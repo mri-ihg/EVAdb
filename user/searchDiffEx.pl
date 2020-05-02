@@ -1,23 +1,22 @@
-#!/usr/bin/perl -w
+#!/usr/bin/perl 
 
 ########################################################################
 # Tim M Strom   February 2007
 ########################################################################
 
 use strict;
-use CGI;
-use CGI::Session;
-use CGI::Carp qw(fatalsToBrowser);
+#use lib '/srv/www/cgi-bin/mysql/test';
 use Snv;
-use DBI;
 
 my $snv         = new Snv;
-my $cgiquery    = new CGI;
-my $pedigree    = $cgiquery->param('pedigree');
-my $search      = $snv->initSearchDiffEx($pedigree);
+my $cgi         = new CGI;
+my $pedigree    = $cgi->param('pedigree');
 
-$snv->printHeader("","cgisessid");
+$snv->printHeader();
 $snv->loadSessionId();
+
+$pedigree       = $snv->htmlencode($pedigree);
+my $search      = $snv->initSearchDiffEx($pedigree);
 	
 $snv->showMenu("searchDiffEx");
 print "<span class=\"big\">Search</span><br><br>" ;

@@ -12,7 +12,7 @@ my $snv         = new Snv;
 my $cgiquery    = new CGI;
 my $search      = $snv->initSearchStatistics();
 
-$snv->printHeader("","cgisessid");
+$snv->printHeader();
 $snv->loadSessionId();
 	
 $snv->showMenu("searchStat");

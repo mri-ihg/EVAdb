@@ -5,13 +5,9 @@
 ########################################################################
 
 use strict;
-use CGI;
-use CGI::Session qw/-ip-match/;
-use CGI::Carp qw(fatalsToBrowser);
 use Snv;
 
 my $snv         = new Snv;
-my $cgiquery    = new CGI;
 
 $snv->printHeader();
 my ($dbh) = $snv->loadSessionId();

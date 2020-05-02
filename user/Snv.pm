@@ -58,8 +58,8 @@ my $hg             = "hg19";
 my $contextM       = "contextM";
 my $giabradio      = 0;
 my $giabform       = "";
-my $performDEAnalysis = "/data/isilon/scripts/eclipse_workspace_wieland/Pipeline/performDEAnalysis.pl";
-my $performDiffPeakCalling = "/data/isilon/scripts/eclipse_workspace_wieland/Pipeline/performDiffPeakCalling.pl";
+my $performDEAnalysis = "/data/isilon/users/scripts/eclipse_workspace_wieland/Pipeline/performDEAnalysis.pl";
+my $performDiffPeakCalling = "/data/isilon/users/scripts/eclipse_workspace_wieland/Pipeline/performDiffPeakCalling.pl";
 my $wholegenome = "wholegenomehg19";
 
 if ($vcf) {
@@ -14378,6 +14378,17 @@ my $igvfile   = "";
 my $cnvfile   = "";
 my $allowedprojects = &allowedprojects("s.");
 
+my $cgi          = new CGI::Plus;
+$cgi->csrf(1);
+if (! $cgi->csrf_check)
+    { die 'security error' }
+delete($ref->{csrf});
+my $csrf_token = $ref->{wwwcsrf};
+my $status = check_csrf_token($user, "YJxm9H", $csrf_token,\%options);
+die "Wrong CSRF token" unless ($status == CSRF_OK);
+delete($ref->{wwwcsrf});
+
+
 if ($ref->{'datebegin'} ne "") {
 	$where = " AND es.date >= ? ";
 	push(@prepare, $ref->{'datebegin'});
@@ -19557,6 +19568,7 @@ if (
 )
 {die;}
 
+
 my $allowedprojects = &allowedprojects("s.");
 
 my $cgi          = new CGI::Plus;
@@ -21266,6 +21278,12 @@ my $status = check_csrf_token($user, "YJxm9H", $csrf_token,\%options);
 die "Wrong CSRF token" unless ($status == CSRF_OK);
 delete($ref->{wwwcsrf});
 
+print $cgi->csrf_field, "\n";
+$csrf_token = generate_csrf_token($user, "YJxm9H");
+print qq(
+<input name="wwwcsrf" type= "hidden" value="$csrf_token">
+);
+
 
 print "<input type=\"submit\" name=\"diffEx\" value=\"Differential Expession\" >";
 print "<br><br>";
@@ -21437,6 +21455,11 @@ my $status = check_csrf_token($user, "YJxm9H", $csrf_token,\%options);
 die "Wrong CSRF token" unless ($status == CSRF_OK);
 delete($ref->{wwwcsrf});
 
+print $cgi->csrf_field, "\n";
+$csrf_token = generate_csrf_token($user, "YJxm9H");
+print qq(
+<input name="wwwcsrf" type= "hidden" value="$csrf_token">
+);
 
 print "<input type=\"submit\" name=\"diffPeak\" value=\"Differential Peak Calling\" >";
 print "<br><br>";
@@ -21619,7 +21642,19 @@ my @row          = ();
 my $ppid         = getppid;
 my $mytime       = time;
 my $outfile      = "/srv/tmp/diffex$ppid$mytime";
-#my $outfile      = "/srv/tmp/diffex";
+#my $outfile      = "/tmp/diffex";
+
+
+my $cgi          = new CGI::Plus;
+$cgi->csrf(1);
+if (! $cgi->csrf_check)
+    { die 'security error' }
+delete($ref->{csrf});
+my $csrf_token = $ref->{wwwcsrf};
+my $status = check_csrf_token($user, "YJxm9H", $csrf_token,\%options);
+die "Wrong CSRF token" unless ($status == CSRF_OK);
+delete($ref->{wwwcsrf});
+
 
 print "Reads mapping to annotated genes are quantified with HTseq-count 
 (PMID <a href=https://www.ncbi.nlm.nih.gov/pubmed/25260700>25260700</a>).
@@ -21629,7 +21664,7 @@ The Relative Log Expression (RLE) normalization implemented in the R Bioconducto
 
 my $fcshrinkage=$ref->{fcshrinkage};
 
-my @cmd = "perl";
+my @cmd = ("/usr/bin/perl");
 push (@cmd, "$performDEAnalysis");
 print "Cases: ";
 foreach(@cases) {
@@ -21655,7 +21690,10 @@ push (@cmd, "$outfile");
 if ($fcshrinkage eq "no") {
 	push (@cmd, "-nofcs");
 }
-system (@cmd);
+my $cmd = join " ", @cmd;
+$ENV{'PATH'} = "/usr/local/bin:/usr/bin";
+my $error = system ($cmd);
+#my $error = system (@cmd);
 #system ("$performDEAnalysis $tmpcases $tmpcontrols -e diffEx -o $outfile");
 
 $outfile .= "/DESeq2";
@@ -21769,6 +21807,16 @@ my $mytime       = time;
 my $outfile      = "/srv/tmp/diffex$ppid$mytime";
 #my $outfile      = "/srv/tmp/diffex";
 
+my $cgi          = new CGI::Plus;
+$cgi->csrf(1);
+if (! $cgi->csrf_check)
+    { die 'security error' }
+delete($ref->{csrf});
+my $csrf_token = $ref->{wwwcsrf};
+my $status = check_csrf_token($user, "YJxm9H", $csrf_token,\%options);
+die "Wrong CSRF token" unless ($status == CSRF_OK);
+delete($ref->{wwwcsrf});
+
 print "Calculating differentially bound sites which can take up to 15 minutes. Please wait ... 
 <br><br>";
 
@@ -21781,7 +21829,7 @@ ChIPpeakAnno (Bioconductor: <a href=http://bioconductor.org/packages/release/bio
 
 my $peaktype=$ref->{peaktype};
 
-my @cmd = "perl";
+my @cmd = "/usr/bin/perl";
 push (@cmd, "$performDiffPeakCalling");
 print "Cases: ";
 foreach(@cases) {
@@ -21809,6 +21857,7 @@ push (@cmd, "human");
 if ($peaktype eq "no") {
 	push (@cmd, "-b");
 }
+$ENV{'PATH'} = "/usr/local/bin:/usr/bin";
 system (@cmd);
 #system ("$performDEAnalysis $tmpcases $tmpcontrols -e diffEx -o $outfile");
 
@@ -22341,11 +22390,11 @@ my ($dbh)    = &loadSessionId();
 
 my $cgi    = new CGI::Plus;
 $cgi->csrf(1);
-print $cgi->csrf_field, "\n<br>";
+print $cgi->csrf_field, "\n";
 
 my $csrf_token = generate_csrf_token($user, "YJxm9H");
 print qq(
-<input name="wwwcsrf" type= "hidden" value="$csrf_token"><br>
+<input name="wwwcsrf" type= "hidden" value="$csrf_token">
 );
 
 print qq(
@@ -23138,6 +23187,21 @@ sub htmlencode {
 	my $string  = shift;
 	HTML::Entities::encode($string);
 	return($string);
+}
+########################################################################
+# htmlencodearray
+########################################################################
+
+sub htmlencodearray {
+	my $self    = shift;
+	my (@array) = @_;
+	my $tmp     = "";
+	my @res     = ();
+	foreach $tmp (@array) {
+		HTML::Entities::encode($tmp);
+		push(@res,$tmp);
+	}
+	return(@res);
 }
 ########################################################################
 # htmlencodehash

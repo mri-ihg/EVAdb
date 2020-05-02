@@ -1,22 +1,17 @@
-#!/usr/bin/perl -w
+#!/usr/bin/perl 
 
 ########################################################################
 # Tim M Strom   Juni 2010
 ########################################################################
 
 use strict;
-use CGI;
-use CGI::Session;
-use CGI::Carp qw(fatalsToBrowser);
+#use lib '/srv/www/cgi-bin/mysql/test';
 use Snv;
-use DBI;
 
 my $snv         = new Snv;
-my $cgiquery    = new CGI;
-
 my $search      = $snv->initTranscriptstat();
 
-$snv->printHeader("","cgisessid");
+$snv->printHeader();
 my ($dbh) = $snv->loadSessionId();
 	
 $snv->showMenu("searchTranscriptstat");

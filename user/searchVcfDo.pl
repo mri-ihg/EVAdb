@@ -5,13 +5,11 @@
 ########################################################################
 
 use strict;
-use CGI;
-use CGI::Carp qw(fatalsToBrowser);
+#use lib "/srv/www/cgi-bin/mysql/test";
 use Snv;
 
-my $cgiquery    = new CGI;
-my $ref         = $cgiquery->Vars;
-
+my $cgi         = new CGI;
+my $ref         = $cgi->Vars;
 my $snv        	= new Snv;
 
 ########################################################################
@@ -20,6 +18,8 @@ my $snv        	= new Snv;
 
 $snv->printHeader();
 my ($dbh) = $snv->loadSessionId();
+
+$ref = $snv->htmlencodehash($ref);
 
 $snv->showMenu('searchVcf');
 print "<span class=\"big\">Search results</span><br><br>" ;

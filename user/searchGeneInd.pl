@@ -12,7 +12,7 @@ my $snv         = new Snv;
 my $cgi         = new CGI;
 my $pedigree    = $cgi->param('pedigree');
 
-$snv->printHeader("","cgisessid");
+$snv->printHeader();
 my ($dbh) = $snv->loadSessionId();
 
 $pedigree       = $snv->htmlencode($pedigree);

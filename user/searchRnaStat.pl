@@ -1,22 +1,20 @@
-#!/usr/bin/perl -w
+#!/usr/bin/perl 
 
 ########################################################################
 # Tim M Strom   February 2007
 ########################################################################
 
 use strict;
-use CGI;
-use CGI::Session;
-use CGI::Carp qw(fatalsToBrowser);
+#use lib "/srv/www/cgi-bin/mysql/test";
 use Snv;
-use DBI;
 
 my $snv         = new Snv;
-my $cgiquery    = new CGI;
 my $search      = $snv->initSearchRnaStat();
 
 $snv->printHeader();
 $snv->loadSessionId();
+
+my $search      = $snv->initSearchRnaStat();
 	
 $snv->showMenu("searchRnaStat");
 print "<span class=\"big\">Search</span><br><br>" ;

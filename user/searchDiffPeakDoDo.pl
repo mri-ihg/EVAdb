@@ -5,19 +5,12 @@
 ########################################################################
 
 use strict;
-use CGI;
-use CGI::Carp qw(fatalsToBrowser);
+#use lib "/srv/www/cgi-bin/mysql/test";
 use Snv;
-use DBI;
 
-my $cgiquery     = new CGI;
-my $ref          = $cgiquery->Vars;
-my @cases        = $cgiquery->param('cases');
-my @controls     = $cgiquery->param('controls');
-my $casesref     = \@cases;
-my $controlsref  = \@controls;
-
-my $snv        = new Snv;
+my $cgi          = new CGI;
+my $ref          = $cgi->Vars;
+my $snv          = new Snv;
 
 ########################################################################
 # main
@@ -25,6 +18,14 @@ my $snv        = new Snv;
 
 $snv->printHeader();
 my ($dbh) = $snv->loadSessionId();
+
+my @cases        = $cgi->param('cases');
+my @controls     = $cgi->param('controls');
+$ref             = $snv->htmlencodehash($ref);
+@cases           = $snv->htmlencodearray(@cases);
+@controls        = $snv->htmlencodearray(@controls);
+my $casesref     = \@cases;
+my $controlsref  = \@controls;
 
 $snv->showMenu('searchDiffPeak');
 print "<span class=\"big\">Search results</span><br><br>" ;

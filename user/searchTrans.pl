@@ -5,19 +5,18 @@
 ########################################################################
 
 use strict;
-use CGI;
-use CGI::Session;
-use CGI::Carp qw(fatalsToBrowser);
+#use lib '/srv/www/cgi-bin/mysql/test';
 use Snv;
-use DBI;
 
 my $snv         = new Snv;
-my $cgiquery    = new CGI;
-my $sname       = $cgiquery->param('sname');
-my $search      = $snv->initSearchTrans($sname);
+my $cgi         = new CGI;
+my $sname       = $cgi->param('sname');
 
-$snv->printHeader("","cgisessid");
+$snv->printHeader();
 $snv->loadSessionId();
+
+$sname          = $snv->htmlencode($sname);
+my $search      = $snv->initSearchTrans($sname);
 
 $snv->showMenu("searchTrans");
 print "<span class=\"big\">Search</span><br><br>" ;

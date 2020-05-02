@@ -5,20 +5,18 @@
 ########################################################################
 
 use strict;
-use CGI;
-use CGI::Session;
-use CGI::Carp qw(fatalsToBrowser);
+#use lib '/srv/www/cgi-bin/mysql/test';
 use Snv;
-use DBI;
 use WWW::CSRF qw(generate_csrf_token check_csrf_token CSRF_OK);
 
 my $snv         = new Snv;
-my $cgiquery    = new CGI;
-my $sname       = $cgiquery->param('sname');
+my $cgi         = new CGI;
+my $sname       = $cgi->param('sname');
 
-$snv->printHeader("","cgisessid");
+$snv->printHeader();
 my ($dbh, $user) = $snv->loadSessionId();
-print "user $user<br>";
+
+$sname          = $snv->htmlencode($sname);
 
 print qq(
 <script type="text/javascript">

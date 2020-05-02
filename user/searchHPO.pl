@@ -12,7 +12,7 @@ my $snv         = new Snv;
 my $cgi         = new CGI;
 my $sname       = $cgi->param('sname');
 
-$snv->printHeader("","cgisessid");
+$snv->printHeader();
 my ($dbh) = $snv->loadSessionId();
 
 $sname       = $snv->htmlencode($sname);
