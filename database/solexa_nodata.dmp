@@ -1,0 +1,549 @@
+-- MySQL dump 10.15  Distrib 10.0.35-MariaDB, for Linux (x86_64)
+--
+-- Host: localhost    Database: solexa
+-- ------------------------------------------------------
+-- Server version	10.0.35-MariaDB
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8 */;
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+/*!40103 SET TIME_ZONE='+00:00' */;
+/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+
+--
+-- Table structure for table `assay`
+--
+
+DROP TABLE IF EXISTS `assay`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `assay` (
+  `idassay` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) NOT NULL,
+  PRIMARY KEY (`idassay`)
+) ENGINE=InnoDB AUTO_INCREMENT=66 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `barcodes10x`
+--
+
+DROP TABLE IF EXISTS `barcodes10x`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `barcodes10x` (
+  `id10xbarcodes` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `idtag` int(11) unsigned NOT NULL,
+  `tname` varchar(100) NOT NULL,
+  `ttag` varchar(40) NOT NULL,
+  `torder` varchar(1) DEFAULT NULL,
+  PRIMARY KEY (`id10xbarcodes`),
+  UNIQUE KEY `tname` (`id10xbarcodes`),
+  KEY `idtag` (`idtag`),
+  CONSTRAINT `barcodes10x_ibfk_1` FOREIGN KEY (`idtag`) REFERENCES `tag` (`idtag`)
+) ENGINE=InnoDB AUTO_INCREMENT=769 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `company`
+--
+
+DROP TABLE IF EXISTS `company`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `company` (
+  `idcompany` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `coname` varchar(100) NOT NULL,
+  `coflag` varchar(1) DEFAULT 'T',
+  PRIMARY KEY (`idcompany`),
+  UNIQUE KEY `coname` (`coname`)
+) ENGINE=InnoDB AUTO_INCREMENT=24 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `kit`
+--
+
+DROP TABLE IF EXISTS `kit`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `kit` (
+  `cid` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `cname` varchar(100) NOT NULL,
+  `cdescription` varchar(255) DEFAULT '',
+  `cmenuflag` varchar(1) NOT NULL DEFAULT 'T',
+  PRIMARY KEY (`cid`),
+  UNIQUE KEY `cname` (`cname`)
+) ENGINE=InnoDB AUTO_INCREMENT=143 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `lane`
+--
+
+DROP TABLE IF EXISTS `lane`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `lane` (
+  `aid` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `alane` tinyint(3) unsigned NOT NULL,
+  `rid` int(10) unsigned NOT NULL,
+  `amolar` float DEFAULT NULL,
+  `aversion` int(11) unsigned NOT NULL DEFAULT '0',
+  `aread1failed` varchar(1) NOT NULL DEFAULT 'F',
+  `aread2failed` varchar(1) NOT NULL DEFAULT 'F',
+  `apaid` varchar(1) NOT NULL DEFAULT 'F',
+  `idpool` int(11) unsigned NOT NULL,
+  PRIMARY KEY (`aid`),
+  UNIQUE KEY `aridlane` (`rid`,`alane`),
+  KEY `rid` (`rid`),
+  KEY `arid` (`rid`),
+  KEY `lanepool` (`idpool`),
+  CONSTRAINT `arid` FOREIGN KEY (`rid`) REFERENCES `run` (`rid`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `lanepool` FOREIGN KEY (`idpool`) REFERENCES `pool` (`idpool`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB AUTO_INCREMENT=9448 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `libpair`
+--
+
+DROP TABLE IF EXISTS `libpair`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `libpair` (
+  `lpid` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `lplibpair` varchar(255) NOT NULL,
+  PRIMARY KEY (`lpid`)
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `library`
+--
+
+DROP TABLE IF EXISTS `library`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `library` (
+  `lid` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `lname` varchar(100) NOT NULL,
+  `ldescription` varchar(100) DEFAULT '',
+  `lcomment` varchar(255) DEFAULT '',
+  `uid` int(10) unsigned DEFAULT NULL,
+  `ldate` date DEFAULT NULL,
+  `lmenuflag` varchar(1) NOT NULL DEFAULT 'T',
+  `lversion` int(11) unsigned NOT NULL DEFAULT '0',
+  `lquality` varchar(4) NOT NULL DEFAULT 'good',
+  `libtype` int(11) unsigned DEFAULT NULL,
+  `lmaterial` int(11) DEFAULT NULL,
+  `lpcr` int(11) DEFAULT NULL,
+  `lbio1mol` float DEFAULT NULL,
+  `lbio1conc` float DEFAULT NULL,
+  `lbio1vol` int(11) DEFAULT NULL,
+  `lbiohsmol` float DEFAULT NULL,
+  `lbiohsconc` float DEFAULT NULL,
+  `lbiohsvol` int(11) DEFAULT NULL,
+  `lbio1size` int(11) DEFAULT NULL,
+  `lduplicates` int(11) DEFAULT NULL,
+  `libpair` int(11) unsigned DEFAULT NULL,
+  `lindex` varchar(45) DEFAULT '',
+  `idtag` int(11) unsigned DEFAULT NULL,
+  `lpicogreen` float DEFAULT NULL,
+  `lstatus` enum('to do','lib in process','library prepared','pooled','Taqman finished','sequenced','external') DEFAULT NULL,
+  `lorganisms_old` int(11) unsigned DEFAULT NULL,
+  `lkit` int(11) unsigned DEFAULT '0',
+  `lbiopostpcrngul` float DEFAULT NULL,
+  `lpicogreenpgul` float DEFAULT NULL,
+  `lforpool` varchar(1) DEFAULT '',
+  `lbiohssize` int(11) DEFAULT NULL,
+  `linsertsize` int(11) DEFAULT NULL,
+  `linsertsizesd` int(11) DEFAULT NULL,
+  `lfailed` int(1) unsigned DEFAULT '0',
+  `lextfilepath` blob,
+  `idtag2` int(11) unsigned DEFAULT NULL,
+  `idassay` int(11) unsigned DEFAULT NULL,
+  `lqpcr` float DEFAULT NULL,
+  PRIMARY KEY (`lid`),
+  UNIQUE KEY `lname` (`lname`),
+  KEY `luid` (`uid`),
+  KEY `libtype` (`libtype`),
+  KEY `libpair` (`libpair`),
+  KEY `lidtag` (`idtag`),
+  CONSTRAINT `libpair` FOREIGN KEY (`libpair`) REFERENCES `libpair` (`lpid`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `libtype` FOREIGN KEY (`libtype`) REFERENCES `libtype` (`ltid`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `lidtag` FOREIGN KEY (`idtag`) REFERENCES `tag` (`idtag`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB AUTO_INCREMENT=101195 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `library2pool`
+--
+
+DROP TABLE IF EXISTS `library2pool`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `library2pool` (
+  `idlibrary2pool` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `lid` int(11) unsigned NOT NULL,
+  `idpool` int(11) unsigned NOT NULL,
+  `loversion` int(11) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`idlibrary2pool`),
+  UNIQUE KEY `lidpool` (`lid`,`idpool`),
+  KEY `lid_lid2pool` (`lid`),
+  KEY `pool_lid2pool` (`idpool`),
+  CONSTRAINT `lid_lid2pool` FOREIGN KEY (`lid`) REFERENCES `library` (`lid`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `pool_lid2pool` FOREIGN KEY (`idpool`) REFERENCES `pool` (`idpool`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB AUTO_INCREMENT=128321 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `libtype`
+--
+
+DROP TABLE IF EXISTS `libtype`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `libtype` (
+  `ltid` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `ltlibtype` varchar(255) NOT NULL,
+  PRIMARY KEY (`ltid`)
+) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `login`
+--
+
+DROP TABLE IF EXISTS `login`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `login` (
+  `idlogin` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `user` varchar(45) NOT NULL,
+  `succeeded_all` int(10) unsigned NOT NULL DEFAULT '0',
+  `failed_all` int(10) unsigned NOT NULL DEFAULT '0',
+  `failed_last` int(10) unsigned NOT NULL DEFAULT '0',
+  PRIMARY KEY (`idlogin`),
+  UNIQUE KEY `idlogin_UNIQUE` (`idlogin`)
+) ENGINE=InnoDB AUTO_INCREMENT=27 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `opticalduplicates`
+--
+
+DROP TABLE IF EXISTS `opticalduplicates`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `opticalduplicates` (
+  `idopticalduplicates` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `rname` varchar(100) DEFAULT NULL,
+  `lane` tinyint(3) unsigned DEFAULT NULL,
+  `lname` varchar(100) DEFAULT NULL,
+  `duplicates` decimal(5,2) unsigned DEFAULT NULL,
+  `opticalduplicates` decimal(5,2) unsigned DEFAULT NULL,
+  PRIMARY KEY (`idopticalduplicates`),
+  UNIQUE KEY `optduprunlanelib` (`rname`,`lane`,`lname`)
+) ENGINE=MyISAM AUTO_INCREMENT=143201 DEFAULT CHARSET=latin1 PAGE_CHECKSUM=1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `pair`
+--
+
+DROP TABLE IF EXISTS `pair`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `pair` (
+  `pairid` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `aid` int(10) unsigned NOT NULL,
+  `LowSD` int(10) unsigned DEFAULT NULL,
+  `HighSD` int(10) unsigned DEFAULT NULL,
+  `Median` int(10) unsigned DEFAULT NULL,
+  `Min` int(11) DEFAULT NULL,
+  `Max` int(10) unsigned DEFAULT NULL,
+  `Fm` int(10) unsigned DEFAULT NULL,
+  `Fp` int(10) unsigned DEFAULT NULL,
+  `NominalOrientationPercent` float DEFAULT NULL,
+  `Rm` int(10) unsigned DEFAULT NULL,
+  `Rp` int(10) unsigned DEFAULT NULL,
+  `UniquePairedAlignment` int(11) DEFAULT NULL,
+  `NominalOrientationButLargeInsert` int(10) unsigned DEFAULT NULL,
+  `NominalOrientationButSmallInsert` int(10) unsigned DEFAULT NULL,
+  PRIMARY KEY (`pairid`),
+  UNIQUE KEY `aid` (`aid`),
+  KEY `pairsaid` (`aid`),
+  CONSTRAINT `pairsaid` FOREIGN KEY (`aid`) REFERENCES `lane` (`aid`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB AUTO_INCREMENT=1147 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `pool`
+--
+
+DROP TABLE IF EXISTS `pool`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `pool` (
+  `idpool` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `oname` varchar(100) NOT NULL,
+  `odescription` varchar(100) DEFAULT '',
+  `ocomment` varchar(255) DEFAULT '',
+  `omenuflag` varchar(1) NOT NULL DEFAULT 'T',
+  `oentered` int(11) unsigned NOT NULL,
+  `odate` date DEFAULT NULL,
+  `oversion` int(11) unsigned NOT NULL DEFAULT '0',
+  `obarcode` varchar(200) DEFAULT NULL,
+  `oplate` varchar(200) DEFAULT NULL,
+  `orow` varchar(1) DEFAULT NULL,
+  `ocolumn` varchar(2) DEFAULT NULL,
+  `opcr` float DEFAULT NULL,
+  `olanestosequence` tinyint(3) unsigned NOT NULL DEFAULT '1',
+  `picogreennmol` float DEFAULT NULL,
+  `ovolume` float DEFAULT NULL,
+  `opcrrecalculated` float DEFAULT NULL,
+  `ousedvolume` float DEFAULT NULL,
+  `oaimedconcentration` float DEFAULT NULL,
+  `oloadingconcentration` float DEFAULT NULL,
+  `ophix` float DEFAULT NULL,
+  `oflowcell` char(9) DEFAULT NULL,
+  `oreadlength` char(9) DEFAULT NULL,
+  `oworkflow` char(9) DEFAULT NULL,
+  PRIMARY KEY (`idpool`),
+  UNIQUE KEY `oname` (`oname`),
+  UNIQUE KEY `obarcode` (`obarcode`),
+  UNIQUE KEY `oplate` (`oplate`,`orow`,`ocolumn`)
+) ENGINE=InnoDB AUTO_INCREMENT=44669 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `qcal`
+--
+
+DROP TABLE IF EXISTS `qcal`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `qcal` (
+  `qcalid` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `aid` int(10) unsigned NOT NULL,
+  `readnumber` tinyint(3) unsigned NOT NULL,
+  `qcal` int(11) NOT NULL,
+  `error` int(10) unsigned NOT NULL,
+  `bases` int(10) unsigned NOT NULL,
+  PRIMARY KEY (`qcalid`),
+  UNIQUE KEY `aidreadnumberqcall` (`aid`,`readnumber`,`qcal`),
+  KEY `qcalaid` (`aid`),
+  CONSTRAINT `qcalaid` FOREIGN KEY (`aid`) REFERENCES `lane` (`aid`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB AUTO_INCREMENT=99544 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `rread`
+--
+
+DROP TABLE IF EXISTS `rread`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `rread` (
+  `rreadid` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `aid` int(10) unsigned NOT NULL,
+  `machine` varchar(100) NOT NULL,
+  `runfolder` varchar(250) NOT NULL,
+  `readNumber` tinyint(4) NOT NULL,
+  `originalReadLength` smallint(6) NOT NULL,
+  `averageAlignScorePF` float NOT NULL,
+  `clusterCountPF` int(10) unsigned NOT NULL,
+  `clusterCountRaw` int(10) unsigned NOT NULL,
+  `errorPF` float NOT NULL,
+  `oneSig` int(10) unsigned NOT NULL,
+  `percentUniquelyAlignedPF` float NOT NULL,
+  `signal20AsPctOf1` float NOT NULL,
+  `errorPFstdev` float NOT NULL,
+  `tileCountRaw` int(11) NOT NULL,
+  PRIMARY KEY (`rreadid`),
+  UNIQUE KEY `aidread` (`aid`,`readNumber`),
+  KEY `rraid` (`aid`),
+  CONSTRAINT `rraid` FOREIGN KEY (`aid`) REFERENCES `lane` (`aid`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB AUTO_INCREMENT=17605 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `run`
+--
+
+DROP TABLE IF EXISTS `run`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `run` (
+  `rid` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `rname` varchar(100) NOT NULL,
+  `rdescription` int(11) unsigned DEFAULT NULL,
+  `rcomment` varchar(255) DEFAULT '',
+  `uid` int(10) unsigned DEFAULT NULL,
+  `rdate` date DEFAULT NULL,
+  `rdirectory` varchar(255) DEFAULT '',
+  `rmenuflag` varchar(1) NOT NULL DEFAULT 'T',
+  `rversion` int(11) unsigned NOT NULL DEFAULT '0',
+  `rdaterun` date DEFAULT NULL,
+  `rfailed` varchar(255) DEFAULT '',
+  `rindex` varchar(1) DEFAULT 'F',
+  `rinstrument` varchar(45) DEFAULT '',
+  `flowcellmode` varchar(10) NOT NULL DEFAULT 'HiSeq',
+  PRIMARY KEY (`rid`),
+  UNIQUE KEY `rname` (`rname`),
+  KEY `ruid` (`uid`),
+  KEY `rtype` (`rdescription`),
+  CONSTRAINT `rtype` FOREIGN KEY (`rdescription`) REFERENCES `runtype` (`runtypeid`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB AUTO_INCREMENT=1355 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `run2stock`
+--
+
+DROP TABLE IF EXISTS `run2stock`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `run2stock` (
+  `idrun2stock` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `rid` int(11) unsigned NOT NULL,
+  `sid` int(11) unsigned NOT NULL,
+  `entered` int(11) unsigned NOT NULL,
+  PRIMARY KEY (`idrun2stock`),
+  UNIQUE KEY `runstock` (`rid`,`sid`),
+  KEY `run2stock_stock` (`sid`),
+  KEY `run2stock_run` (`rid`),
+  KEY `run2stock_user` (`entered`),
+  CONSTRAINT `run2stock_run` FOREIGN KEY (`rid`) REFERENCES `run` (`rid`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `run2stock_stock` FOREIGN KEY (`sid`) REFERENCES `stock` (`sid`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB AUTO_INCREMENT=4036 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `runtype`
+--
+
+DROP TABLE IF EXISTS `runtype`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `runtype` (
+  `runtypeid` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(100) NOT NULL,
+  PRIMARY KEY (`runtypeid`),
+  UNIQUE KEY `runtypename` (`name`)
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `sample2library`
+--
+
+DROP TABLE IF EXISTS `sample2library`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `sample2library` (
+  `idsample2library` int(11) NOT NULL AUTO_INCREMENT,
+  `idsample` int(11) unsigned NOT NULL,
+  `lid` int(11) unsigned NOT NULL,
+  PRIMARY KEY (`idsample2library`),
+  UNIQUE KEY `samplelibrary` (`lid`,`idsample`),
+  UNIQUE KEY `sllid` (`lid`),
+  UNIQUE KEY `slidsamplelid` (`lid`,`idsample`),
+  KEY `slidsample` (`idsample`),
+  CONSTRAINT `slidsample` FOREIGN KEY (`idsample`) REFERENCES `exomehg19`.`sample` (`idsample`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `sllid` FOREIGN KEY (`lid`) REFERENCES `library` (`lid`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB AUTO_INCREMENT=100514 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `shopping`
+--
+
+DROP TABLE IF EXISTS `shopping`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `shopping` (
+  `idshopping` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `bnumber` varchar(45) NOT NULL DEFAULT '',
+  `bdescription` varchar(100) NOT NULL DEFAULT '',
+  `blistprice` decimal(10,2) DEFAULT NULL,
+  `bprice` decimal(10,2) DEFAULT NULL,
+  `bdate` date DEFAULT '0000-00-00',
+  `buser` int(11) unsigned DEFAULT NULL,
+  `beinkaufswagen` varchar(45) DEFAULT '',
+  `bordernumber` varchar(45) DEFAULT '',
+  `bcompany` int(11) unsigned DEFAULT NULL,
+  `pspelement` varchar(45) NOT NULL DEFAULT '',
+  `articlegroup` enum('Consumables','Computer','Computer_service','Sequencing_Machines','Sequencing_service','Other_machines','Other_machines_service','Other') DEFAULT 'Consumables',
+  PRIMARY KEY (`idshopping`),
+  KEY `buser` (`buser`),
+  KEY `company` (`bcompany`),
+  CONSTRAINT `company` FOREIGN KEY (`bcompany`) REFERENCES `company` (`idcompany`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB AUTO_INCREMENT=1044 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `stock`
+--
+
+DROP TABLE IF EXISTS `stock`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `stock` (
+  `sid` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `cid` int(10) unsigned NOT NULL,
+  `uidreceived` int(10) unsigned DEFAULT NULL,
+  `sgetdate` date DEFAULT NULL,
+  `scomment` varchar(255) DEFAULT '',
+  `replacement` varchar(1) NOT NULL DEFAULT 'F',
+  `expiration` date DEFAULT NULL,
+  `lot` varchar(20) DEFAULT '',
+  `expiration2` date DEFAULT NULL,
+  `lot2` varchar(20) DEFAULT '',
+  `smenuflag` varchar(1) NOT NULL DEFAULT 'T',
+  PRIMARY KEY (`sid`),
+  KEY `cid` (`cid`),
+  KEY `scid` (`cid`),
+  KEY `suidreceived` (`uidreceived`),
+  CONSTRAINT `scid` FOREIGN KEY (`cid`) REFERENCES `kit` (`cid`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB AUTO_INCREMENT=4481 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `tag`
+--
+
+DROP TABLE IF EXISTS `tag`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `tag` (
+  `idtag` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `tgroup` varchar(100) NOT NULL,
+  `tname` varchar(100) NOT NULL,
+  `ttag` varchar(40) NOT NULL,
+  `tentered` int(11) unsigned DEFAULT NULL,
+  `tdate` date DEFAULT NULL,
+  `tmenuflag` varchar(1) NOT NULL DEFAULT 'T',
+  `tdualindex` tinyint(4) DEFAULT '0',
+  PRIMARY KEY (`idtag`),
+  UNIQUE KEY `tname` (`tname`),
+  KEY `tentered` (`tentered`)
+) ENGINE=InnoDB AUTO_INCREMENT=2769 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
+
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+
+-- Dump completed on 2020-05-03 11:45:16
