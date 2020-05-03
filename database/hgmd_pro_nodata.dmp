@@ -1,0 +1,1062 @@
+-- MySQL dump 10.15  Distrib 10.0.35-MariaDB, for Linux (x86_64)
+--
+-- Host: localhost    Database: hgmd_pro
+-- ------------------------------------------------------
+-- Server version	10.0.35-MariaDB
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8 */;
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+/*!40103 SET TIME_ZONE='+00:00' */;
+/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+
+--
+-- Table structure for table `allgenes`
+--
+
+DROP TABLE IF EXISTS `allgenes`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `allgenes` (
+  `disease` text COLLATE utf8_unicode_ci COMMENT 'Concatenated HGMD phenotypes',
+  `expected_inheritance` varchar(5) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Inheritance pattern expected for the predominant phenotype(s) associated with a defect in the related gene',
+  `gene_id` int(11) DEFAULT NULL COMMENT 'HGMD gene identifier (from MARKNAME table)',
+  `gene` varchar(15) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'HGMD gene symbol (from MARKNAME table)',
+  `chrom` varchar(25) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Chromosomal position (from MARKNAME table)',
+  `genename` varchar(200) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Gene name (from MARKNAME table)',
+  `refseq` varchar(25) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'RefSeq sequence utilised by HGMD',
+  `altsymbol` text COLLATE utf8_unicode_ci COMMENT 'Alternate gene symbols',
+  `altname` text COLLATE utf8_unicode_ci COMMENT 'Alternate gene names',
+  `gdbid` varchar(8) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Genome DataBase identifier now redundant',
+  `omimid` varchar(8) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'OMIM identifier',
+  `entrezID` varchar(10) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Entrez Gene identifier',
+  `hgncID` varchar(10) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'HUGO Gene Nomenclature Committee identifier',
+  `comments` text COLLATE utf8_unicode_ci COMMENT 'HGMD curator comments',
+  `svar` int(11) DEFAULT NULL COMMENT 'HGMD gene ID for alternate isoform',
+  `mut` char(1) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Disease mutation flag',
+  `poly` char(1) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Polymorphism flag',
+  `ftv` char(1) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Frameshift/truncating variant flag (now redundant)',
+  `go_terms_acc` text COLLATE utf8_unicode_ci COMMENT 'GO terms concatenated accession numbers',
+  `go_terms_name` text COLLATE utf8_unicode_ci COMMENT 'GO terms concatenated names',
+  `mut_total` int(11) DEFAULT NULL COMMENT 'Total number of entries in HGMD',
+  `new_mut_total` int(11) DEFAULT NULL COMMENT 'Total number of new genes for the current release',
+  `gene_date` date DEFAULT NULL COMMENT 'Date entered into HGMD (from MARKNAME table)',
+  PRIMARY KEY (`gene`),
+  UNIQUE KEY `refseq` (`refseq`),
+  UNIQUE KEY `gdbid` (`gdbid`),
+  UNIQUE KEY `entrezID` (`entrezID`),
+  UNIQUE KEY `hgncID` (`hgncID`),
+  FULLTEXT KEY `ALLFIELDS` (`disease`,`gene`,`altsymbol`,`altname`,`chrom`,`genename`,`gdbid`,`omimid`,`entrezID`,`hgncID`,`refseq`,`comments`,`go_terms_acc`,`go_terms_name`),
+  FULLTEXT KEY `GENEDATA` (`gene`,`altsymbol`,`altname`,`genename`),
+  FULLTEXT KEY `OTHERDATA` (`hgncID`,`omimid`,`gdbid`,`entrezID`),
+  FULLTEXT KEY `GOTERMS` (`go_terms_acc`,`go_terms_name`),
+  FULLTEXT KEY `DISEASE` (`disease`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `allmut`
+--
+
+DROP TABLE IF EXISTS `allmut`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `allmut` (
+  `disease` varchar(125) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'HGMD phenotype as reported in cited reference',
+  `gene` varchar(15) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'HGMD gene symbol (from MARKNAME table)',
+  `chrom` varchar(25) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Chromosomal location (from MARKNAME table)',
+  `genename` varchar(200) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'HGMD gene name (from MARKNAME table)',
+  `gdbid` varchar(8) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'GenomeDataBase identifier (from MARKNAME table)',
+  `omimid` varchar(8) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'OMIM identifier (from MARKNAME table)',
+  `amino` varchar(8) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Amino acid change (from MUTATION table)',
+  `deletion` varchar(65) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Deleted nucleotides (lowercase) with 10bp flanking sequence (from DELETION or INDEL tables)',
+  `insertion` varchar(65) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Inserted nucleotides (lowercase) with 10bp flanking sequence (from INSERTION or INDEL table)',
+  `codon` int(11) DEFAULT NULL COMMENT 'Codon number (from MUTATION, DELETION, INSERTION or INDEL tables)',
+  `codonAff` int(11) DEFAULT NULL COMMENT 'Codon directly affected by the mutation',
+  `descr` varchar(125) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Narrative description of the mutation',
+  `refseq` varchar(25) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'NCBI RefSeq reference sequence',
+  `hgvs` varchar(60) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'HGVS compliant c-dot nomenclature (from MUTNOMEN table)',
+  `hgvsAll` varchar(120) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Composite c-dot and p-dot nomenclature (for indexing purposes)',
+  `dbsnp` varchar(12) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'dbSNP identifier',
+  `chromosome` varchar(2) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Chromosome number (from hg38_COORDS table)',
+  `startCoord` int(11) DEFAULT NULL,
+  `endCoord` int(11) DEFAULT NULL,
+  `expected_inheritance` varchar(5) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Inheritance pattern expected for the predominant phenotype(s) associated with a defect in the related gene',
+  `gnomad_AC` int(11) DEFAULT NULL,
+  `gnomad_AF` double DEFAULT NULL,
+  `gnomad_AN` int(11) DEFAULT NULL,
+  `tag` enum('DP','FP','DFP','DM','DM?','FTV','R') COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'HGMD variant class',
+  `dmsupport` int(11) DEFAULT NULL,
+  `rankscore` double DEFAULT NULL,
+  `mutype` varchar(25) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `author` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'First author of cited reference',
+  `title` text COLLATE utf8_unicode_ci,
+  `fullname` varchar(55) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'NLM journal title abbreviation (from JOURNAL table)',
+  `allname` varchar(200) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `vol` varchar(15) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Volume of cited reference',
+  `page` varchar(25) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'First page of cited reference',
+  `year` char(4) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `pmid` varchar(8) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Pubmed ID of cited reference',
+  `pmidAll` text COLLATE utf8_unicode_ci,
+  `reftag` char(3) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `comments` text COLLATE utf8_unicode_ci COMMENT 'HGMD curator comments',
+  `acc_num` varchar(10) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'HGMD mutation accession number',
+  `new_date` date DEFAULT NULL COMMENT 'Date entered into HGMD',
+  `base` char(1) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `clinvarID` varchar(25) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `clinvar_clnsig` varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
+  PRIMARY KEY (`acc_num`),
+  KEY `hgvs` (`hgvs`),
+  KEY `pmid` (`pmid`),
+  KEY `gene` (`gene`),
+  KEY `codonAff` (`codonAff`),
+  KEY `dbsnp` (`dbsnp`),
+  FULLTEXT KEY `ALLFIELDS` (`disease`,`gene`,`chrom`,`genename`,`gdbid`,`omimid`,`author`,`fullname`,`allname`,`vol`,`page`,`year`,`pmid`,`pmidAll`,`comments`,`acc_num`),
+  FULLTEXT KEY `REFFIELDS` (`gene`,`author`,`fullname`,`allname`,`year`,`pmid`,`pmidAll`),
+  FULLTEXT KEY `ACC` (`acc_num`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `altname`
+--
+
+DROP TABLE IF EXISTS `altname`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `altname` (
+  `altname_id` int(11) NOT NULL DEFAULT '0' COMMENT 'Internal identifier',
+  `gene_id` int(11) DEFAULT NULL COMMENT 'HGMD gene identifier (from MARKNAME table)',
+  `altname` varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Alternate gene name',
+  PRIMARY KEY (`altname_id`),
+  UNIQUE KEY `gene_id` (`gene_id`,`altname`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `altsym`
+--
+
+DROP TABLE IF EXISTS `altsym`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `altsym` (
+  `alt_id` int(11) NOT NULL DEFAULT '0' COMMENT 'Internal identifier',
+  `gene_id` int(11) DEFAULT NULL COMMENT 'HGMD gene identifier (from MARKNAME table)',
+  `altsymbol` varchar(35) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Alternative gene symbol',
+  PRIMARY KEY (`alt_id`),
+  UNIQUE KEY `gene_id` (`gene_id`,`altsymbol`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `amino`
+--
+
+DROP TABLE IF EXISTS `amino`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `amino` (
+  `code3` char(4) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'Triplet amino acid abbreviation',
+  `code1` char(1) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Single letter amino acid code',
+  `full` varchar(15) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Full amino acid name',
+  `polarity` char(3) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Polarity of amino acid',
+  `pH` varchar(15) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'pH range of amino acid',
+  `weight` int(11) DEFAULT NULL COMMENT 'Weight of amino acid residue',
+  `hydrophob` decimal(2,1) DEFAULT NULL COMMENT 'Amino acid hydrophobicity',
+  `hydrophil` decimal(2,1) DEFAULT NULL COMMENT 'Amino acid hydophilicity',
+  `sec` varchar(20) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Amino acid secondary structure propensity',
+  PRIMARY KEY (`code3`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `aminoseq`
+--
+
+DROP TABLE IF EXISTS `aminoseq`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `aminoseq` (
+  `gene_id` int(11) NOT NULL DEFAULT '0' COMMENT 'HGMD gene identifier (from MARKNAME table)',
+  `gene` varchar(15) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'HGMD gene symbol (from MARKNAME table)',
+  `txid` int(11) DEFAULT NULL COMMENT 'Taxonomy ID from NCBI Taxonomy database',
+  `species` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Latin (Linnean) species name',
+  `sp_name` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Species name (English)',
+  `prot_seq` text COLLATE utf8_unicode_ci COMMENT 'Protein sequence single letter code',
+  `prot_acc` varchar(25) COLLATE utf8_unicode_ci NOT NULL COMMENT 'NCBI RefSeq protein sequence identifier',
+  `prot_ver` varchar(2) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'NCBI RefSeq protein sequence version',
+  `curated` char(1) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Automatic or Manual curation',
+  PRIMARY KEY (`prot_acc`,`gene_id`),
+  KEY `gene` (`gene`),
+  KEY `txid` (`txid`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `amplet`
+--
+
+DROP TABLE IF EXISTS `amplet`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `amplet` (
+  `disease` varchar(125) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'HGMD phenotype as reported in cited reference',
+  `gene` varchar(15) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'HGMD gene symbol (from MARKNAME table)',
+  `chrom` varchar(3) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Chromosome',
+  `amplet` varchar(50) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'Repeated sequence',
+  `norcopy` varchar(15) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'Reported copy range normally found in population',
+  `patcopy` varchar(15) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'Reported copy range found in population with phenotype',
+  `location` varchar(15) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'Narrative location of repeat',
+  `tag` enum('DP','FP','DFP','DM','DM?','FTV','R') COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'HGMD variant class',
+  `author` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'First author of cited reference',
+  `journal` varchar(10) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'HGMD journal or LSDB abbreviation (from JOURNAL table)',
+  `fullname` varchar(55) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'NLM journal title abbreviation (from JOURNAL table)',
+  `vol` varchar(15) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Volume of cited reference',
+  `page` varchar(25) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'First page of cited reference',
+  `year` year(4) DEFAULT NULL COMMENT 'Publication year of cited reference',
+  `pmid` varchar(8) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Pubmed ID of cited reference',
+  `comments` text COLLATE utf8_unicode_ci COMMENT 'HGMD curator comments',
+  `acc_num` varchar(10) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'HGMD mutation accession number',
+  `new_date` date DEFAULT NULL COMMENT 'Date entered into HGMD',
+  PRIMARY KEY (`gene`,`amplet`,`norcopy`,`patcopy`,`location`),
+  UNIQUE KEY `acc_num` (`acc_num`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `complex`
+--
+
+DROP TABLE IF EXISTS `complex`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `complex` (
+  `disease` varchar(125) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'HGMD phenotype as reported in cited reference',
+  `gene` varchar(15) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'HGMD gene symbol (from MARKNAME table)',
+  `descr` varchar(75) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'Narrative description of variant',
+  `tag` enum('DP','FP','DFP','DM','DM?','FTV','R') COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'HGMD variant class',
+  `author` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'First author of cited reference',
+  `journal` varchar(10) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'HGMD journal or LSDB abbreviation (from JOURNAL table)',
+  `fullname` varchar(55) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'NLM journal title abbreviation (from JOURNAL table)',
+  `vol` varchar(15) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Volume of cited reference',
+  `page` varchar(25) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'First page of cited reference',
+  `year` year(4) DEFAULT NULL COMMENT 'Publication year of cited reference',
+  `pmid` varchar(8) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'Pubmed ID of cited reference',
+  `comments` text COLLATE utf8_unicode_ci COMMENT 'HGMD curator comments',
+  `acc_num` varchar(10) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'HGMD mutation accession number',
+  `new_date` date DEFAULT NULL COMMENT 'Date entered into HGMD',
+  PRIMARY KEY (`gene`,`descr`,`pmid`),
+  UNIQUE KEY `acc_num` (`acc_num`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `dbnsfp3`
+--
+
+DROP TABLE IF EXISTS `dbnsfp3`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `dbnsfp3` (
+  `id` int(11) NOT NULL DEFAULT '0',
+  `acc_num` varchar(10) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'HGMD mutation accession number',
+  `SIFT` varchar(120) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'dbNSFP3 SIFT prediction',
+  `Polyphen2_HVAR_pred` text COLLATE utf8_unicode_ci COMMENT 'dbNSFP3 PolyPhen prediction',
+  `LRT` varchar(1) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'dbNSFP3 LRT prediction',
+  `mutationTaster` varchar(67) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'dbNSFP3 MutationTaster prediction',
+  `mutationAssessor` varchar(15) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'dbNSFP3 MutationAssessor prediction',
+  `FATHMM` varchar(120) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'dbNSFP3 FATHMM prediction',
+  `PROVEAN` varchar(120) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'dbNSFP3 PROVEAN prediction',
+  `MCAP` varchar(1) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'dbNSFP3 MCAP prediction',
+  `CADD_phred` double DEFAULT NULL COMMENT 'dbNSFP3 CADD score',
+  `fathmm_MKL` char(1) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'dbNSFP3 FATHMM_MKL prediction',
+  `MetaSVM_pred` char(1) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'dbNSFP3 MetaSVM prediction',
+  `MetaLR_pred` char(1) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'dbNSFP3 MetaLR prediction',
+  `ExAC_AC` varchar(6) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'dbNSFP3 ExAC allele count',
+  `ExAC_AF` varchar(9) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'dbNSFP3 ExAC allele frequency',
+  `1000Gp3_AC` varchar(4) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'dbNSFP3 1000 Genomes allele count',
+  `1000Gp3_AF` varchar(21) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'dbNSFP3 1000 Genomes allele frequency',
+  `gnomAD_AC` varchar(6) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'dbNSFP3 gnomAD allele count',
+  `gnomAD_AF` varchar(12) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'dbNSFP3 gnomAD allele frequency',
+  `Interpro` text COLLATE utf8_unicode_ci COMMENT 'dbNSFP3 InterPro domain',
+  `phastCons100` varchar(10) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'dbNSFP3 PHAST conservation (100 species)',
+  `phyloP100` varchar(15) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'dbNSFP3 phylogenetic p-values (100 species)',
+  `phastCons20` varchar(10) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'dbNSFP3 PHAST conservation (20 species)',
+  `phyloP20` varchar(15) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'dbNSFP3 phylogenetic p-values (20 species)',
+  `GERP_RS` varchar(15) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'dbNSFP3 GERP conservation score',
+  PRIMARY KEY (`id`),
+  KEY `acc_num` (`acc_num`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `dbsnp`
+--
+
+DROP TABLE IF EXISTS `dbsnp`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `dbsnp` (
+  `hgmd_acc` varchar(10) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'HGMD mutation accession number (from core mutation tables)',
+  `dbsnp_id` varchar(12) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'NCBI dbSNP variant identifier',
+  `het` decimal(2,2) DEFAULT NULL COMMENT 'dbSNP average het',
+  `MAFsource` varchar(25) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'dbSNP minor allele frequency source',
+  `MAFfreq` varchar(25) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'dbSNP minor allele frequency',
+  `comments` text COLLATE utf8_unicode_ci COMMENT 'HGMD curator comment',
+  PRIMARY KEY (`hgmd_acc`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `deletion`
+--
+
+DROP TABLE IF EXISTS `deletion`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `deletion` (
+  `disease` varchar(125) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'HGMD phenotype as reported in cited reference',
+  `gene` varchar(15) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'HGMD gene symbol (from MARKNAME table)',
+  `deletion` varchar(65) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'Deleted nucleotides (lowercase) with 10bp flanking sequence',
+  `codon` int(11) NOT NULL DEFAULT '0' COMMENT 'Codon number denoted by caret (^) symbol',
+  `tag` enum('DP','FP','DFP','DM','DM?','FTV','R') COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'HGMD variant class',
+  `author` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'First author of cited reference',
+  `journal` varchar(10) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'HGMD journal or LSDB abbreviation (from JOURNAL table)',
+  `fullname` varchar(55) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'NLM journal title abbreviation (from JOURNAL table)',
+  `vol` varchar(15) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Volume of cited reference',
+  `page` varchar(25) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'First page of cited reference',
+  `year` year(4) DEFAULT NULL COMMENT 'Publication year of cited reference',
+  `pmid` varchar(8) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Pubmed ID of cited reference',
+  `comments` text COLLATE utf8_unicode_ci COMMENT 'HGMD curator comments',
+  `acc_num` varchar(10) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'HGMD mutation accession number',
+  `new_date` date DEFAULT NULL COMMENT 'Date entered into HGMD',
+  PRIMARY KEY (`gene`,`deletion`,`codon`),
+  UNIQUE KEY `acc_num` (`acc_num`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `delins`
+--
+
+DROP TABLE IF EXISTS `delins`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `delins` (
+  `acc_num` varchar(10) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'HGMD mutation accession number',
+  `delins` varchar(65) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'HGMD Deletion/insertion/indel sequence data (from core table) ',
+  `deleted` varchar(20) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Deleted nucleotides',
+  `inserted` varchar(20) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Inserted nucleotides',
+  `del_length` int(2) DEFAULT NULL COMMENT 'Length of deletion',
+  `ins_length` int(2) DEFAULT NULL COMMENT 'Length of insertion',
+  `base` char(1) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Source core table (DELETION, INSERTION or INDEL)',
+  PRIMARY KEY (`acc_num`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `extrarefs`
+--
+
+DROP TABLE IF EXISTS `extrarefs`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `extrarefs` (
+  `acc_num` varchar(10) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'HGMD mutation accession number',
+  `disease` varchar(125) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'HGMD phenotype as reported in cited reference',
+  `gene` varchar(15) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'HGMD gene symbol (from MARKNAME table)',
+  `author` varchar(50) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'First author of cited reference',
+  `title` text COLLATE utf8_unicode_ci COMMENT 'Title of cited reference',
+  `journal` varchar(10) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'HGMD journal or LSDB abbreviation (from JOURNAL table)',
+  `fullname` varchar(55) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'NLM journal title abbreviation (from JOURNAL table)',
+  `allname` varchar(200) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `vol` varchar(15) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'Volume of cited reference',
+  `issue` varchar(6) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `page` varchar(25) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'First page of cited reference',
+  `year` char(4) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
+  `pmid` varchar(8) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Pubmed ID of cited reference',
+  `comments` text COLLATE utf8_unicode_ci COMMENT 'HGMD curator comments',
+  `support` enum('1','0','-1') COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Support for or against deleterious nature of variant in cited reference',
+  `reftag` char(4) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'Codes for type of additional reference',
+  PRIMARY KEY (`acc_num`,`author`,`fullname`,`vol`,`page`,`year`,`reftag`,`disease`),
+  FULLTEXT KEY `REFFIELDS` (`gene`,`author`,`fullname`,`allname`,`year`,`pmid`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `faq`
+--
+
+DROP TABLE IF EXISTS `faq`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `faq` (
+  `id` int(10) unsigned NOT NULL COMMENT 'Internal HGMD ID',
+  `question` text COLLATE utf8_unicode_ci COMMENT 'FAQ question',
+  `answer` text COLLATE utf8_unicode_ci COMMENT 'FAQ answer',
+  `owner` varchar(25) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'HGMD owner',
+  `type` varchar(25) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Is question regarding online or download version',
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `func_anotat`
+--
+
+DROP TABLE IF EXISTS `func_anotat`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `func_anotat` (
+  `acc_num` varchar(10) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'HGMD mutation accession number',
+  `site_id` int(11) NOT NULL DEFAULT '0' COMMENT 'Internal code for functional site (from FUNC_SITES table)',
+  `pmid` int(11) NOT NULL DEFAULT '0' COMMENT 'Pubmed ID of reference for functional relationship',
+  `comments` text COLLATE utf8_unicode_ci COMMENT 'HGMD curator comments',
+  `direction` char(1) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Loss/Gain of functional site',
+  `wildtype` varchar(20) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Wildtype nucleotides',
+  `mutant` varchar(20) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Mutated nucleotides',
+  PRIMARY KEY (`acc_num`,`site_id`,`pmid`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `func_sites`
+--
+
+DROP TABLE IF EXISTS `func_sites`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `func_sites` (
+  `id` int(11) NOT NULL COMMENT 'Internal HGMD identifier',
+  `abr` varchar(20) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Abbreviation for name',
+  `name` varchar(200) COLLATE utf8_unicode_ci NOT NULL COMMENT 'Name of functional site',
+  `type` varchar(60) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Type of functional site',
+  `comments` varchar(250) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'HGMD curator comments',
+  PRIMARY KEY (`id`),
+  KEY `new_index` (`type`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `gene2refseq`
+--
+
+DROP TABLE IF EXISTS `gene2refseq`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `gene2refseq` (
+  `hgmdID` int(11) NOT NULL DEFAULT '0' COMMENT 'HGMD gene identifier (from MARKNAME table)',
+  `refcore` varchar(15) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'NCBI RefSeq nucleotide sequence identifier',
+  `refversion` varchar(2) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'NCBI RefSeq nucleotide sequence version',
+  `offset` int(11) DEFAULT NULL COMMENT 'Legacy offset to codon numbering',
+  `first` char(1) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Internal HGMD field',
+  `chrom` varchar(10) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Chromosome from NCBI annotation',
+  `strand` char(1) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Strand orientation from NCBI annotation',
+  `startTIS` int(10) unsigned DEFAULT NULL COMMENT 'Transcript start position from NCBI annotation',
+  `endTIS` int(10) unsigned DEFAULT NULL COMMENT 'Transcript end position from NCBI annotation',
+  `startCDS` int(10) unsigned DEFAULT NULL COMMENT 'Coding sequence start position from NCBI annotation',
+  `endCDS` int(10) unsigned DEFAULT NULL COMMENT 'Coding sequence end position from NCBI annotation',
+  `exonCOUNT` int(10) unsigned DEFAULT NULL COMMENT 'Number of exons on NCBI annotation',
+  `exonSTARTS` longtext COLLATE utf8_unicode_ci COMMENT 'Exon start positions from NCBI annotation',
+  `exonENDS` longtext COLLATE utf8_unicode_ci COMMENT 'Exon end positions from NCBI annotation',
+  PRIMARY KEY (`hgmdID`),
+  UNIQUE KEY `refcore` (`refcore`,`refversion`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `gene_concept_scores`
+--
+
+DROP TABLE IF EXISTS `gene_concept_scores`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `gene_concept_scores` (
+  `gene` varchar(15) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'HGMD gene symbol (from MARKNAME table)',
+  `concept` varchar(50) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'UMLS concept (from hgmd_phenbase.concept)',
+  `num_matching` int(11) DEFAULT NULL COMMENT 'Number of HGMD entries matching',
+  `total` int(11) DEFAULT NULL COMMENT 'Total possible',
+  `percentage` double DEFAULT NULL COMMENT 'Number of matching entries as percentage',
+  PRIMARY KEY (`gene`,`concept`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `genefam`
+--
+
+DROP TABLE IF EXISTS `genefam`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `genefam` (
+  `url` varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'URL link for genefamily at HGNC',
+  `gene_family_id` varchar(25) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'HGNC gene family ID',
+  `genefamily` varchar(150) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'HGNC gene family/group',
+  `symbol` varchar(25) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'HGNC gene symbol',
+  `hgncID` int(11) NOT NULL DEFAULT '0' COMMENT 'HGNC identifier',
+  PRIMARY KEY (`gene_family_id`,`hgncID`),
+  KEY `symbol` (`symbol`),
+  KEY `hgncID` (`hgncID`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `goterms`
+--
+
+DROP TABLE IF EXISTS `goterms`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `goterms` (
+  `gene_id` int(11) NOT NULL DEFAULT '0' COMMENT 'HGMD gene identifier (from MARKNAME table)',
+  `hgmdsym` varchar(15) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'HGMD gene symbol (from MARKNAME table)',
+  `go_term_name` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'GO term name from Gene Ontology database',
+  `go_term_type` varchar(55) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'GO term type from Gene Ontology database',
+  `go_term_acc` varchar(100) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'GO term accession from Gene Ontology database',
+  `go_term_evid` varchar(11) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'GO term evidence code from Gene Ontology database',
+  PRIMARY KEY (`gene_id`,`go_term_acc`,`go_term_evid`),
+  FULLTEXT KEY `GOFIELDS` (`hgmdsym`,`go_term_name`,`go_term_type`,`go_term_acc`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `grosdel`
+--
+
+DROP TABLE IF EXISTS `grosdel`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `grosdel` (
+  `disease` varchar(125) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'HGMD phenotype as reported in cited reference',
+  `gene` varchar(15) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'HGMD gene symbol (from MARKNAME table)',
+  `descr` varchar(75) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Narrative description of variant',
+  `cdna` char(1) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Reported at genomic (g) or cDNA (c) level',
+  `tag` enum('DP','FP','DFP','DM','DM?','FTV','R') COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'HGMD variant class',
+  `author` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'First author of cited reference',
+  `journal` varchar(10) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'HGMD journal or LSDB abbreviation (from JOURNAL table)',
+  `fullname` varchar(55) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'NLM journal title abbreviation (from JOURNAL table)',
+  `vol` varchar(15) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Volume of cited reference',
+  `page` varchar(25) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'First page of cited reference',
+  `year` year(4) DEFAULT NULL COMMENT 'Publication year of cited reference',
+  `pmid` varchar(8) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Pubmed ID of cited reference',
+  `comments` text COLLATE utf8_unicode_ci COMMENT 'HGMD curator comments',
+  `acc_num` varchar(10) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'HGMD mutation accession number',
+  `new_date` date DEFAULT NULL COMMENT 'Date entered into HGMD',
+  PRIMARY KEY (`acc_num`),
+  UNIQUE KEY `acc_num` (`acc_num`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `grosins`
+--
+
+DROP TABLE IF EXISTS `grosins`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `grosins` (
+  `disease` varchar(125) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'HGMD phenotype as reported in cited reference',
+  `gene` varchar(15) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'HGMD gene symbol (from MARKNAME table)',
+  `type` char(1) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Insertion (I) or duplication (D)',
+  `descr` varchar(75) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Narrative description of variant',
+  `cdna` char(1) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Reported at genomic (g) or cDNA (c) level',
+  `tag` enum('DP','FP','DFP','DM','DM?','FTV','R') COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'HGMD variant class',
+  `author` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'First author of cited reference',
+  `journal` varchar(10) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'HGMD journal or LSDB abbreviation (from JOURNAL table)',
+  `fullname` varchar(55) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'NLM journal title abbreviation (from JOURNAL table)',
+  `vol` varchar(15) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Volume of cited reference',
+  `page` varchar(25) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'First page of cited reference',
+  `year` year(4) DEFAULT NULL COMMENT 'Publication year of cited reference',
+  `pmid` varchar(8) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Pubmed ID of cited reference',
+  `comments` text COLLATE utf8_unicode_ci COMMENT 'HGMD curator comments',
+  `acc_num` varchar(10) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'HGMD mutation accession number',
+  `new_date` date DEFAULT NULL COMMENT 'Date entered into HGMD',
+  PRIMARY KEY (`acc_num`),
+  UNIQUE KEY `acc_num` (`acc_num`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `hg19_coords`
+--
+
+DROP TABLE IF EXISTS `hg19_coords`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `hg19_coords` (
+  `acc_num` varchar(10) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'HGMD mutation accession number',
+  `chromosome` varchar(2) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'hg19 chromosome number',
+  `strand` char(1) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'hg19 strand orientation',
+  `coordSTART` int(11) DEFAULT NULL COMMENT 'First nucleotide position of mutation',
+  `coordEND` int(11) DEFAULT NULL COMMENT 'hg19 final nucleotide position of mutation',
+  `upstreamFLANK` varchar(30) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '30bp upstream flanking sequence (coding strand)',
+  `downstreamFLANK` varchar(30) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '30bp downstream flanking sequence (coding strand)',
+  PRIMARY KEY (`acc_num`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `hg38_coords`
+--
+
+DROP TABLE IF EXISTS `hg38_coords`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `hg38_coords` (
+  `acc_num` varchar(10) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'HGMD mutation accession number',
+  `chromosome` varchar(2) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'hg38 chromosome number',
+  `strand` char(1) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'hg38 strand orientation',
+  `coordSTART` int(11) DEFAULT NULL COMMENT 'First nucleotide position of mutation',
+  `coordEND` int(11) DEFAULT NULL COMMENT 'Final nucleotide position of mutation',
+  `upstreamFLANK` varchar(30) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '30bp upstream flanking sequence (coding strand)',
+  `downstreamFLANK` varchar(30) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '30bp downstream flanking sequence (coding strand)',
+  PRIMARY KEY (`acc_num`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `hgmd_hg19_vcf`
+--
+
+DROP TABLE IF EXISTS `hgmd_hg19_vcf`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `hgmd_hg19_vcf` (
+  `chrom` varchar(45) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
+  `pos` int(11) NOT NULL DEFAULT '0' COMMENT 'hg19 chromosomal position VCF compliant',
+  `id` varchar(10) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'HGMD identifier',
+  `ref` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `alt` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `qual` char(1) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Qual value VCF compliant',
+  `filter` char(1) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Filter value VCF compliant',
+  `info` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Info field VCF compliant',
+  PRIMARY KEY (`chrom`,`pos`,`id`),
+  KEY `hgmd_id` (`id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `hgmd_hg38_vcf`
+--
+
+DROP TABLE IF EXISTS `hgmd_hg38_vcf`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `hgmd_hg38_vcf` (
+  `chrom` varchar(2) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'hg38 chromosome number VCF compliant',
+  `pos` int(11) NOT NULL DEFAULT '0' COMMENT 'hg38 position VCF compliant',
+  `id` varchar(10) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'HGMD identifier',
+  `ref` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'hg38 reference nucleotide(s) VCF compliant',
+  `alt` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'hg38 alt nucleotide(s) VCF compliant',
+  `qual` char(1) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Qual value VCF compliant',
+  `filter` char(1) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Filert value VCF compliant',
+  `info` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Info field VCF compliant',
+  PRIMARY KEY (`chrom`,`pos`,`id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `high_level_concept`
+--
+
+DROP TABLE IF EXISTS `high_level_concept`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `high_level_concept` (
+  `concept` varchar(50) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'UMLS concept (from hgmd_phenbase.concept)',
+  `cui` char(10) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'UMLS identifier (from hgmd_phenbase.concept)',
+  PRIMARY KEY (`concept`,`cui`),
+  KEY `concept` (`concept`),
+  KEY `cui` (`cui`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `history`
+--
+
+DROP TABLE IF EXISTS `history`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `history` (
+  `histID` int(11) NOT NULL DEFAULT '0' COMMENT 'Internal HGMD identifier',
+  `acc_num` varchar(10) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'HGMD mutation accession number',
+  `tname` varchar(25) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'HGMD table name',
+  `colname` varchar(25) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'HGMD field name (relates to table in TNAME column)',
+  `beforeUpd` text COLLATE utf8_unicode_ci COMMENT 'Field data point before update',
+  `afterUpd` text COLLATE utf8_unicode_ci COMMENT 'Field data point after update',
+  `updDate` date DEFAULT NULL COMMENT 'Date of update',
+  PRIMARY KEY (`histID`),
+  KEY `acc_num` (`acc_num`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `indel`
+--
+
+DROP TABLE IF EXISTS `indel`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `indel` (
+  `disease` varchar(125) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'HGMD phenotype as reported in cited reference',
+  `gene` varchar(15) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'HGMD gene symbol (from MARKNAME table)',
+  `wildtype` varchar(65) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'Deleted nucleotides (lowercase) with 10bp flanking sequence',
+  `insertion` varchar(25) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'Inserted nucleotides',
+  `codon` int(11) NOT NULL DEFAULT '0' COMMENT 'Codon number denoted by caret (^) symbol',
+  `tag` enum('DP','FP','DFP','DM','DM?','FTV','R') COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'HGMD variant class',
+  `author` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'First author of cited reference',
+  `journal` varchar(10) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'HGMD journal or LSDB abbreviation (from JOURNAL table)',
+  `fullname` varchar(55) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'NLM journal title abbreviation (from JOURNAL table)',
+  `vol` varchar(15) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Volume of cited reference',
+  `page` varchar(25) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'First page of cited reference',
+  `year` year(4) DEFAULT NULL COMMENT 'Publication year of cited reference',
+  `pmid` varchar(8) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Pubmed ID of cited reference',
+  `comments` text COLLATE utf8_unicode_ci COMMENT 'HGMD curator comments',
+  `acc_num` varchar(10) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'HGMD mutation accession number',
+  `new_date` date DEFAULT NULL COMMENT 'Date entered into HGMD',
+  PRIMARY KEY (`gene`,`wildtype`,`insertion`,`codon`),
+  UNIQUE KEY `acc_num` (`acc_num`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `insertion`
+--
+
+DROP TABLE IF EXISTS `insertion`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `insertion` (
+  `disease` varchar(125) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'HGMD phenotype as reported in cited reference',
+  `gene` varchar(15) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'HGMD gene symbol (from MARKNAME table)',
+  `insertion` varchar(65) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'Inserted nucleotides (lowercase) with 10bp flanking sequence',
+  `codon` int(11) NOT NULL DEFAULT '0' COMMENT 'Codon number denoted by caret (^) symbol',
+  `nucleotide` varchar(10) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'Reported nucleotide position (legacy not HGVS compliant)',
+  `tag` enum('DP','FP','DFP','DM','DM?','FTV','R') COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'HGMD variant class',
+  `author` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'First author of cited reference',
+  `journal` varchar(10) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'HGMD journal or LSDB abbreviation (from JOURNAL table)',
+  `fullname` varchar(55) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'NLM journal title abbreviation (from JOURNAL table)',
+  `vol` varchar(15) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Volume of cited reference',
+  `page` varchar(25) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'First page of cited reference',
+  `year` year(4) DEFAULT NULL COMMENT 'Publication year of cited reference',
+  `pmid` varchar(8) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Pubmed ID of cited reference',
+  `comments` text COLLATE utf8_unicode_ci COMMENT 'HGMD curator comments',
+  `acc_num` varchar(10) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'HGMD mutation accession number',
+  `new_date` date DEFAULT NULL COMMENT 'Date entered into HGMD',
+  PRIMARY KEY (`gene`,`insertion`,`codon`,`nucleotide`),
+  UNIQUE KEY `acc_num` (`acc_num`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `journal`
+--
+
+DROP TABLE IF EXISTS `journal`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `journal` (
+  `journal` varchar(10) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'HGMD journal or LSDB abbreviation',
+  `fullname` varchar(55) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'NLM journal title abbreviation',
+  `allname` varchar(200) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Complete journal title',
+  `url` varchar(125) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'URL of journal or locus-specific database',
+  PRIMARY KEY (`journal`),
+  KEY `fullname` (`fullname`),
+  KEY `allname` (`allname`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `links`
+--
+
+DROP TABLE IF EXISTS `links`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `links` (
+  `xorder` varchar(1) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Internal ordering flag',
+  `gene` varchar(15) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'HGMD gene symbol (from MARKNAME table)',
+  `url` varchar(150) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'URL for generated link',
+  PRIMARY KEY (`gene`,`url`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `markname`
+--
+
+DROP TABLE IF EXISTS `markname`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `markname` (
+  `gene_id` int(11) NOT NULL DEFAULT '0' COMMENT 'Internal HGMD gene identifier',
+  `genesym` varchar(15) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'HGMD gene symbol based on HGNC',
+  `chrom` varchar(25) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Chromosomal location',
+  `genename` varchar(200) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'HGMD gene name based on HGNC',
+  `gdbid` varchar(8) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Genome DataBase identifier now redundant',
+  `omimid` varchar(8) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'OMIM identifier',
+  `entrezID` int(11) DEFAULT NULL COMMENT 'Entrez Gene identifier',
+  `unigeneID` int(11) DEFAULT NULL COMMENT 'Unigene identifier',
+  `hgncID` int(11) DEFAULT NULL COMMENT 'HUGO Gene Nomenclature Committee identifier',
+  `hprdID` smallint(5) unsigned zerofill DEFAULT NULL COMMENT 'Human Protein Reference Database identifier',
+  `swiss_acc` varchar(15) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'SwissProt sequence identifier',
+  `gene_date` date DEFAULT NULL COMMENT 'Date the gene was entered into HGMD',
+  `expected_inheritance` varchar(5) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Inheritance pattern expected for the predominant phenotype(s) associated with a defect in the related gene',
+  `svar` int(11) DEFAULT NULL COMMENT 'HGMD gene_id of the main gene entry for alternate isoform',
+  `gadb` char(1) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'NIH Genetic Association Database entry flag. Now retired.',
+  `findbase` char(1) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Findbase entry flag',
+  `cosmic` char(1) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'COSMIC entry flag',
+  `atlas` char(1) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'GenAtlas entry flag',
+  `instruct` char(1) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'INstruct 3D protein interactome flag',
+  `mupit` char(1) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'muPIT interactive flag (3D protein structures)',
+  `acmg` char(1) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'ACMG reportable gene flag',
+  PRIMARY KEY (`gene_id`),
+  UNIQUE KEY `entrezID` (`entrezID`),
+  UNIQUE KEY `unigeneID` (`unigeneID`),
+  UNIQUE KEY `hgncID` (`hgncID`),
+  UNIQUE KEY `hprdID` (`hprdID`),
+  UNIQUE KEY `genesym` (`genesym`),
+  KEY `svar` (`svar`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `mutall`
+--
+
+DROP TABLE IF EXISTS `mutall`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `mutall` (
+  `acc_num` varchar(10) DEFAULT NULL,
+  `disease` varchar(65) DEFAULT NULL,
+  `tag` enum('DP','FP','DFP','DM','FTV') DEFAULT NULL,
+  KEY `acc_num_mutall` (`acc_num`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `mutation`
+--
+
+DROP TABLE IF EXISTS `mutation`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `mutation` (
+  `disease` varchar(125) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'HGMD phenotype as reported in cited reference',
+  `gene` varchar(15) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'HGMD gene symbol (from MARKNAME table)',
+  `base` varchar(9) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'Codon triplet change',
+  `amino` varchar(8) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Amino acid change',
+  `codon` int(11) NOT NULL DEFAULT '0' COMMENT 'Codon number',
+  `tag` enum('DP','FP','DFP','DM','DM?','FTV','R') COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'HGMD variant class',
+  `author` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'First author of cited reference',
+  `journal` varchar(10) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'HGMD journal or LSDB abbreviation (from JOURNAL table)',
+  `fullname` varchar(55) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'NLM journal title abbreviation (from JOURNAL table)',
+  `vol` varchar(15) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Volume of cited reference',
+  `page` varchar(25) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'First page of cited reference',
+  `year` year(4) DEFAULT NULL COMMENT 'Publication year of cited reference',
+  `pmid` varchar(8) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Pubmed ID of cited reference',
+  `comments` text COLLATE utf8_unicode_ci COMMENT 'HGMD curator comments',
+  `acc_num` varchar(10) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'HGMD mutation accession number',
+  `new_date` date DEFAULT NULL COMMENT 'Date entered into HGMD',
+  PRIMARY KEY (`gene`,`codon`,`base`),
+  UNIQUE KEY `acc_num` (`acc_num`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `mutnomen`
+--
+
+DROP TABLE IF EXISTS `mutnomen`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `mutnomen` (
+  `acc_num` varchar(10) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'HGMD mutation accession number',
+  `refCORE` varchar(14) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'NCBI RefSeq nucleotide sequence identifier',
+  `refVER` varchar(2) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'NCBI RefSeq nucleotide sequence version',
+  `cSTART` varchar(11) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'First nucleotide position according to HGVS nomenclature',
+  `ivsSTART` int(11) DEFAULT NULL COMMENT 'First nucleotide position relative to cSTART if mutation is intronic',
+  `cEND` varchar(11) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Last nucleotide position according to HGVS nomenclature',
+  `ivsEND` int(11) DEFAULT NULL COMMENT 'Last nucleotide position relative to cEND if mutation is intronic',
+  `wildBASE` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Widtype nucleotide at given position',
+  `mutBASE` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Mutated nucleotide at given position',
+  `protCORE` varchar(14) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'NCBI RefSeq protein sequence identifier',
+  `protVER` varchar(2) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'NCBI RefSeq protein sequence version',
+  `wildAMINO` char(1) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Wildtype amino acid at given codon position',
+  `mutAMINO` char(1) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Mutated amino acid at given codon position',
+  `codon` int(11) DEFAULT NULL COMMENT 'Codon number',
+  `hgvs` varchar(60) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'HGVS compliant c-dot nomenclature',
+  `hgvsPROT` varchar(60) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'HGVS compliant p-dot nomenclature',
+  `hgvsall` varchar(120) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Composite c-dot and p-dot nomenclature (for search indexing)',
+  PRIMARY KEY (`acc_num`),
+  FULLTEXT KEY `HGVSALL` (`hgvsall`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `prom`
+--
+
+DROP TABLE IF EXISTS `prom`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `prom` (
+  `disease` varchar(125) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'HGMD phenotype as reported in cited reference',
+  `gene` varchar(15) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'HGMD gene symbol (from MARKNAME table)',
+  `base` varchar(65) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'Reported nucleotide change with 30bp flanking sedquence',
+  `location` int(11) NOT NULL DEFAULT '0' COMMENT 'Location relative to locref',
+  `locref` varchar(5) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Point of reference for location (MET, TIS, TERM)',
+  `tag` enum('DP','FP','DFP','DM','DM?','FTV','R') COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'HGMD variant class',
+  `author` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'First author of cited reference',
+  `journal` varchar(10) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'HGMD journal or LSDB abbreviation (from JOURNAL table)',
+  `fullname` varchar(55) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'NLM journal title abbreviation (from JOURNAL table)',
+  `vol` varchar(15) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Volume of cited reference',
+  `page` varchar(25) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'First page of cited reference',
+  `year` year(4) DEFAULT NULL COMMENT 'Publication year of cited reference',
+  `pmid` varchar(8) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Pubmed ID of cited reference',
+  `comments` text COLLATE utf8_unicode_ci COMMENT 'HGMD curator comments',
+  `acc_num` varchar(10) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'HGMD mutation accession number',
+  `new_date` date DEFAULT NULL COMMENT 'Date entered into HGMD',
+  PRIMARY KEY (`gene`,`base`,`location`),
+  UNIQUE KEY `acc_num` (`acc_num`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `refseqgene`
+--
+
+DROP TABLE IF EXISTS `refseqgene`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `refseqgene` (
+  `entrez_id` int(11) NOT NULL DEFAULT '0' COMMENT 'Entrez Gene identifier',
+  `ngseq` varchar(50) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'NCBI RefSeqGene project sequence identifier',
+  PRIMARY KEY (`entrez_id`,`ngseq`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `sec`
+--
+
+DROP TABLE IF EXISTS `sec`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `sec` (
+  `code3` char(4) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'Triplet amino acid abbreviation',
+  `helix` int(11) DEFAULT NULL COMMENT 'Chou-Fasman P(a) alpha helix',
+  `sheet` int(11) DEFAULT NULL COMMENT 'Chou-Fasman P(b) beta sheet',
+  `turn` int(11) DEFAULT NULL COMMENT 'Chou-Fasman P(turn)',
+  `helixD` char(1) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Alpha helix secondary strucure propensity',
+  `sheetD` char(1) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Beta sheet secondary strucure propensity',
+  `p1` decimal(4,3) DEFAULT NULL COMMENT 'Unused',
+  `p2` decimal(4,3) DEFAULT NULL COMMENT 'Unused',
+  `p3` decimal(4,3) DEFAULT NULL COMMENT 'Unused',
+  `p4` decimal(4,3) DEFAULT NULL COMMENT 'Unused',
+  PRIMARY KEY (`code3`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `sequence_ontology`
+--
+
+DROP TABLE IF EXISTS `sequence_ontology`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `sequence_ontology` (
+  `acc_num` varchar(10) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'HGMD mutation accession number',
+  `refseqCdots` text COLLATE utf8_unicode_ci COMMENT 'Concatenated HGVS nomenclature for indexing',
+  `refseqPdots` text COLLATE utf8_unicode_ci COMMENT 'Concatenated protein HGVS nomenclature for indexing',
+  `hgvsRefWithTranscript` text COLLATE utf8_unicode_ci COMMENT 'Concatenated HGVS nomenclature for display',
+  `ensemblCdots` text COLLATE utf8_unicode_ci COMMENT 'Concatenated HGVS nomenclature for indexing',
+  `ensemblPdots` text COLLATE utf8_unicode_ci COMMENT 'Concatenated HGVS protein nomenclature for indexing',
+  `hgvsEnsemblWithTranscript` text COLLATE utf8_unicode_ci COMMENT 'Concatenated HGVS nomenclature for display',
+  `SeqOntologyId` text COLLATE utf8_unicode_ci COMMENT 'Sequence ontology identifiers',
+  `SeqOntologyTerm` text COLLATE utf8_unicode_ci COMMENT 'Sequence ontology terms',
+  PRIMARY KEY (`acc_num`),
+  FULLTEXT KEY `seqontology` (`refseqCdots`,`refseqPdots`,`hgvsRefWithTranscript`,`SeqOntologyId`,`SeqOntologyTerm`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `splice`
+--
+
+DROP TABLE IF EXISTS `splice`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `splice` (
+  `disease` varchar(125) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'HGMD phenotype as reported in cited reference',
+  `gene` varchar(15) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'HGMD gene symbol (from MARKNAME table)',
+  `ivs` varchar(4) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'Reported intron (IVS) number',
+  `type` char(2) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'Donor (ds) or acceptor (as) site',
+  `base` char(3) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'Reported nucleotide change',
+  `location` int(11) NOT NULL DEFAULT '0' COMMENT 'Location relative to donor or acceptor site',
+  `tag` enum('DP','FP','DFP','DM','DM?','FTV','R') COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'HGMD variant class',
+  `author` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'First author of cited reference',
+  `journal` varchar(10) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'HGMD journal or LSDB abbreviation (from JOURNAL table)',
+  `fullname` varchar(55) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'NLM journal title abbreviation (from JOURNAL table)',
+  `vol` varchar(15) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Volume of cited reference',
+  `page` varchar(25) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'First page of cited reference',
+  `year` year(4) DEFAULT NULL COMMENT 'Publication year of cited reference',
+  `pmid` varchar(8) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Pubmed ID of cited reference',
+  `comments` text COLLATE utf8_unicode_ci COMMENT 'HGMD curator comments',
+  `acc_num` varchar(10) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'HGMD mutation accession number',
+  `new_date` date DEFAULT NULL COMMENT 'Date entered into HGMD',
+  PRIMARY KEY (`gene`,`ivs`,`type`,`base`,`location`),
+  UNIQUE KEY `acc_num` (`acc_num`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `storealign`
+--
+
+DROP TABLE IF EXISTS `storealign`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `storealign` (
+  `acc_num` varchar(10) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'HGMD mutation accession number',
+  `codon` int(11) DEFAULT NULL COMMENT 'HGMD codon position',
+  `taxonomy` int(11) DEFAULT NULL COMMENT 'Taxonomy ID from NCBI Taxonomy database',
+  `species` varchar(250) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Latin (Linnean) species name',
+  `sp_name` varchar(250) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Species name (English)',
+  `prot_acc` varchar(25) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'NCBI RefSeq protein sequence identifier',
+  `prot_ver` varchar(2) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'NCBI RefSeq protein sequence version',
+  `first10` int(11) DEFAULT NULL COMMENT 'Start codon of first 10 flanking amino acids',
+  `upstreamOrth` varchar(25) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Upstream flanking amino acids',
+  `mutOrth` char(1) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Orthologous amino acid at mutated position',
+  `downstreamOrth` varchar(25) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Downstream flanking amino acids',
+  `final10` int(11) DEFAULT NULL COMMENT 'End codon of last 10 flanking amino acids',
+  `sim_percent` int(11) DEFAULT NULL COMMENT 'Percentage match',
+  `Qmethod` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Internal HGMD method',
+  `highscore` int(11) DEFAULT NULL COMMENT 'Highest score matching position',
+  `highpos` int(11) DEFAULT NULL COMMENT 'Highest scoring position',
+  PRIMARY KEY (`acc_num`,`prot_acc`),
+  KEY `species` (`species`),
+  KEY `sp_name` (`sp_name`),
+  KEY `taxonomy` (`taxonomy`),
+  KEY `sim_percent` (`sim_percent`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
+
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+
+-- Dump completed on 2020-05-03 11:49:40
