@@ -1,0 +1,51 @@
+-- MySQL dump 10.15  Distrib 10.0.35-MariaDB, for Linux (x86_64)
+--
+-- Host: localhost    Database: solexa
+-- ------------------------------------------------------
+-- Server version	10.0.35-MariaDB
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8 */;
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+/*!40103 SET TIME_ZONE='+00:00' */;
+/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+
+--
+-- Table structure for table `assay`
+--
+
+DROP TABLE IF EXISTS `assay`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `assay` (
+  `idassay` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) NOT NULL,
+  PRIMARY KEY (`idassay`)
+) ENGINE=InnoDB AUTO_INCREMENT=66 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `assay`
+--
+
+LOCK TABLES `assay` WRITE;
+/*!40000 ALTER TABLE `assay` DISABLE KEYS */;
+INSERT INTO `assay` VALUES (1,'SureSelect38Mb'),(2,'SureSelect50Mb'),(3,'SureSelectMouse50Mb'),(4,'SureSelect50Mbv4'),(5,'SureSelect50Mbv5'),(6,'AmpliconZimprich'),(7,'MIP_RLS'),(8,'Nextera62Mb'),(9,'SureSelect60Mbv6'),(10,'TruSightOneV1'),(11,'SeqCapEZExomeV2'),(12,'SeqCapEZExomeV3'),(13,'MIP_CAD'),(14,'NexteraRapidCaptureV1.2'),(15,'TruSeqExome62Mb'),(16,'TruSeq_DNA_PCR-Free'),(17,'TruSeq_ChIP'),(18,'TruSeq_Stranded_Total_RNA'),(19,'TruSeq_Stranded_mRNA'),(20,'TruSeq_Non-stranded_RNA_v2'),(21,'TruSeq_Small_RNA'),(22,'SureSelect_Mouse_All_Exon'),(23,'TruSeq_Nano_DNA'),(24,'NEXTflex_Rapid_Directional_qRNA-Seq'),(25,'Nextera_XT_DNA'),(26,'Nextera_DNA'),(27,'TruSeq_Methyl_Capture_EPIC'),(28,'10x_Single_Cell_RNA_seq'),(29,'TruSeq_DNA'),(30,'NEBNext_Ultra_Directional_RNA'),(31,'4C_PCR'),(32,'SMART-Seq_v4_Ultra_Low_Input_RNA_Kit_-_MicroPlex_Library_Preparation_Kit_v2'),(33,'EZ_DNA_Methylation-Gold_+_Accel-NGS_Methyl-Seq_DNA'),(34,'ACE3_Personalis'),(35,'NEBnext_Ultra_II_DNA'),(36,'NEBnext_small_RNA'),(37,'CORALINA'),(38,'KAPA_Hyper_Prep_DNA'),(39,'SureSelect75Mbv5UTR'),(40,'SureSelect91Mbv6UTR'),(41,'SureSelect60Mbv6_200ng_XTLI'),(42,'VAHTS_Total_RNA-seq'),(43,'QuantSeq_3prime_mRNA-Seq'),(44,'NEBNext_Ultra_II_RNA'),(45,'TruSeq_Methyl_Capture_EPIC'),(46,'ThruPLEX_DNA-seq_Kit'),(47,'NuGEN_TrueMethyl_oxBS'),(48,'SMARTer_Stranded_Total_RNA-Seq_Kit_v2_-_Pico_Input_Mammalian'),(49,'Zymo_EZ_DNA_Methylation_Gold_Kit'),(50,'TruePrep_DNA_Library_Prep_Kit_V2_Vazyme'),(51,'ChIP-nexus'),(52,'PERSPECTIVE'),(53,'QIAseq_Ultralow_Input_Library_Kit'),(54,'MicroPlex_Library_Preparation_kit_v2'),(55,'smartseq2'),(56,'SeqCapEZMedExome'),(57,'KAPA_Stranded_RNA-Seq_Kit_RiboErase'),(58,'iCLIP_Koenig2011'),(59,'10x_Single_Cell_ATAC_seq'),(60,'TruSeq_Ribo_Profile'),(61,'CATS_Small_RNA-seq_Kit'),(62,'CEL-seq2'),(63,'NEBNext_Single_Cell'),(64,'NeurodegZimprich'),(65,'SureSelect_XT_Custom_Hyperchol');
+/*!40000 ALTER TABLE `assay` ENABLE KEYS */;
+UNLOCK TABLES;
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
+
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+
+-- Dump completed on 2020-05-03 12:01:57
