@@ -6,6 +6,9 @@
 
 use strict;
 #use lib "/srv/www/cgi-bin/mysql/test";
+use Cwd qw( abs_path );
+use File::Basename qw( dirname );
+use lib dirname(abs_path(-e));
 use Snv;
 use WWW::CSRF qw(generate_csrf_token check_csrf_token CSRF_OK);
 

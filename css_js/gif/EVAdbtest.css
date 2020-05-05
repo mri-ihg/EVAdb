@@ -1,0 +1,94 @@
+html               { height:100%; }
+body               { background-color:#fffff3; height:100%; margin:0;  }
+td.person          { background-color:#e88a6a; }
+td.default         { background-color:#fffff3; }
+td.blue            { background-color:#c9e5e3; }
+td.dna             { background-color:#aedecf; }
+td.formbg          { background-color:#c9e5e3; }
+
+td.diseaseGene1    { background-color:#EFAC95; }
+td.diseaseGene2    { background-color:#FFC4AF; }
+td.diseaseGene3    { background-color:#FFE7DF; }
+td.diseaseGene4    { background-color:#83AABF; }
+td.diseaseGene5    { background-color:#B5D0DF; }
+td.diseaseGene6    { background-color:#EFF9FF; }
+td.diseaseGene7    { background-color:#A2BF83; }
+td.diseaseGene8    { background-color:#CBDFB5; }
+td.diseaseGene9    { background-color:#F7FFEF; }
+td.diseaseGene10   { background-color:#BEBF77; }
+td.diseaseGene11   { background-color:#DEDFA7; }
+td.diseaseGene12   { background-color:#FFFFDF; }
+td.diseaseGene13   { background-color:#FFB93F; }
+
+td.warning         { background-color:#e5cab5; }
+td.green           { background-color:#aedecf; }
+.nowrap            { white-space:nowrap}
+.textred           { color:red }
+td.width230        { min-width:230px}
+td.coverage        { padding:0;border:0; }
+
+tr.odd             { background-color:#EDECEB; }
+tr.even            { background-color:#FFFFF3; }
+
+.button100         { width:100px; }
+
+input.readonly     { background-color:#CCCCCC; }
+table              { border-color:#CCCCCC;border-style:solid;border-width:0px 1px 1px 0px;}
+table.outer        { border-color:#fffff3;border-style:solid;border-width:0px 0px 0px 0px;}
+td                 { border-color:#CCCCCC;border-style:solid;border-width:1px 0px 0px 1px;}
+td.outer           { border-color:#fffff3;border-style:solid;border-width:0px 0px 0px 0px;}
+td.n               { border-color:#fffff3;border-style:solid;border-width:0px 0px 0px 0px;}
+th                 { border-color:#CCCCCC;border-style:solid;border-width:1px 0px 0px 1px;}
+td.header          { min-width:65px }
+*.big              { font-size: 18px; font-family: Arial, Verdana, Helvetica, sans-serif;}
+*                  { font-size: 12px; font-family: Arial, Verdana,  Helvetica, sans-serif;}
+a                  { text-decoration:none;color:#2e6385;}
+a:hover            { text-decoration:underline;}
+a.menu             { display:block;width:100%;height:100%;font-size:12px;color:#FFFFFF; font-family:Sans-Serif,Arial,Helvetica,Verdana;text-decoration:none;}   
+a.menu:hover       { text-decoration:none;color:#99a4b5;}
+a.menuactive       { display:block;width:100%;height:100%;font-size:12px;color:#99a4b5; font-family:Sans-Serif,Arial,Helvetica,Verdana;text-decoration:none;}   
+*.header           { border-color:#fffff3;border-style:solid;border-width:0px 0px 0px 0px;font-size:12px;background-color:#53739c; color:white;font-family:Sans-Serif,Arial,Helvetica,Verdana;text-decoration:none;}   
+td.header          { border-color:#fffff3;border-style:solid;border-width:0px 2px 0px 0px;}
+.help_table        { border-width:0px 0px 0px 0px;border-spacing:0px}
+.help_table td     { border-color:#fffff3;border-width:0px 0px 1px 0px;padding:5px;background-color:#EDEDED;}
+.vep_table         { border-width:0px 0px 0px 0px;border-spacing:0px}
+.vep_table td      { border-color:#fffff3;border-width:0px 0px 1px 1px;padding:5px;background-color:#EDEDED;text-align:center;}
+.vep_table th      { border-color:#fffff3;border-width:0px 0px 1px 1px;padding:5px;background-color:#EDEDED;text-align:center;}
+
+
+table.dataTable tr.odd               { background-color: #f9f9f1; }
+table.dataTable tr.even              { background-color: #fffff3; }
+table.dataTable tr.odd  td.sorting_1 { background-color: #efefef; }
+table.dataTable tr.even td.sorting_1 { background-color: #f9f9f5; }
+table.dataTable th                   { background-color: #efefef; }
+
+// for dataTable container
+.width650           { width:650px }
+.width1000          { width:1000px }
+.width1500          { width:1500px }
+
+
+.box2 {
+    height: 12px;
+    overflow: auto;
+    padding: 5px;
+}
+#wrapper {
+	min-height:100%;
+	position:relative;  
+}
+#content {
+	padding-bottom:5rem;   /* Height of the footer element */
+	margin:5px;
+}
+#footer { 
+	width:100%;
+	border-top:1px solid #DEDCDB;
+	background-color:#FBF8F1;
+	height:5rem;
+	position:absolute;
+	bottom:0;
+	left:0; 
+}
+.footertext  { position:relative; left:50px; }
+
