@@ -14,6 +14,9 @@
 ############################################################
 
 use strict;
+use Cwd qw( abss_path );
+use File::Basename qw( dirname );
+use lib dirname(abs_path($0));
 use Snv;
 use IO::Select;
 
