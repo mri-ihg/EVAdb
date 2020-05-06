@@ -17,7 +17,7 @@ my $cgi         = new CGI;
 my $sname       = $cgi->param('sname');
 
 $snv->printHeader();
-my ($dbh, $user) = $snv->loadSessionId();
+my ($dbh, $user, $csrfsalt) = $snv->loadSessionId();
 
 $sname          = $snv->htmlencode($sname);
 
@@ -34,7 +34,7 @@ print "<span class=\"big\">Import</span><br><br>" ;
 print "<div position: static;>";
 print "<form action=\"importHPODo.pl\" method=\"post\" name=\"hpoform\">\n" ;
 
-my $csrf_token = generate_csrf_token($user, "YJxm9H");
+my $csrf_token = generate_csrf_token($user, $csrfsalt);
 print qq(
 <input name="wwwcsrf" type= "hidden" value="$csrf_token"><br>
 );

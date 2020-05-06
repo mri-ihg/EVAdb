@@ -1190,7 +1190,7 @@ my $session     = CGI::Session->load($sess_id) or die CGI::Session->errstr;
 	#print "$#allowedprojects\n";
 	#print "al @allowedprojects<br>";
 
-return($dbh,$user);
+return($dbh,$user,$csrfsalt);
 }
 
 ########################################################################
