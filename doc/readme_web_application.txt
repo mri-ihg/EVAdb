@@ -28,6 +28,16 @@ cp -r css_js/medialize-jQuery-contextMenu-09dffab /srv/www/htdocs/.
 ################################################################
 #database user and password
 
+
+# create an admin user
+mysql  -u root -p exomevcfe
+insert into exomevcfe.user (name,password,role) VALUES ('admin','$2a$08$pmAbhhM2wYD/G9oxziYV3.J9MHwOTG2edQP.RXX.YF2HAhWJ0L1Jm','admin');
+quit
+login ist admin
+password is Admintest1
+Yubikey is disabled.
+Change the password!!
+Activate the Yubikey!!
 ################################################################
 #Perl modules
 Install the required Perl modules.

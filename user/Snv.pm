@@ -322,6 +322,7 @@ my $text2         = "/srv/tools/textreadonly2.txt"; #yubikey id and api
 #my $usersxml      = "/srv/tools/users.xml";
 my $user          = "";
 my $role          = "";
+my $csrfsalt      = "";
 my %options = ('MaxAge' => 10800); #for WWW::CSRF 3 hours, same as session cookie
 
 my $glabels       = "";
@@ -1115,6 +1116,7 @@ my $session     = CGI::Session->load($sess_id) or die CGI::Session->errstr;
 		$logins{$item}=$value;
 	}
 	close IN;
+	$csrfsalt = $logins{'csrfsalt'};
 
 	my $dbh = DBI->connect("DBI:mysql:$maindb", "$logins{dblogin}", "$logins{dbpasswd}") || die print "$DBI::errstr";
 	my $query = "SET SESSION group_concat_max_len = 1000000";
@@ -6264,7 +6266,7 @@ if (! $cgi->csrf_check)
     { die 'security error' }
 delete($ref->{csrf});
 my $csrf_token = $ref->{wwwcsrf};
-my $status = check_csrf_token($user, "YJxm9H", $csrf_token,\%options);
+my $status = check_csrf_token($user, $csrfsalt, $csrf_token,\%options);
 die "Wrong CSRF token" unless ($status == CSRF_OK);
 delete($ref->{wwwcsrf});
 
@@ -6679,7 +6681,7 @@ if (! $cgi->csrf_check)
     { die 'security error' }
 delete($ref->{csrf});
 my $csrf_token = $ref->{wwwcsrf};
-my $status = check_csrf_token($user, "YJxm9H", $csrf_token,\%options);
+my $status = check_csrf_token($user, $csrfsalt, $csrf_token,\%options);
 die "Wrong CSRF token" unless ($status == CSRF_OK);
 delete($ref->{wwwcsrf});
 
@@ -6933,7 +6935,7 @@ if (! $cgi->csrf_check)
     { die 'security error' }
 delete($ref->{csrf});
 my $csrf_token = $ref->{wwwcsrf};
-my $status = check_csrf_token($user, "YJxm9H", $csrf_token,\%options);
+my $status = check_csrf_token($user, $csrfsalt, $csrf_token,\%options);
 die "Wrong CSRF token" unless ($status == CSRF_OK);
 delete($ref->{wwwcsrf});
 
@@ -8234,7 +8236,7 @@ if (! $cgi->csrf_check)
     { die 'security error' }
 delete($ref->{csrf});
 my $csrf_token = $ref->{wwwcsrf};
-my $status = check_csrf_token($user, "YJxm9H", $csrf_token,\%options);
+my $status = check_csrf_token($user, $csrfsalt, $csrf_token,\%options);
 die "Wrong CSRF token" unless ($status == CSRF_OK);
 delete($ref->{wwwcsrf});
 
@@ -10031,7 +10033,7 @@ if (! $cgi->csrf_check)
     { die 'security error' }
 delete($ref->{csrf});
 my $csrf_token = $ref->{wwwcsrf};
-my $status = check_csrf_token($user, "YJxm9H", $csrf_token,\%options);
+my $status = check_csrf_token($user, $csrfsalt, $csrf_token,\%options);
 die "Wrong CSRF token" unless ($status == CSRF_OK);
 delete($ref->{wwwcsrf});
 
@@ -10561,7 +10563,7 @@ if (! $cgi->csrf_check)
     { die 'security error' }
 delete($ref->{csrf});
 my $csrf_token = $ref->{wwwcsrf};
-my $status = check_csrf_token($user, "YJxm9H", $csrf_token,\%options);
+my $status = check_csrf_token($user, $csrfsalt, $csrf_token,\%options);
 die "Wrong CSRF token" unless ($status == CSRF_OK);
 delete($ref->{wwwcsrf});
 
@@ -11367,7 +11369,7 @@ if (! $cgi->csrf_check)
     { die 'security error' }
 delete($ref->{csrf});
 my $csrf_token = $ref->{wwwcsrf};
-my $status = check_csrf_token($user, "YJxm9H", $csrf_token,\%options);
+my $status = check_csrf_token($user, $csrfsalt, $csrf_token,\%options);
 die "Wrong CSRF token" unless ($status == CSRF_OK);
 delete($ref->{wwwcsrf});
 
@@ -11904,7 +11906,7 @@ if (! $cgi->csrf_check)
     { die 'security error' }
 delete($ref->{csrf});
 my $csrf_token = $ref->{wwwcsrf};
-my $status = check_csrf_token($user, "YJxm9H", $csrf_token,\%options);
+my $status = check_csrf_token($user, $csrfsalt, $csrf_token,\%options);
 die "Wrong CSRF token" unless ($status == CSRF_OK);
 delete($ref->{wwwcsrf});
 
@@ -14384,7 +14386,7 @@ if (! $cgi->csrf_check)
     { die 'security error' }
 delete($ref->{csrf});
 my $csrf_token = $ref->{wwwcsrf};
-my $status = check_csrf_token($user, "YJxm9H", $csrf_token,\%options);
+my $status = check_csrf_token($user, $csrfsalt, $csrf_token,\%options);
 die "Wrong CSRF token" unless ($status == CSRF_OK);
 delete($ref->{wwwcsrf});
 
@@ -16420,7 +16422,7 @@ my $dbh          = shift;
 my $ref          = shift;
 
 my $csrf_token = $ref->{wwwcsrf};
-my $status = check_csrf_token($user, "YJxm9H", $csrf_token,\%options);
+my $status = check_csrf_token($user, $csrfsalt, $csrf_token,\%options);
 die "Wrong CSRF token" unless ($status == CSRF_OK);
 delete($ref->{wwwcsrf});
 
@@ -16614,7 +16616,7 @@ if (! $cgi->csrf_check)
     { die 'security error' }
 delete($ref->{csrf});
 my $csrf_token = $ref->{wwwcsrf};
-my $status = check_csrf_token($user, "YJxm9H", $csrf_token,\%options);
+my $status = check_csrf_token($user, $csrfsalt, $csrf_token,\%options);
 die "Wrong CSRF token" unless ($status == CSRF_OK);
 delete($ref->{wwwcsrf});
 
@@ -18856,7 +18858,7 @@ if (! $cgi->csrf_check)
     { die 'security error' }
 delete($ref->{csrf});
 my $csrf_token = $ref->{wwwcsrf};
-my $status = check_csrf_token($user, "YJxm9H", $csrf_token,\%options);
+my $status = check_csrf_token($user, $csrfsalt, $csrf_token,\%options);
 die "Wrong CSRF token" unless ($status == CSRF_OK);
 delete($ref->{wwwcsrf});
 
@@ -19072,7 +19074,7 @@ if (! $cgi->csrf_check)
     { die 'security error' }
 delete($ref->{csrf});
 my $csrf_token = $ref->{wwwcsrf};
-my $status = check_csrf_token($user, "YJxm9H", $csrf_token,\%options);
+my $status = check_csrf_token($user, $csrfsalt, $csrf_token,\%options);
 die "Wrong CSRF token" unless ($status == CSRF_OK);
 delete($ref->{wwwcsrf});
 
@@ -19577,7 +19579,7 @@ if (! $cgi->csrf_check)
     { die 'security error' }
 delete($ref->{csrf});
 my $csrf_token = $ref->{wwwcsrf};
-my $status = check_csrf_token($user, "YJxm9H", $csrf_token,\%options);
+my $status = check_csrf_token($user, $csrfsalt, $csrf_token,\%options);
 die "Wrong CSRF token" unless ($status == CSRF_OK);
 delete($ref->{wwwcsrf});
 
@@ -19762,7 +19764,7 @@ if (! $cgi->csrf_check)
     { die 'security error' }
 delete($ref->{csrf});
 my $csrf_token = $ref->{wwwcsrf};
-my $status = check_csrf_token($user, "YJxm9H", $csrf_token,\%options);
+my $status = check_csrf_token($user, $csrfsalt, $csrf_token,\%options);
 die "Wrong CSRF token" unless ($status == CSRF_OK);
 delete($ref->{wwwcsrf});
 
@@ -19906,7 +19908,7 @@ if (! $cgi->csrf_check)
     { die 'security error' }
 delete($ref->{csrf});
 my $csrf_token = $ref->{wwwcsrf};
-my $status = check_csrf_token($user, "YJxm9H", $csrf_token,\%options);
+my $status = check_csrf_token($user, $csrfsalt, $csrf_token,\%options);
 die "Wrong CSRF token" unless ($status == CSRF_OK);
 delete($ref->{wwwcsrf});
 
@@ -20228,7 +20230,7 @@ if (! $cgi->csrf_check)
     { die 'security error' }
 delete($ref->{csrf});
 my $csrf_token = $ref->{wwwcsrf};
-my $status = check_csrf_token($user, "YJxm9H", $csrf_token,\%options);
+my $status = check_csrf_token($user, $csrfsalt, $csrf_token,\%options);
 die "Wrong CSRF token" unless ($status == CSRF_OK);
 delete($ref->{wwwcsrf});
 
@@ -20492,7 +20494,7 @@ if (! $cgi->csrf_check)
     { die 'security error' }
 delete($ref->{csrf});
 my $csrf_token = $ref->{wwwcsrf};
-my $status = check_csrf_token($user, "YJxm9H", $csrf_token,\%options);
+my $status = check_csrf_token($user, $csrfsalt, $csrf_token,\%options);
 die "Wrong CSRF token" unless ($status == CSRF_OK);
 delete($ref->{wwwcsrf});
 
@@ -20788,7 +20790,7 @@ if (! $cgi->csrf_check)
     { die 'security error' }
 delete($ref->{csrf});
 my $csrf_token = $ref->{wwwcsrf};
-my $status = check_csrf_token($user, "YJxm9H", $csrf_token,\%options);
+my $status = check_csrf_token($user, $csrfsalt, $csrf_token,\%options);
 die "Wrong CSRF token" unless ($status == CSRF_OK);
 delete($ref->{wwwcsrf});
 
@@ -21090,7 +21092,7 @@ if (! $cgi->csrf_check)
     { die 'security error' }
 delete($ref->{csrf});
 my $csrf_token = $ref->{wwwcsrf};
-my $status = check_csrf_token($user, "YJxm9H", $csrf_token,\%options);
+my $status = check_csrf_token($user, $csrfsalt, $csrf_token,\%options);
 die "Wrong CSRF token" unless ($status == CSRF_OK);
 delete($ref->{wwwcsrf});
 
@@ -21274,12 +21276,12 @@ if (! $cgi->csrf_check)
     { die 'security error' }
 delete($ref->{csrf});
 my $csrf_token = $ref->{wwwcsrf};
-my $status = check_csrf_token($user, "YJxm9H", $csrf_token,\%options);
+my $status = check_csrf_token($user, $csrfsalt, $csrf_token,\%options);
 die "Wrong CSRF token" unless ($status == CSRF_OK);
 delete($ref->{wwwcsrf});
 
 print $cgi->csrf_field, "\n";
-$csrf_token = generate_csrf_token($user, "YJxm9H");
+$csrf_token = generate_csrf_token($user, $csrfsalt);
 print qq(
 <input name="wwwcsrf" type= "hidden" value="$csrf_token">
 );
@@ -21451,12 +21453,12 @@ if (! $cgi->csrf_check)
     { die 'security error' }
 delete($ref->{csrf});
 my $csrf_token = $ref->{wwwcsrf};
-my $status = check_csrf_token($user, "YJxm9H", $csrf_token,\%options);
+my $status = check_csrf_token($user, $csrfsalt, $csrf_token,\%options);
 die "Wrong CSRF token" unless ($status == CSRF_OK);
 delete($ref->{wwwcsrf});
 
 print $cgi->csrf_field, "\n";
-$csrf_token = generate_csrf_token($user, "YJxm9H");
+$csrf_token = generate_csrf_token($user, $csrfsalt);
 print qq(
 <input name="wwwcsrf" type= "hidden" value="$csrf_token">
 );
@@ -21651,7 +21653,7 @@ if (! $cgi->csrf_check)
     { die 'security error' }
 delete($ref->{csrf});
 my $csrf_token = $ref->{wwwcsrf};
-my $status = check_csrf_token($user, "YJxm9H", $csrf_token,\%options);
+my $status = check_csrf_token($user, $csrfsalt, $csrf_token,\%options);
 die "Wrong CSRF token" unless ($status == CSRF_OK);
 delete($ref->{wwwcsrf});
 
@@ -21813,7 +21815,7 @@ if (! $cgi->csrf_check)
     { die 'security error' }
 delete($ref->{csrf});
 my $csrf_token = $ref->{wwwcsrf};
-my $status = check_csrf_token($user, "YJxm9H", $csrf_token,\%options);
+my $status = check_csrf_token($user, $csrfsalt, $csrf_token,\%options);
 die "Wrong CSRF token" unless ($status == CSRF_OK);
 delete($ref->{wwwcsrf});
 
@@ -22392,7 +22394,7 @@ my $cgi    = new CGI::Plus;
 $cgi->csrf(1);
 print $cgi->csrf_field, "\n";
 
-my $csrf_token = generate_csrf_token($user, "YJxm9H");
+my $csrf_token = generate_csrf_token($user, $csrfsalt);
 print qq(
 <input name="wwwcsrf" type= "hidden" value="$csrf_token">
 );
