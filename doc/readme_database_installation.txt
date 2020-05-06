@@ -9,6 +9,7 @@ mysqladmin  create exomevcfe -u root -p
 mysqladmin  create solexa -u root -p
 mysqladmin  create ClinVar -u root -p
 mysqladmin  create hgmd_pro -u root -p
+mysqladmin  create hg19 -u root -p
 
 # import tables
 mysql -L exomehg19 < exomehg19_nodata.dmp -u root -p
@@ -28,6 +29,16 @@ mysql -L solexa < solexa_tag.dmp -u root -p
 mysql -L exomehg19 < exomehg19_organism.dmp -u root -p
 mysql -L exomehg19 < exomehg19_tissue.dmp -u root -p
 
+mysql -L hg19 < hg19_pph3_nodata.dmp -u root -p
+mysql -L hg19 < hg19_sift_nodata.dmp -u root -p
+mysql -L hg19 < hg19_cadd_nodata.dmp -u root -p
+mysql -L hg19 < hg19_evs_nodata.dmp -u root -p
+mysql -L hg19 < hg19_exacGeneScores_nodata.dmp -u root -p
+mysql -L hg19 < hg19_kaviar_nodata.dmp -u root -p
+mysql -L hg19 < hg19_clinvar_nodata.dmp -u root -p
+mysql -L hg19 < hg19_dgvbp_nodata.dmp -u root -p
+
+
 # mysqlshow should no show the following databases
 mysqlshow -u root -p
 +---------------------+
@@ -37,8 +48,8 @@ mysqlshow -u root -p
 | exomehg19           |
 | exomevcf            |
 | exomevcfe           |
+| hg19                |
 | hgmd_pro            |
-| hgmd_pro_nodata.dmp |
 | information_schema  |
 | mysql               |
 | performance_schema  |

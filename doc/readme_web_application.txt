@@ -28,6 +28,60 @@ cp -r css_js/medialize-jQuery-contextMenu-09dffab /srv/www/htdocs/.
 ################################################################
 #database user and password
 
+# create the database user
+# Use strong passwords.
+
+mysql  -u root -p mysql
+create user 'exomereadonly' IDENTIFIED BY 'exomereadonly';
+update mysql.user set Host='localhost' where User='exomereadonly';
+drop user exomereadonly;
+insert into mysql.user (Host,User,Password) VALUES ('localhost','exomereadonly','exomereadonly');
+insert into mysql.db (Host,Db,User,Select_priv) VALUES ('localhost','exomehg19','exomereadonly','Y');
+insert into mysql.db (Host,Db,User,Select_priv) VALUES ('localhost','exomevcf','exomereadonly','Y');
+insert into mysql.db (Host,Db,User,Select_priv) VALUES ('localhost','solexa','exomereadonly','Y');
+insert into mysql.db (Host,Db,User,Select_priv) VALUES ('localhost','hgmd_pro','exomereadonly','Y');
+insert into mysql.db (Host,Db,User,Select_priv) VALUES ('localhost','hg19','exomereadonly','Y');
+insert into mysql.db (Host,Db,User,Select_priv,Insert_priv,Update_priv) VALUES ('localhost','exomevcfe','exomereadonly','Y','Y','Y');
+
+create user exome IDENTIFIED BY 'exome';
+update mysql.user set Host='localhost' where User='exome';
+insert into mysql.db (Host,Db,User,Select_priv,Insert_priv,Update_priv) VALUES ('localhost','exomevhg19','exome','Y','Y','Y');
+insert into mysql.db (Host,Db,User,Select_priv,Insert_priv,Update_priv) VALUES ('localhost','exomevcfe','exome','Y','Y','Y');
+insert into mysql.db (Host,Db,User,Select_priv,Insert_priv,Update_priv) VALUES ('localhost','solexa','exome','Y','Y','Y');
+insert into mysql.db (Host,Db,User,Select_priv) VALUES ('localhost','exomevcf','exome','Y');
+insert into mysql.db (Host,Db,User,Select_priv) VALUES ('localhost','hgmd_pro','exome','Y');
+insert into mysql.db (Host,Db,User,Select_priv) VALUES ('localhost','hg19','exome','Y');
+
+create user solexa IDENTIFIED BY 'solexa';
+update mysql.user set Host='localhost' where User='solexa';
+insert into mysql.db (Host,Db,User,Select_priv,Insert_priv,Update_priv) VALUES ('localhost','solexa','solexa','Y','Y','Y');
+insert into mysql.db (Host,Db,User,Select_priv,Insert_priv,Update_priv) VALUES ('localhost','exomevcfe','solexa','Y','Y','Y');
+insert into mysql.db (Host,Db,User,Select_priv) VALUES ('localhost','exomehg19','solexa','Y');
+insert into mysql.db (Host,Db,User,Select_priv) VALUES ('localhost','hg19','solexa','Y');
+
+flush privileges;
+
+
+# Create three password files in /usr/tools
+# The password files should only be readable for the apache user.
+# That is usually wwwrun.
+# The files must contain the 3 following lines.
+# 'csrfsalt' should contain 6 random characters (lower and upper characters and numbers)
+# File for application 'user'/usr/tools/textreadonly.txt
+dblogin:exomereadonly
+dbpasswd:mysqlpassword
+csrfsalt:XXXXX
+
+# file for application 'managment' /usr/tools/text.txt
+dblogin:exome
+dbpasswd:exome
+csrfsalt:XXXXX
+
+# file for application 'solexa' /usr/tools/solexa.txt
+dblogin:solexa
+dbpasswd:solexa
+csrfsalt:XXXXX
+
 
 # create an admin user
 mysql  -u root -p exomevcfe
