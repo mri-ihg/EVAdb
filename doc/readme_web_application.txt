@@ -92,6 +92,25 @@ password is Admintest1
 Yubikey is disabled.
 Change the password!!
 Activate the Yubikey!!
+
+# Two-factor authentication with one-time-password
+The application provides two-factor authentication with one-time-password
+with the classical YubiKey.
+If you don't want to use this feature, the field 'user' in exomevcfe.user
+must contain a '0'.
+If you want to use this feature, the field must contain the identifier of
+a classical YubiKey.
+Before you can use this module, you need to register for an API key at Yubico. 
+This is as simple as logging onto <https://upgrade.yubico.com/getapikey/> and 
+entering your Yubikey's OTP and your email address. 
+Once you have the API and ID, you need to provide those details to the module to work.
+Create a file: /usr/tools/textreadonly2.txt (only readable for wwwrun)
+and enter the following information:
+
+id:<myid>
+api:<myapi>
+
+
 ################################################################
 #Perl modules
 Install the required Perl modules.
