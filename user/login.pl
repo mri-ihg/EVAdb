@@ -14,11 +14,23 @@ use WWW::CSRF qw(generate_csrf_token check_csrf_token CSRF_OK);
 
 my $snv         = new Snv;
 
-my $csrf_field = $snv->printHeader();
+my ($csrf_field) = $snv->printHeader();
 $snv->showMenu("login");
 $snv->deleteSessionId();
 
 my $demo = 0;
+
+my $item  = "";
+my $value = "";
+my %logins = ();
+open(IN, "/srv/tools/textreadonly.txt");
+while (<IN>) {
+	chomp;
+	($item,$value)=split(/\:/);
+	$logins{$item}=$value;
+}
+close IN;
+my $csrfsalt = $logins{'csrfsalt'};
 
 print "<span class=\"big\">Login</span><br><br>" ;
 
@@ -28,7 +40,7 @@ print qq(
 
 print $csrf_field, "\n<br>";
 
-my $csrf_token = generate_csrf_token("test", "G4pDj7");
+my $csrf_token = generate_csrf_token("test", $csrfsalt);
 print qq(
 <input name="wwwcsrf" type= "hidden" value="$csrf_token"><br>
 );

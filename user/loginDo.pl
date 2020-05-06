@@ -19,11 +19,23 @@ my $snv          = new Snv;
 my %options = ('MaxAge' => 60); #for WWW::CSRF
 $ref = $snv->htmlencodehash($ref);
 
+my $item  = "";
+my $value = "";
+my %logins = ();
+open(IN, "/srv/tools/textreadonly.txt");
+while (<IN>) {
+	chomp;
+	($item,$value)=split(/\:/);
+	$logins{$item}=$value;
+}
+close IN;
+my $csrfsalt = $logins{'csrfsalt'};
+
 if (! $cgi->csrf_check)
     { die 'security error' }
 delete($ref->{csrf});
 my $csrf_token = $ref->{wwwcsrf};
-my $status = check_csrf_token('test', "G4pDj7", $csrf_token,\%options);
+my $status = check_csrf_token('test', $csrfsalt, $csrf_token,\%options);
 die "Wrong CSRF token" unless ($status == CSRF_OK);
 
 if (($ref->{name} eq '' or $ref->{password} eq '')) {
