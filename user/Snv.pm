@@ -12057,7 +12057,7 @@ if ($ref->{'ds.iddisease'} ne "") {
 	print "Disease: $tmp<br>\n";
 }
 else {
-	$tmp=HTML::Entities::encode(@individuals);
+	#$tmp=HTML::Entities::encode(@individuals);
 	#print "Individuals $tmp<br>\n";
 	print "Individuals @individuals<br>\n";
 }

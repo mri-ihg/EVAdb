@@ -49,8 +49,8 @@ They appear in several places in the file.
 <user>DBUSER</user>
 <password>DBPWD</password>
 
-sed -i 's/SERVER13/localhost/g' current.config.xml
-sed -i 's/DBPORT/3306/g' current.config.xml
+sed -i 's/SERVER13/<host>/g' current.config.xml
+sed -i 's/DBPORT/<port>/g' current.config.xml
 sed -i 's/DBUSER/<myuser>/g' current.config.xml
 sed -i 's/DBPWD/<mypassword>/g' current.config.xml
 	
@@ -60,20 +60,26 @@ sed -i 's/DBPWD/<mypassword>/g' current.config.xml
 #Polyphen2 and SIFT
 For simplicity, Polyphen2 and SIFT predictions are taken from dbNSFP, a precomputed collection of many prediction and
 conservation scores. dbNSFP can be dowloaded here: https://sites.google.com/site/jpopgen/dbNSFP
-NOTE: This script is written for version 3 of dbNSFP. In other versions the numbering of the columns may be different
-and this script might not work.
 
-Download the academic version 3.5a from:
+Download the academic version 3.5a from: for example into ~/sift
 
 https://drive.google.com/file/d/0B60wROKy6OqcRmZLbWd4SW5Yc1U/view?usp=sharing
 or 
 wget -c ftp://dbnsfp:dbnsfp@dbnsfp.softgenetics.com/dbNSFPv3.5a.zip
+Unzip the file. The folder then contains dbNSFP tables one per chromosome.
+
+./fillAnnotationTables.pl -se hg19_test -chrprefix -db ~/sift -p -s
+
 
 #############################################################################
 #CADD
-All GRCh37 annotations required for offline installation.
-wget -c https://krishna.gs.washington.edu/download/CADD/v1.4/GRCh37/annotationsGRCh37.tar.gz
 
+Download the following file for example into ~/cadd
+wget -c https://krishna.gs.washington.edu/download/CADD/v1.6/GRCh37/whole_genome_SNVs.tsv.gz
+This is a single compressed file. Don't unpack the files.
+
+Start the import with:
+./fillAnnotationTables.pl -se hg19_test -chrprefix -c ~/cadd/whole_genome_SNVs.tsv.gz
 
 
 #############################################################################
@@ -90,5 +96,4 @@ This is a single compressed file. Don't unpack the files.
 Both files have to be in the same folder.
 
 Start the import with:
-
 ./fillAnnotationTables.pl -se hg19_test -chrprefix -g ~/gnomad_download
