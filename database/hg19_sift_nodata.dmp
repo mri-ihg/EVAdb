@@ -25,11 +25,9 @@ DROP TABLE IF EXISTS `sift`;
 CREATE TABLE `sift` (
   `chrom` varchar(45) DEFAULT NULL,
   `start` int(11) DEFAULT NULL,
-  `snp` varchar(45) DEFAULT NULL,
   `ref` char(1) DEFAULT NULL,
   `alt` char(1) DEFAULT NULL,
   `score` float DEFAULT NULL,
-  `median` float DEFAULT NULL,
   KEY `sift_key` (`chrom`,`start`,`ref`,`alt`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1 PAGE_CHECKSUM=1;
 /*!40101 SET character_set_client = @saved_cs_client */;
