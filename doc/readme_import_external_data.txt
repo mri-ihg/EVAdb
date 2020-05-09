@@ -32,9 +32,9 @@ cpan install 	diagnostics
 cpan install	Bio::DB::Fasta	
 cpan install	File::chmod::Recursive
 # give the path to your samtools installation	
-#LD_LIBRARY_PATH=$SEQPACKAGES/samtools-0.1.19
-#SAMTOOLS=$SEQPACKAGES/samtools-0.1.19 
-#cpan install	Bio::DB::Sam	
+LD_LIBRARY_PATH=<PATH_to_samtools_folder>
+SAMTOOLS=<PATH_to_samtools_folder
+cpan install	Bio::DB::Sam	
 	
 #############################################################################
 Modification of current.config.xml
@@ -97,3 +97,19 @@ Both files have to be in the same folder.
 
 Start the import with:
 ./fillAnnotationTables.pl -se hg19_test -chrprefix -g ~/gnomad_download
+
+#############################################################################
+# UCSC Genome Browser
+# Import of tables from UCSC
+
+mysqldump --lock-tables=false --user=genomep --password=password --host=genome-mysql.cse.ucsc.edu hg19 knownGene kgXref knownGenePep refGene | mysql hg19
+
+#############################################################################
+# DGV
+
+Use the helperscript dgv.pl to import a table that contains the number of DGV entries
+for every genome position.
+It takes about 10 hours and requires about 20G memory.
+
+
+
