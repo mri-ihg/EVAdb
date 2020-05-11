@@ -31,9 +31,7 @@ make install
 cpan install 	diagnostics		
 cpan install	Bio::DB::Fasta	
 cpan install	File::chmod::Recursive
-# give the path to your samtools installation	
-LD_LIBRARY_PATH=<PATH_to_samtools_folder>
-SAMTOOLS=<PATH_to_samtools_folder
+# samtools-0.1.19 required	
 cpan install	Bio::DB::Sam	
 	
 #############################################################################
