@@ -5,11 +5,7 @@
 ########################################################################
 
 use strict;
-#use lib "/srv/www/cgi-bin/mysql/test";
-use Cwd qw( abs_path );
-use File::Basename qw( dirname );
-use lib dirname(abs_path($0));
-use Snv;
+BEGIN {require './Snv.pm';}
 
 my $snv         = new Snv;
 my $cgi         = new CGI;
@@ -22,10 +18,10 @@ $snv->printHeader();
 my ($dbh) = $snv->loadSessionId();
 my $search      = $snv->initComment($idsnv,$idsample,$reason,$dbh,$table);
 
-$idsnv          = $snv->htmlencode($idsnv);
-$idsample       = $snv->htmlencode($idsample);
-$reason         = $snv->htmlencode($reason);
-$table          = $snv->htmlencode($table);
+#$idsnv          = $snv->htmlencode($idsnv);
+#$idsample       = $snv->htmlencode($idsample);
+#$reason         = $snv->htmlencode($reason);
+#$table          = $snv->htmlencode($table);
 
 $snv->showMenu("");
 print "<span class=\"big\">Comment</span><br><br>" ;

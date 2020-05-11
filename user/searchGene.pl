@@ -5,11 +5,7 @@
 ########################################################################
 
 use strict;
-#use lib "/srv/www/cgi-bin/mysql/test";
-use Cwd qw( abs_path );
-use File::Basename qw( dirname );
-use lib dirname(abs_path($0));
-use Snv;
+BEGIN {require './Snv.pm';}
 
 my $snv         = new Snv;
 my $cgi         = new CGI;
@@ -18,7 +14,7 @@ my $ref         = $cgi->Vars;
 $snv->printHeader();
 $snv->loadSessionId();
 
-$ref = $snv->htmlencodehash($ref);
+#$ref = $snv->htmlencodehash($ref);
 my $search      = $snv->initSearchGene($ref->{'g.genesymbol'});
 	
 $snv->showMenu("searchGene");

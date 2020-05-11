@@ -5,11 +5,7 @@
 ########################################################################
 
 use strict;
-#use lib "/srv/www/cgi-bin/mysql/test";
-use Cwd qw( abs_path );
-use File::Basename qw( dirname );
-use lib dirname(abs_path($0));
-use Snv;
+BEGIN {require './Snv.pm';}
 
 my $snv         = new Snv;
 my $cgi         = new CGI;
@@ -19,8 +15,8 @@ my $name        = $cgi->param('name');
 $snv->printHeader();
 $snv->loadSessionId();
 
-$name           = $snv->htmlencode($name);
-$position       = $snv->htmlencode($position);
+#$name           = $snv->htmlencode($name);
+#$position       = $snv->htmlencode($position);
 my $search      = $snv->initSearchPosition($position,$name);
 
 $snv->showMenu("searchPosition");

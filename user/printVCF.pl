@@ -5,11 +5,7 @@
 ########################################################################
 
 use strict;
-#use lib "/srv/www/cgi-bin/mysql/test";
-use Cwd qw( abs_path );
-use File::Basename qw( dirname );
-use lib dirname(abs_path($0));
-use Snv;
+BEGIN {require './Snv.pm';}
 
 my $cgi          = new CGI;
 my $idsamplesvcf = $cgi->param('idsamplesvcf');
@@ -23,8 +19,8 @@ my $snv          = new Snv;
 $snv->printHeader();
 my ($dbh) = $snv->loadSessionId();
 
-$idsamplesvcf    = $snv->htmlencode($idsamplesvcf);
-$idsnvsvcf       = $snv->htmlencode($idsnvsvcf);
+#$idsamplesvcf    = $snv->htmlencode($idsamplesvcf);
+#$idsnvsvcf       = $snv->htmlencode($idsnvsvcf);
 
 $snv->printVCF($dbh,$idsamplesvcf,$idsnvsvcf);
 

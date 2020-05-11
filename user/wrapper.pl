@@ -14,10 +14,7 @@
 ############################################################
 
 use strict;
-use Cwd qw( abs_path );
-use File::Basename qw( dirname );
-use lib dirname(abs_path($0));
-use Snv;
+BEGIN {require './Snv.pm';}
 use IO::Select;
 
 my $cgi   = new CGI();
@@ -26,7 +23,7 @@ my $snv   = new Snv;
 # Init
 	my %headers  = map { $_ => $cgi->http($_) } $cgi->http();
 	my $filename = $cgi->param("file");
-	$filename    = $snv->htmlencode($filename);
+#	$filename    = $snv->htmlencode($filename);
 
 	if ( $filename eq "" )
 	{
@@ -36,14 +33,14 @@ my $snv   = new Snv;
 	
 # Session recover
 	my $sess_id = $cgi->param("sid");
-	$sess_id    = $snv->htmlencode($sess_id);
+#	$sess_id    = $snv->htmlencode($sess_id);
 	my ($dbh)   = $snv->loadSessionId($sess_id);
 
 # Log in STDERR
 	my $debug = 0;
 	if ($debug) {
 		my $ref   = $cgi->Vars;
-		$ref = $snv->htmlencodehash($ref);
+#		$ref = $snv->htmlencodehash($ref);
 		my %param = %$ref;
 		foreach my $tmp (sort keys %headers) {
 			print STDERR "$tmp $headers{$tmp}\n";
@@ -60,7 +57,7 @@ my $snv   = new Snv;
 		print STDERR "before authorization\n";
 	}	
 	my $sname = $cgi->param("sname");
-	$sname    = $snv->htmlencode($sname);
+#	$sname    = $snv->htmlencode($sname);
 	my $dir   = $snv->checkigv($sname,$dbh);
 	if ($dir eq "NOT_ALLOWED") {
 		print $cgi->header(-status => "403");

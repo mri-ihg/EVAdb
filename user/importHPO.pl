@@ -5,11 +5,7 @@
 ########################################################################
 
 use strict;
-#use lib "/srv/www/cgi-bin/mysql/test";
-use Cwd qw( abs_path );
-use File::Basename qw( dirname );
-use lib dirname(abs_path($0));
-use Snv;
+BEGIN {require './Snv.pm';}
 use WWW::CSRF qw(generate_csrf_token check_csrf_token CSRF_OK);
 
 my $snv         = new Snv;
@@ -19,7 +15,7 @@ my $sname       = $cgi->param('sname');
 $snv->printHeader();
 my ($dbh, $user, $csrfsalt) = $snv->loadSessionId();
 
-$sname          = $snv->htmlencode($sname);
+#$sname          = $snv->htmlencode($sname);
 
 print qq(
 <script type="text/javascript">

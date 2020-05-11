@@ -5,11 +5,7 @@
 ########################################################################
 
 use strict;
-#use lib "/srv/www/cgi-bin/mysql/test";
-use Cwd qw( abs_path );
-use File::Basename qw( dirname );
-use lib dirname(abs_path($0));
-use Snv;
+BEGIN {require './Snv.pm';}
 use WWW::CSRF qw(generate_csrf_token check_csrf_token CSRF_OK);
 
 my $cgi          = new CGI::Plus;
@@ -17,7 +13,7 @@ $cgi->csrf(1);
 my $ref          = $cgi->Vars;
 my $snv          = new Snv;
 my %options = ('MaxAge' => 60); #for WWW::CSRF
-$ref = $snv->htmlencodehash($ref);
+#$ref = $snv->htmlencodehash($ref);
 
 my $item  = "";
 my $value = "";

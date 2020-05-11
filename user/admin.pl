@@ -5,11 +5,7 @@
 ########################################################################
 
 use strict;
-#use lib "/srv/www/cgi-bin/mysql/test";
-use Cwd qw( abs_path );
-use File::Basename qw( dirname );
-use lib dirname(abs_path($0));
-use Snv;
+BEGIN {require './Snv.pm';}
 
 my $snv         = new Snv;
 my $cgi         = new CGI;
@@ -20,8 +16,8 @@ $snv->printHeader();
 my ($dbh)       = $snv->loadSessionId();
 my $mask        = $snv->initAdmin();
 
-$mode           = $snv->htmlencode($mode);
-$id             = $snv->htmlencode($id);
+#$mode           = $snv->htmlencode($mode);
+#$id             = $snv->htmlencode($id);
 	
 $snv->showMenu("admin");
 print "<span class=\"big\">Admin</span><br><br>" ;

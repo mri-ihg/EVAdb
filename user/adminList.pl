@@ -5,11 +5,7 @@
 ########################################################################
 
 use strict;
-#use lib "/srv/www/cgi-bin/mysql/test";
-use Cwd qw( abs_path );
-use File::Basename qw( dirname );
-use lib dirname(abs_path($0));
-use Snv;
+BEGIN {require './Snv.pm';}
 
 my $cgi          = new CGI;
 my $ref          = $cgi->Vars;
@@ -25,7 +21,7 @@ my ($dbh) = $snv->loadSessionId();
 $snv->showMenu("adminList");
 print "<span class=\"big\">Search results</span><br><br>" ;
 
-$ref = $snv->htmlencodehash($ref);
+#$ref = $snv->htmlencodehash($ref);
 
 $snv->adminList($dbh,$ref);
 

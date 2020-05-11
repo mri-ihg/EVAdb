@@ -5,11 +5,7 @@
 ########################################################################
 
 use strict;
-#use lib "/srv/www/cgi-bin/mysql/test";
-use Cwd qw( abs_path );
-use File::Basename qw( dirname );
-use lib dirname(abs_path($0));
-use Snv;
+BEGIN {require './Snv.pm';}
 
 my $snv         = new Snv;
 my $cgi         = new CGI;
@@ -19,7 +15,7 @@ my $search      = $snv->initSearchHomozygosity($sname);
 $snv->printHeader();
 $snv->loadSessionId();
 
-$sname          = $snv->htmlencode($sname);
+#$sname          = $snv->htmlencode($sname);
 my $search      = $snv->initSearchHomozygosity($sname);
 
 $snv->showMenu("searchHomozygosity");
