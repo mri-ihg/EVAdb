@@ -45,7 +45,7 @@ insert into mysql.db (Host,Db,User,Select_priv,Insert_priv,Update_priv) VALUES (
 
 create user exome IDENTIFIED BY 'exome';
 update mysql.user set Host='localhost' where User='exome';
-insert into mysql.db (Host,Db,User,Select_priv,Insert_priv,Update_priv) VALUES ('localhost','exomevhg19','exome','Y','Y','Y');
+insert into mysql.db (Host,Db,User,Select_priv,Insert_priv,Update_priv) VALUES ('localhost','exomehg19','exome','Y','Y','Y');
 insert into mysql.db (Host,Db,User,Select_priv,Insert_priv,Update_priv) VALUES ('localhost','exomevcfe','exome','Y','Y','Y');
 insert into mysql.db (Host,Db,User,Select_priv,Insert_priv,Update_priv) VALUES ('localhost','solexa','exome','Y','Y','Y');
 insert into mysql.db (Host,Db,User,Select_priv) VALUES ('localhost','exomevcf','exome','Y');

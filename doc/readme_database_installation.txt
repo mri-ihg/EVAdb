@@ -28,6 +28,7 @@ mysql -L solexa < solexa_tag.dmp -u root -p
 
 mysql -L exomehg19 < exomehg19_organism.dmp -u root -p
 mysql -L exomehg19 < exomehg19_tissue.dmp -u root -p
+mysql -L exomehg19 < exomehg19_diseasegroup.dmp -u root -p
 
 mysql -L hg19 < hg19_pph3_nodata.dmp -u root -p
 mysql -L hg19 < hg19_sift_nodata.dmp -u root -p
