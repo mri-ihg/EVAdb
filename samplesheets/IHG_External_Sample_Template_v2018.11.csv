@@ -1,0 +1,2 @@
+Sample ID,Foreign ID,Pedigree,Comment,Sex,Affected,Organism,Tissue,Disease,Library Type,Read Type,Exome Assay
+control1,control1,control1_ped,comment,male,0,human,peripheral blood,Controls,exomic,paired-end,SureSelect60Mbv6
