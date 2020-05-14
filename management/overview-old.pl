@@ -6,11 +6,7 @@
 
 use strict;
 use CGI;
-use Cwd qw( abs_path );
-use File::Basename qw( dirname );
-use lib dirname(abs_path($0));
-use CGI::Carp qw(fatalsToBrowser);
-use Snvedit;
+BEGIN {require './Snvedit.pm';}
 use DBI;
 
 my $cgiquery     = new CGI;

@@ -5,8 +5,7 @@
 ########################################################################
 
 use strict;
-use CGI::Carp qw(fatalsToBrowser);
-use Solexa;
+BEGIN {require './Solexa.pm';}
 
 my $snv         = new Solexa;
 
