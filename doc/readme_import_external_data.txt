@@ -109,5 +109,9 @@ Use the helperscript dgv.pl to import a table that contains the number of DGV en
 for every genome position.
 It takes about 10 hours and requires about 20G memory.
 
+#############################################################################
+# ClinVar
 
+Use the the scripts in 'helperscript/ClinVarImport' to import the the ClinVar data for hg19.
+Modify path, user and password in ClinVarForCron.sh
 
