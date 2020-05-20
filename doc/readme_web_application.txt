@@ -85,7 +85,7 @@ csrfsalt:XXXXX
 
 # create an admin user
 mysql  -u root -p exomevcfe
-insert into exomevcfe.user (name,password,role,edit,genesearch) VALUES ('admin','$2a$08$pmAbhhM2wYD/G9oxziYV3.J9MHwOTG2edQP.RXX.YF2HAhWJ0L1Jm','admin',1,1);
+insert into exomevcfe.user (name,password,role,edit,genesearch,yubikey) VALUES ('admin','$2a$08$pmAbhhM2wYD/G9oxziYV3.J9MHwOTG2edQP.RXX.YF2HAhWJ0L1Jm','admin',1,1,0);
 quit
 login ist admin
 password is Admintest1
