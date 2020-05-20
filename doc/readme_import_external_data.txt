@@ -55,7 +55,7 @@ sed -i 's/DBPWD/<mypassword>/g' current.config.xml
 #############################################################################
 # imports
 #############################################################################
-#Polyphen2 and SIFT
+#Polyphen2 and SIFT for hg19
 For simplicity, Polyphen2 and SIFT predictions are taken from dbNSFP, a precomputed collection of many prediction and
 conservation scores. dbNSFP can be dowloaded here: https://sites.google.com/site/jpopgen/dbNSFP
 
@@ -70,7 +70,7 @@ Unzip the file. The folder then contains dbNSFP tables one per chromosome.
 
 
 #############################################################################
-#CADD
+#CADD for hg19
 
 Download the following file for example into ~/cadd
 wget -c https://krishna.gs.washington.edu/download/CADD/v1.6/GRCh37/whole_genome_SNVs.tsv.gz
@@ -81,7 +81,7 @@ Start the import with:
 
 
 #############################################################################
-#gnomAD
+#gnomAD for hg19
 
 Download all exomes for example into ~/gnomad_download
 wget -c https://storage.googleapis.com/gnomad-public/release/2.1.1/vcf/exomes/gnomad.exomes.r2.1.1.sites.vcf.bgz
@@ -97,21 +97,48 @@ Start the import with:
 ./fillAnnotationTables.pl -se hg19_test -chrprefix -g ~/gnomad_download
 
 #############################################################################
-# UCSC Genome Browser
-# Import of tables from UCSC
-
-mysqldump --lock-tables=false --user=genomep --password=password --host=genome-mysql.cse.ucsc.edu hg19 knownGene kgXref knownGenePep refGene | mysql hg19
-
-#############################################################################
-# DGV
+# DGV for hg19
 
 Use the helperscript dgv.pl to import a table that contains the number of DGV entries
 for every genome position.
 It takes about 10 hours and requires about 20G memory.
 
 #############################################################################
-# ClinVar
+# ClinVar for hg19
 
 Use the the scripts in 'helperscript/ClinVarImport' to import the the ClinVar data for hg19.
-Modify path, user and password in ClinVarForCron.sh
+Modify path, user and password in ClinVarForCron.sh and run this script.
 
+#############################################################################
+# UCSC Genome Browser
+
+# Import UCSC tables for hg19
+mysqldump --lock-tables=false --user=genomep --password=password --host=genome-mysql.cse.ucsc.edu hg19 knownGene kgXref knownGenePep refGene | mysql hg19
+# delete the genes on the mitochondrial genome
+echo "delete from hg19.knownGene where chrom='chrM';" | mysql hg19
+
+# We use hg38 for the mitochondrial genome
+mysqldump --lock-tables=false --user=genomep --password=password --host=genome-mysql.cse.ucsc.edu hg38 wgEncodeGencodeBasicV20 | mysql hg19
+
+#############################################################################
+# Import data into gene tables of EVAdb
+
+# create a view to join UCSC knownGenes with gene symbols
+# NOTE: refGene already has the geneSymbol included
+echo "CREATE VIEW knownGeneSymbol AS select kg.name AS name,kg.chrom AS chrom,kg.strand AS strand,kg.txStart AS txStart,kg.txEnd AS txEnd,kg.cdsStart AS cdsStart,kg.cdsEnd AS cdsEnd,kg.exonCount AS exonCount,kg.exonStarts AS exonStarts,kg.exonEnds AS exonEnds,kg.proteinID AS proteinID,kg.alignID AS alignID,x.geneSymbol AS geneSymbol from (knownGene kg join kgXref x on((x.kgID = kg.name)))" | mysql hg19
+
+# Add gene names & transcript informations to respective tables
+# Here, we use UCSC known genes to annotate variants and RefSeq coding transcripts for coverage information
+echo "insert into gene (geneSymbol,nonsynpergene,delpergene) select distinct replace(geneSymbol , ' ','_'),0,0 from hg19.knownGeneSymbol;" | mysql exomevcf
+echo "insert into gene (geneSymbol,nonsynpergene,delpergene) select distinct replace(name2 , ' ','_'),0,0 from hg19.refGene;" | mysql exomehg19
+echo "insert into transcript (idgene,name,chrom,exonStarts,exonEnds) select (select idgene from exomehg19.gene where geneSymbol=replace(r.name2 , ' ','_')),name,chrom,exonStarts,exonEnds from hg19.refGene r where cdsEnd>cdsStart;" | mysql exomehg19
+
+# add the mitochondrial genome from hg38
+echo "insert into exomevcf.gene (genesymbol) ( select name2 from hg19.wgEncodeGencodeBasicV20 where chrom='chrM' group by name2);" | mysql exomevcf
+echo "insert into exomehg19.gene (genesymbol) ( select name2 from hg19.wgEncodeGencodeBasicV20 where chrom='chrM' group by name2);" | mysql exomehg19
+
+#############################################################################
+# fill coding sequence table (required for annotation)
+# NOTE: in this configuration runs only for the default knownGene table
+# This step takes some hours
+./cdsdb.pl
