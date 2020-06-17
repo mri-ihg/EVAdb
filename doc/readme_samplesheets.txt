@@ -15,7 +15,7 @@ pipeline, you must move the sequence files to a directory named
 '/data/isilon/seq/analysis/external/<project_name>'. 
 The base directory is hard-coded in Snvedit.pm and can be modified.
 The file names must contain the 'Sample ID' or 'Foreign ID'.
-The sequence files can be formatted as 'bam', 'fastq.gz' or 'fastq'.
+The sequence files can be formatted as 'bam' or 'fastq.gz'.
 Select the respective format in the field 'File extensions'.
 
 2) vcf-files

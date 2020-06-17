@@ -1783,14 +1783,23 @@ my @AoH = (
 	  	bgcolor     => "formbg",
 	  },
 	  {
-	  	label       => "File Extension (if empty no files are added to lib)",
-	  	type        => "text",
+	  	label       => "File Extension<br>(if no files, lib is created without looking for data)",
+		labels      => "no files, bam, fastq.gz",
+	  	type        => "radio",
 		name        => "fileextension",
-	  	value       => "",
-		size        => "30",
-		maxlength   => "100",
+	  	value       => "fastq.gz",
+		values      => ", bam, fastq.gz",
 	  	bgcolor     => "formbg",
-	  }
+	  },
+	  {
+	  	label       => "Allow existing samples<br>(for libraries prepared in-house)",
+	  	labels      => "True, False",
+	  	type        => "radio",
+	  	name        => "allowexisting",
+	  	value       => "F",
+	  	values      => "T, F",
+	  	bgcolor     => "formbg",
+          }
 );
 
 $ref = \@AoH;
@@ -5347,6 +5356,8 @@ my $idcooperation = $ref->{'s.idcooperation'};
 my $idproject     = $ref->{'s.idproject'};
 my $createlibrary = 1; # ( $ref->{createlibrary} eq "yes" ? 1 : 0 );
 my $fileextension = $ref->{'fileextension'};
+my $allowexisting = ( $ref->{'allowexisting'} eq "T" ) ? 1 : 0;
+
 
 # Library creation auxiliaries
 my $libextens="LIB1";
@@ -5454,6 +5465,9 @@ $dbh->do($sql) || die print "$DBI::errstr";
 		my $iddisease   = "";
 		my $diseasename = "";
 
+		# If Library prepared in lab sample might exist - if $allowexisting == 1 
+		my $sampleexists = 0;
+
 		# convert arrays label and values in hash
 		for $i (0..$#labels) {
 			$values{$labels[$i]}=$values[$i];
@@ -5548,9 +5562,30 @@ $dbh->do($sql) || die print "$DBI::errstr";
 		$sth->execute() || die print "$DBI::errstr";
 		$tmp = $sth->fetchrow_array;
 		if ($tmp ne "") {
-			print "Sample name ".$values{name}." already in database.<br>.";
-			exit();
+			if ( $allowexisting == 0 )
+			{
+				print "Sample name ".$values{name}." already in database.<br>.";
+				exit();
+			}
+			else
+			{
+				print "WARN: Sample ".$values{name}." exists: going on<br>";
+				$sampleexists=1;
+			}
 		}
+
+		# Check that the existing sample has not been analyzed
+		$sql = "SELECT name FROM sample
+                        WHERE name = '$values{name}' and not( sbam='' or sbam is null ) ";
+                $sth = $dbh->prepare($sql) || die print "$DBI::errstr";
+                $sth->execute() || die print "$DBI::errstr";
+                $tmp = $sth->fetchrow_array;
+                if ($tmp ne "") {
+                	print "Sample name ".$values{name}." has been analyzed already. Cannot import data on it.<br>.";
+                        exit();
+                }
+
+
 		$values{entered} = $date;
 		$values{user}    = $iduser;
 	
@@ -5578,26 +5613,43 @@ $dbh->do($sql) || die print "$DBI::errstr";
 		}
 		#print "@fields<br>";
 		#print "@values<br>";
-		$sql = sprintf "INSERT INTO sample (%s) VALUES (%s)",
-			join(",", @fields), join(",", ("?")x@fields);
-		$sth = $dbh->prepare($sql) || die print "$DBI::errstr";
-		print "$sql<br>";
-		$sth->execute(@values) || die print "$DBI::errstr";
-		$idsample=$sth->{mysql_insertid};
+
+		if ( $sampleexists )
+		{
+			$sql = "SELECT idsample FROM sample where name = '$values{name}'";
+			$sth = $dbh->prepare($sql) || die print "$DBI::errstr";
+	        	$sth->execute() || die print "$DBI::errstr";
+        		$idsample = $sth->fetchrow_array;
+			if ( $idsample eq "" ) 
+			{
+				print ("Something happened processing sample ".$values{name}.". It might have been deleted. Please retry.\n");
+				exit();
+			}
+		}
+		else
+		{
+			$sql = sprintf "INSERT INTO sample (%s) VALUES (%s)",
+			 join(",", @fields), join(",", ("?")x@fields);
+			$sth = $dbh->prepare($sql) || die print "$DBI::errstr";
+	                print "$sql<br>";
+
+			$sth->execute(@values) || die print "$DBI::errstr";
+			$idsample=$sth->{mysql_insertid};
+		}
 
 		# Get disease
 		if ($diseasename ne "") {
-		#$exomedb = &exomedb($dbh,$idsample);
-		$sql = "SELECT iddisease FROM disease
-			WHERE name = '$diseasename'",
-		$sth = $dbh->prepare($sql) || die print "$DBI::errstr";
-		$sth->execute() || die print "$DBI::errstr";
-		$tmp = $sth->fetchrow_array;
-		if ($tmp eq "") {
-			print "Disease not in database.<br>.";
-			exit();
-		}
-		$iddisease=$tmp;
+			#$exomedb = &exomedb($dbh,$idsample);
+			$sql = "SELECT iddisease FROM disease
+				WHERE name = '$diseasename'",
+			$sth = $dbh->prepare($sql) || die print "$DBI::errstr";
+			$sth->execute() || die print "$DBI::errstr";
+			$tmp = $sth->fetchrow_array;
+			if ($tmp eq "") {
+				print "Disease not in database.<br>.";
+				exit();
+			}
+			$iddisease=$tmp;
 		}
 	
 		# into disease2sample
@@ -5608,7 +5660,7 @@ $dbh->do($sql) || die print "$DBI::errstr";
 				exit(1);
 			}
 			$sql = "
-				INSERT INTO disease2sample
+				INSERT IGNORE INTO disease2sample
 				(iddisease,idsample)
 				VALUES
 				('$iddisease','$idsample')
@@ -5630,7 +5682,10 @@ $dbh->do($sql) || die print "$DBI::errstr";
 		my $bams = "";	
 
 		if($fileextension && $fileextension ne "" && $demo == 0) {
-			open IN,"find $externalSamplesDir -name \"*$foreignid\_*$fileextension\" | sort |";
+			
+			my $foreignidsearch = $foreignid eq "" ? $samplename : $foreignid;
+
+			open IN,"find $externalSamplesDir -name \"*$foreignidsearch\_*$fileextension\" | sort |";
 			while(<IN>){
 				chomp;
 				$bams .= $_.",";
@@ -5656,15 +5711,30 @@ $dbh->do($sql) || die print "$DBI::errstr";
 
 		# Create library:
 		# RB:20180511 changed foreignid to samplename to create library names: potential problems otherwise. values ('$samplename\_$libextens'
-		$sql = "insert into $solexa.library (lname,lcomment,libtype,libpair,lstatus,idassay,lextfilepath) values ('$samplename\_$libextens','external library; entry generated automatically',(select ltid from $solexa.libtype where ltlibtype='$libtype'),(select lpid from $solexa.libpair where lplibpair='$libpair'),'external',(select idassay from $solexa.assay where name='$assay'),'$bams');";
+		$sql = "insert into $solexa.library (lname,lcomment,libtype,libpair,lstatus,idassay,lextfilepath) values ('$samplename\_$libextens','external library; entry generated automatically',(select ltid from $solexa.libtype where ltlibtype='$libtype'),(select lpid from $solexa.libpair where lplibpair='$libpair'),'external',(select idassay from $solexa.assay where name='$assay'),'$bams')";
+
+		if ( $allowexisting )
+		{
+			$sql.= " ON DUPLICATE KEY UPDATE lstatus='external', lextfilepath='$bams'"; 
+		}
+
 		$dbh->do($sql) || die print "$DBI::errstr";
 				
 		# Connect library entry and sample
 		my $lid = $dbh->last_insert_id(undef, undef, "$solexa.library", "lid") or die $DBI::errstr;
-		$sql = "insert into $solexa.sample2library (idsample,lid) values ($idsample,$lid);";
+		$sql = "insert ignore into $solexa.sample2library (idsample,lid) values ($idsample,$lid);";
  		$dbh->do($sql) or die $DBI::errstr;
 
 		#Sample is created along with its library. #NEXT sample
+
+         	$sql = "SELECT * from $solexa.library where lid =$lid"; 
+                $sth = $dbh->prepare($sql) || die print "$DBI::errstr";
+                $sth->execute() || die print "$DBI::errstr";
+                my @vals = $sth->fetchrow_array;
+		print "LIB: "; foreach my $val (@vals){ print $val." | "; };print "\n";
+
+
+
 	}
 
 }

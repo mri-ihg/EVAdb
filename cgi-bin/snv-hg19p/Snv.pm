@@ -11,14 +11,14 @@ use warnings;
 ####### change only here #############
 
 my $vcf                = 0;
-my $hg19p              = 0;
+my $hg19p              = 1;
 my $genomegatk         = 0;
 my $multisampletest    = 0;
 my $multisampletesthardfilter    = 0;
 my $mtdnagatk          = 0;
 my $mm10               = 0;
 my $genomemm10         = 0;
-my $test               = 1;
+my $test               = 0;
 my $demo               = 0;
 my $mip                = 0;
 my $mipcad             = 0;
@@ -923,6 +923,7 @@ $out->execute($user) || die print "$DBI::errstr";
 sub createSessionId {
 my $self      = shift;
 my $ref       = shift;
+my $cwd       = shift;
 my $user      = $ref->{name};
 my $password  = $ref->{password};
 my $otp       = $ref->{yubikey};

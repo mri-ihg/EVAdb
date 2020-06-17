@@ -107,3 +107,4 @@ tmp_table_size = 2048M
 # and all other data on the server
 # a database with 20,000 Exomes require about 3 TB
  
+# we use innobackup for the backup of the database
