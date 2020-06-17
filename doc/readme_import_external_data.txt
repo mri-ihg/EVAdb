@@ -129,12 +129,12 @@ echo "CREATE VIEW knownGeneSymbol AS select kg.name AS name,kg.chrom AS chrom,kg
 
 # Add gene names & transcript informations to respective tables
 # Here, we use UCSC known genes to annotate variants and RefSeq coding transcripts for coverage information
-echo "insert into gene (geneSymbol,nonsynpergene,delpergene) select distinct replace(geneSymbol , ' ','_'),0,0 from hg19.knownGeneSymbol;" | mysql exomevcf
+echo "insert into gene (geneSymbol,nonsynpergene,delpergene) select distinct replace(geneSymbol , ' ','_'),0,0 from hg19.knownGeneSymbol;" | mysql exomehg19plus
 echo "insert into gene (geneSymbol,nonsynpergene,delpergene) select distinct replace(name2 , ' ','_'),0,0 from hg19.refGene;" | mysql exomehg19
 echo "insert into transcript (idgene,name,chrom,exonStarts,exonEnds) select (select idgene from exomehg19.gene where geneSymbol=replace(r.name2 , ' ','_')),name,chrom,exonStarts,exonEnds from hg19.refGene r where cdsEnd>cdsStart;" | mysql exomehg19
 
 # add the mitochondrial genome from hg38
-echo "insert into exomevcf.gene (genesymbol) ( select name2 from hg19.wgEncodeGencodeBasicV20 where chrom='chrM' group by name2);" | mysql exomevcf
+echo "insert into exomehg19plus.gene (genesymbol) ( select name2 from hg19.wgEncodeGencodeBasicV20 where chrom='chrM' group by name2);" | mysql exomehg19plus
 echo "insert into exomehg19.gene (genesymbol) ( select name2 from hg19.wgEncodeGencodeBasicV20 where chrom='chrM' group by name2);" | mysql exomehg19
 
 #############################################################################
