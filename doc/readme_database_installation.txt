@@ -4,19 +4,17 @@
 
 # create databases
 mysqladmin  create exomehg19 -u root -p
-mysqladmin  create exomevcf -u root -p
+mysqladmin  create exomehg19plus -u root -p
 mysqladmin  create exomevcfe -u root -p
 mysqladmin  create solexa -u root -p
-mysqladmin  create ClinVar -u root -p
 mysqladmin  create hgmd_pro -u root -p
 mysqladmin  create hg19 -u root -p
 
 # import tables
 mysql -L exomehg19 < exomehg19_nodata.dmp -u root -p
-mysql -L exomevcf < exomevcf_nodata.dmp -u root -p
+mysql -L exomehg19plus < exomehg19plus_nodata.dmp -u root -p
 mysql -L exomevcfe < exomevcfe_nodata.dmp -u root -p
 mysql -L solexa < solexa_nodata.dmp -u root -p
-mysql -L ClinVar < ClinVar_nodata.dmp -u root -p
 mysql -L hgmd_pro < hgmd_pro_nodata.dmp -u root -p
 
 mysql -L solexa < solexa_assay.dmp -u root -p
@@ -36,7 +34,6 @@ mysql -L hg19 < hg19_cadd_nodata.dmp -u root -p
 mysql -L hg19 < hg19_evs_nodata.dmp -u root -p
 mysql -L hg19 < hg19_exacGeneScores_nodata.dmp -u root -p
 mysql -L hg19 < hg19_kaviar_nodata.dmp -u root -p
-mysql -L hg19 < hg19_clinvar_nodata.dmp -u root -p
 mysql -L hg19 < hg19_dgvbp_nodata.dmp -u root -p
 
 
@@ -45,9 +42,8 @@ mysqlshow -u root -p
 +---------------------+
 |      Databases      |
 +---------------------+
-| ClinVar             |
 | exomehg19           |
-| exomevcf            |
+| exomehg19plus       |
 | exomevcfe           |
 | hg19                |
 | hgmd_pro            |
