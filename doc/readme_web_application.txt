@@ -4,15 +4,11 @@ Create the following directory tree
 		       |
 		       |---snvedit                       |
 		       |
-		       |---test
+		       |---snv-hg19p
 
-Copy all files in 'LIMS'       to the 'solexa' folder.
-Copy all files in 'management' to the 'snvedit' folder.
-Copy all files in 'user'       to the 'test' folder.
+Copy all files in 'cgi-bin'   to the 'mysql' folder.
 
-cp LIMS/* /srv/www/cgi-bin/mysql/solexa/.
-cp management/* /srv/www/cgi-bin/mysql/snvedit/.
-cp user/* /srv/www/cgi-bin/mysql/test/.
+cp -r cgi-bin/* /srv/www/cgi-bin/mysql/.
 
 The paths of the directories are defined at top of the 
 Snv.pm file and can be modified.
@@ -37,7 +33,7 @@ update mysql.user set Host='localhost' where User='exomereadonly';
 drop user exomereadonly;
 insert into mysql.user (Host,User,Password) VALUES ('localhost','exomereadonly','exomereadonly');
 insert into mysql.db (Host,Db,User,Select_priv) VALUES ('localhost','exomehg19','exomereadonly','Y');
-insert into mysql.db (Host,Db,User,Select_priv) VALUES ('localhost','exomevcf','exomereadonly','Y');
+insert into mysql.db (Host,Db,User,Select_priv) VALUES ('localhost','exomehg19plus','exomereadonly','Y');
 insert into mysql.db (Host,Db,User,Select_priv) VALUES ('localhost','solexa','exomereadonly','Y');
 insert into mysql.db (Host,Db,User,Select_priv) VALUES ('localhost','hgmd_pro','exomereadonly','Y');
 insert into mysql.db (Host,Db,User,Select_priv) VALUES ('localhost','hg19','exomereadonly','Y');
@@ -48,7 +44,7 @@ update mysql.user set Host='localhost' where User='exome';
 insert into mysql.db (Host,Db,User,Select_priv,Insert_priv,Update_priv) VALUES ('localhost','exomehg19','exome','Y','Y','Y');
 insert into mysql.db (Host,Db,User,Select_priv,Insert_priv,Update_priv) VALUES ('localhost','exomevcfe','exome','Y','Y','Y');
 insert into mysql.db (Host,Db,User,Select_priv,Insert_priv,Update_priv) VALUES ('localhost','solexa','exome','Y','Y','Y');
-insert into mysql.db (Host,Db,User,Select_priv) VALUES ('localhost','exomevcf','exome','Y');
+insert into mysql.db (Host,Db,User,Select_priv) VALUES ('localhost','exomehg19plus','exome','Y');
 insert into mysql.db (Host,Db,User,Select_priv) VALUES ('localhost','hgmd_pro','exome','Y');
 insert into mysql.db (Host,Db,User,Select_priv) VALUES ('localhost','hg19','exome','Y');
 
