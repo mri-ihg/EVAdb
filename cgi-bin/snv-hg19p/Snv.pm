@@ -66,7 +66,7 @@ if ($vcf) {
 	$cgidir     = "/cgi-bin/mysql/snv-vcf";
 	$logindb    = "exomevcfe";
 	$sampledb   = "exomehg19";
-	$maindb     = "exomevcf";
+	$maindb     = "database=exomevcf;host=localhost";
 	$coredb     = "hg19";
 	$exomevcfe  = "exomevcfe";
 	$igvserver  = "https://ihgseq13.helmholtz-muenchen.de/cgi-bin/mysql/snv-vcf/wrapper.pl";
@@ -79,7 +79,7 @@ elsif ($hg19p) {
 	$cgidir     = "/cgi-bin/mysql/snv-hg19p";
 	$logindb    = "exomevcfe";
 	$sampledb   = "exomehg19";
-	$maindb     = "exomehg19plus";
+	$maindb     = "database=exomehg19plus;host=localhost";
 	$coredb     = "hg19";
 	$exomevcfe  = "exomevcfe";
 	$igvserver  = "https://ihgseq13.helmholtz-muenchen.de/cgi-bin/mysql/snv-hg19p/wrapper.pl";
@@ -93,7 +93,7 @@ elsif ($genomegatk) {
 	$cgidir     = "/cgi-bin/mysql/snv-genomegatk";
 	$logindb    = "exomevcfe";
 	$sampledb   = "exomehg19";
-	$maindb     = "genomegatk";
+	$maindb     = "database=genomegatk;host=localhost";
 	$coredb     = "hg19";
 	$exomevcfe  = "exomevcfe";
 	$igvserver  = "https://ihgseq13.helmholtz-muenchen.de/cgi-bin/mysql/snv-genomegatk/wrapper.pl";
@@ -113,7 +113,7 @@ elsif ($multisampletest) {
 	$cgidir     = "/cgi-bin/mysql/snv-multisampletest";
 	$logindb    = "exomevcfe";
 	$sampledb   = "exomehg19";
-	$maindb     = "multisampletest";
+	$maindb     = "database=multisampletest;host=localhost";
 	$coredb     = "hg19";
 	$exomevcfe  = "exomevcfe";
 	$igvserver  = "https://ihgseq13.helmholtz-muenchen.de/cgi-bin/mysql/snv-multisampletest/wrapper.pl";
@@ -133,7 +133,7 @@ elsif ($multisampletesthardfilter) {
 	$cgidir     = "/cgi-bin/mysql/snv-multisampletesthardfilter";
 	$logindb    = "exomevcfe";
 	$sampledb   = "exomehg19";
-	$maindb     = "multisampletesthardfilter";
+	$maindb     = "database=multisampletesthardfilter;host=localhost";
 	$coredb     = "hg19";
 	$exomevcfe  = "exomevcfe";
 	$igvserver  = "https://ihgseq13.helmholtz-muenchen.de/cgi-bin/mysql/snv-multisampletesthardfilter/wrapper.pl";
@@ -153,7 +153,7 @@ elsif ($mtdnagatk) {
 	$cgidir     = "/cgi-bin/mysql/snv-mtdnagatk";
 	$logindb    = "exomevcfe";
 	$sampledb   = "exomehg19";
-	$maindb     = "mtdnagatk";
+	$maindb     = "database=mtdnagatk;host=localhost";
 	$coredb     = "hg19";
 	$exomevcfe  = "exomevcfe";
 	$igvserver  = "https://ihgseq13.helmholtz-muenchen.de/cgi-bin/mysql/snv-mtdnagatk/wrapper.pl";
@@ -168,7 +168,7 @@ elsif ($mm10) {
 	$cgidir     = "/cgi-bin/mysql/snv-mm10";
 	$logindb    = "exomevcfe";
 	$sampledb   = "exomehg19";
-	$maindb     = "exomemm10";
+	$maindb     = "database=exomemm10;host=localhost";
 	$coredb     = "mm10";
 	$exomevcfe  = "exomevcfe";
 	$igvserver  = "https://ihgseq13.helmholtz-muenchen.de/cgi-bin/mysql/snv-hg19p/wrapper.pl";
@@ -184,7 +184,7 @@ elsif ($genomemm10) {
 	$cgidir     = "/cgi-bin/mysql/snv-genomemm10";
 	$logindb    = "exomevcfe";
 	$sampledb   = "exomehg19";
-	$maindb     = "mm10genomegatk";
+	$maindb     = "database=mm10genomegatk;host=localhost";
 	$coredb     = "mm10";
 	$exomevcfe  = "exomevcfe";
 	$igvserver  = "https://ihgseq13.helmholtz-muenchen.de/cgi-bin/mysql/snv-genomemm10/wrapper.pl";
@@ -200,7 +200,7 @@ elsif ($test) {
 	$cgidir     = "/cgi-bin/mysql/test";
 	$logindb    = "exomevcfe";
 	$sampledb   = "exomehg19";
-	$maindb     = "exomevcf";
+	$maindb     = "database=exomevcf;host=localhost";
 	$coredb     = "hg19";
 	$exomevcfe  = "exomevcfe";
 	$igvserver  = "https://ihgseq13.helmholtz-muenchen.de/cgi-bin/mysql/test/wrapper.pl";
@@ -214,7 +214,7 @@ elsif ($demo) {
 	$cgidir     = "/cgi-bin/mysql/snv-vcf";
 	$logindb    = "exomewrite";
 	$sampledb   = "exomecore";
-	$maindb     = "exomevariant";
+	$maindb     = "database=exomevariant;host=localhost";
 	$exomevcfe  = "exomewrite";
 	$coredb     = "hg19";
 	$igvserver  = "https://ihgseq13.helmholtz-muenchen.de/cgi-bin/mysql/snv-vcf/wrapper.pl";
@@ -230,7 +230,7 @@ elsif ($mip) {
 	$cgidir     = "/cgi-bin/mysql/snv-mip";
 	$logindb    = "exomevcfe";
 	$sampledb   = "exomehg19";
-	$maindb     = "MIP_RLS";
+	$maindb     = "database=MIP_RLS;host=localhost";
 	$coredb     = "hg19";
 	$exomevcfe  = "exomevcfe";
 	$igvserver  = "https://ihgseq13.helmholtz-muenchen.de/cgi-bin/mysql/snv-mip/wrapper.pl";
@@ -244,7 +244,7 @@ elsif ($mipcad) {
 	$cgidir     = "/cgi-bin/mysql/snv-mipcad";
 	$logindb    = "exomevcfe";
 	$sampledb   = "exomehg19";
-	$maindb     = "MIP_CAD";
+	$maindb     = "database=MIP_CAD;host=localhost";
 	$coredb     = "hg19";
 	$exomevcfe  = "exomevcfe";
 	$igvserver  = "https://ihgseq13.helmholtz-muenchen.de/cgi-bin/mysql/snv-mipcad/wrapper.pl";
@@ -258,7 +258,7 @@ elsif ($rnahg19) {
 	$cgidir     = "/cgi-bin/mysql/snv-rnahg19";
 	$logindb    = "exomevcfe";
 	$sampledb   = "exomehg19";
-	$maindb     = "rnahg19";
+	$maindb     = "database=rnahg19;host=localhost";
 	$coredb     = "hg19";
 	$exomevcfe  = "exomevcfe";
 	$igvserver  = "https://ihgseq13.helmholtz-muenchen.de/cgi-bin/mysql/snv-rnahg19/wrapper.pl";
@@ -272,7 +272,7 @@ elsif ($perspective) {
 	$cgidir     = "/cgi-bin/mysql/snv-perspective";
 	$logindb    = "exomevcfe";
 	$sampledb   = "exomehg19";
-	$maindb     = "PERSPECTIVE";
+	$maindb     = "database=PERSPECTIVE;host=localhost";
 	$coredb     = "hg19";
 	$exomevcfe  = "exomevcfe";
 	$igvserver  = "https://ihgseq13.helmholtz-muenchen.de/cgi-bin/mysql/snv-perspective/wrapper.pl";
@@ -286,7 +286,7 @@ elsif ($fhcl) {
 	$cgidir     = "/cgi-bin/mysql/snv-fhcl";
 	$logindb    = "exomevcfe";
 	$sampledb   = "exomehg19";
-	$maindb     = "fhcl";
+	$maindb     = "database=fhcl;host=localhost";
 	$coredb     = "hg19";
 	$exomevcfe  = "exomevcfe";
 	$igvserver  = "https://ihgseq13.helmholtz-muenchen.de/cgi-bin/mysql/snv-fhcl/wrapper.pl";
@@ -923,7 +923,6 @@ $out->execute($user) || die print "$DBI::errstr";
 sub createSessionId {
 my $self      = shift;
 my $ref       = shift;
-my $cwd       = shift;
 my $user      = $ref->{name};
 my $password  = $ref->{password};
 my $otp       = $ref->{yubikey};
