@@ -250,7 +250,7 @@ CREATE TABLE `opticalduplicates` (
   `opticalduplicates` decimal(5,2) unsigned DEFAULT NULL,
   PRIMARY KEY (`idopticalduplicates`),
   UNIQUE KEY `optduprunlanelib` (`rname`,`lane`,`lname`)
-) ENGINE=MyISAM AUTO_INCREMENT=143201 DEFAULT CHARSET=latin1 PAGE_CHECKSUM=1;
+) ENGINE=MyISAM AUTO_INCREMENT=143201 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
