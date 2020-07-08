@@ -28,7 +28,7 @@ CREATE TABLE `tissue` (
   `menuflag` varchar(1) DEFAULT 'T',
   PRIMARY KEY (`idtissue`),
   UNIQUE KEY `tissuename_UNIQUE` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=42 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --

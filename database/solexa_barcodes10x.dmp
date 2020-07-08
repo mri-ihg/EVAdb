@@ -32,7 +32,7 @@ CREATE TABLE `barcodes10x` (
   UNIQUE KEY `tname` (`id10xbarcodes`),
   KEY `idtag` (`idtag`),
   CONSTRAINT `barcodes10x_ibfk_1` FOREIGN KEY (`idtag`) REFERENCES `tag` (`idtag`)
-) ENGINE=InnoDB AUTO_INCREMENT=769 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --

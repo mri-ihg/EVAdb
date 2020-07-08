@@ -26,7 +26,7 @@ CREATE TABLE `assay` (
   `idassay` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL,
   PRIMARY KEY (`idassay`)
-) ENGINE=InnoDB AUTO_INCREMENT=66 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -46,7 +46,7 @@ CREATE TABLE `barcodes10x` (
   UNIQUE KEY `tname` (`id10xbarcodes`),
   KEY `idtag` (`idtag`),
   CONSTRAINT `barcodes10x_ibfk_1` FOREIGN KEY (`idtag`) REFERENCES `tag` (`idtag`)
-) ENGINE=InnoDB AUTO_INCREMENT=769 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -62,7 +62,7 @@ CREATE TABLE `company` (
   `coflag` varchar(1) DEFAULT 'T',
   PRIMARY KEY (`idcompany`),
   UNIQUE KEY `coname` (`coname`)
-) ENGINE=InnoDB AUTO_INCREMENT=24 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -79,7 +79,7 @@ CREATE TABLE `kit` (
   `cmenuflag` varchar(1) NOT NULL DEFAULT 'T',
   PRIMARY KEY (`cid`),
   UNIQUE KEY `cname` (`cname`)
-) ENGINE=InnoDB AUTO_INCREMENT=143 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -106,7 +106,7 @@ CREATE TABLE `lane` (
   KEY `lanepool` (`idpool`),
   CONSTRAINT `arid` FOREIGN KEY (`rid`) REFERENCES `run` (`rid`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `lanepool` FOREIGN KEY (`idpool`) REFERENCES `pool` (`idpool`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=9448 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -120,7 +120,7 @@ CREATE TABLE `libpair` (
   `lpid` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `lplibpair` varchar(255) NOT NULL,
   PRIMARY KEY (`lpid`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -178,7 +178,7 @@ CREATE TABLE `library` (
   CONSTRAINT `libpair` FOREIGN KEY (`libpair`) REFERENCES `libpair` (`lpid`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `libtype` FOREIGN KEY (`libtype`) REFERENCES `libtype` (`ltid`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `lidtag` FOREIGN KEY (`idtag`) REFERENCES `tag` (`idtag`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=101195 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -199,7 +199,7 @@ CREATE TABLE `library2pool` (
   KEY `pool_lid2pool` (`idpool`),
   CONSTRAINT `lid_lid2pool` FOREIGN KEY (`lid`) REFERENCES `library` (`lid`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `pool_lid2pool` FOREIGN KEY (`idpool`) REFERENCES `pool` (`idpool`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=128321 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -213,7 +213,7 @@ CREATE TABLE `libtype` (
   `ltid` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `ltlibtype` varchar(255) NOT NULL,
   PRIMARY KEY (`ltid`)
-) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -231,7 +231,7 @@ CREATE TABLE `login` (
   `failed_last` int(10) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`idlogin`),
   UNIQUE KEY `idlogin_UNIQUE` (`idlogin`)
-) ENGINE=InnoDB AUTO_INCREMENT=27 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -250,7 +250,7 @@ CREATE TABLE `opticalduplicates` (
   `opticalduplicates` decimal(5,2) unsigned DEFAULT NULL,
   PRIMARY KEY (`idopticalduplicates`),
   UNIQUE KEY `optduprunlanelib` (`rname`,`lane`,`lname`)
-) ENGINE=MyISAM AUTO_INCREMENT=143201 DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -280,7 +280,7 @@ CREATE TABLE `pair` (
   UNIQUE KEY `aid` (`aid`),
   KEY `pairsaid` (`aid`),
   CONSTRAINT `pairsaid` FOREIGN KEY (`aid`) REFERENCES `lane` (`aid`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=1147 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -319,7 +319,7 @@ CREATE TABLE `pool` (
   UNIQUE KEY `oname` (`oname`),
   UNIQUE KEY `obarcode` (`obarcode`),
   UNIQUE KEY `oplate` (`oplate`,`orow`,`ocolumn`)
-) ENGINE=InnoDB AUTO_INCREMENT=44669 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -340,7 +340,7 @@ CREATE TABLE `qcal` (
   UNIQUE KEY `aidreadnumberqcall` (`aid`,`readnumber`,`qcal`),
   KEY `qcalaid` (`aid`),
   CONSTRAINT `qcalaid` FOREIGN KEY (`aid`) REFERENCES `lane` (`aid`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=99544 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -370,7 +370,7 @@ CREATE TABLE `rread` (
   UNIQUE KEY `aidread` (`aid`,`readNumber`),
   KEY `rraid` (`aid`),
   CONSTRAINT `rraid` FOREIGN KEY (`aid`) REFERENCES `lane` (`aid`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=17605 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -400,7 +400,7 @@ CREATE TABLE `run` (
   KEY `ruid` (`uid`),
   KEY `rtype` (`rdescription`),
   CONSTRAINT `rtype` FOREIGN KEY (`rdescription`) REFERENCES `runtype` (`runtypeid`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=1355 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -422,7 +422,7 @@ CREATE TABLE `run2stock` (
   KEY `run2stock_user` (`entered`),
   CONSTRAINT `run2stock_run` FOREIGN KEY (`rid`) REFERENCES `run` (`rid`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `run2stock_stock` FOREIGN KEY (`sid`) REFERENCES `stock` (`sid`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=4036 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -437,7 +437,7 @@ CREATE TABLE `runtype` (
   `name` varchar(100) NOT NULL,
   PRIMARY KEY (`runtypeid`),
   UNIQUE KEY `runtypename` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -458,7 +458,7 @@ CREATE TABLE `sample2library` (
   KEY `slidsample` (`idsample`),
   CONSTRAINT `slidsample` FOREIGN KEY (`idsample`) REFERENCES `exomehg19`.`sample` (`idsample`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `sllid` FOREIGN KEY (`lid`) REFERENCES `library` (`lid`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=100514 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -485,7 +485,7 @@ CREATE TABLE `shopping` (
   KEY `buser` (`buser`),
   KEY `company` (`bcompany`),
   CONSTRAINT `company` FOREIGN KEY (`bcompany`) REFERENCES `company` (`idcompany`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=1044 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -512,7 +512,7 @@ CREATE TABLE `stock` (
   KEY `scid` (`cid`),
   KEY `suidreceived` (`uidreceived`),
   CONSTRAINT `scid` FOREIGN KEY (`cid`) REFERENCES `kit` (`cid`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=4481 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -534,7 +534,7 @@ CREATE TABLE `tag` (
   PRIMARY KEY (`idtag`),
   UNIQUE KEY `tname` (`tname`),
   KEY `tentered` (`tentered`)
-) ENGINE=InnoDB AUTO_INCREMENT=2769 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 

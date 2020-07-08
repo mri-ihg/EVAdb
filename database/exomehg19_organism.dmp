@@ -28,7 +28,7 @@ CREATE TABLE `organism` (
   `ormenuflag` varchar(1) DEFAULT 'T',
   PRIMARY KEY (`idorganism`),
   UNIQUE KEY `orname_UNIQUE` (`orname`)
-) ENGINE=InnoDB AUTO_INCREMENT=30 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --

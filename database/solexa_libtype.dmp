@@ -26,7 +26,7 @@ CREATE TABLE `libtype` (
   `ltid` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `ltlibtype` varchar(255) NOT NULL,
   PRIMARY KEY (`ltid`)
-) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --

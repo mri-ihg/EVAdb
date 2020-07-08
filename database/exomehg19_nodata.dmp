@@ -45,7 +45,7 @@ CREATE TABLE `chipseqstats` (
   CONSTRAINT `chipseqstatsample` FOREIGN KEY (`idsample`) REFERENCES `sample` (`idsample`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `chipseqstatsamplecontrol` FOREIGN KEY (`idsamplecontrol`) REFERENCES `sample` (`idsample`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `chipseqstatsampleoverlap` FOREIGN KEY (`idsampleoverlap`) REFERENCES `sample` (`idsample`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=569 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -68,7 +68,7 @@ CREATE TABLE `cooperation` (
   `sendstatus` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`idcooperation`),
   UNIQUE KEY `cname` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=235 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -89,7 +89,7 @@ CREATE TABLE `disease` (
   KEY `dsymbol` (`symbol`),
   KEY `fk_diseasegroup` (`iddiseasegroup`),
   CONSTRAINT `fk_diseasegroup` FOREIGN KEY (`iddiseasegroup`) REFERENCES `diseasegroup` (`iddiseasegroup`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=550 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -111,7 +111,7 @@ CREATE TABLE `disease2gene` (
   KEY `d2gidgene` (`idgene`),
   CONSTRAINT `d2giddisease` FOREIGN KEY (`iddisease`) REFERENCES `disease` (`iddisease`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `d2gidgene` FOREIGN KEY (`idgene`) REFERENCES `gene` (`idgene`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=40977 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -132,7 +132,7 @@ CREATE TABLE `disease2sample` (
   KEY `d2sidsample` (`idsample`),
   CONSTRAINT `d2siddisease` FOREIGN KEY (`iddisease`) REFERENCES `disease` (`iddisease`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `d2sidsample` FOREIGN KEY (`idsample`) REFERENCES `sample` (`idsample`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=87187 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -146,7 +146,7 @@ CREATE TABLE `diseasegroup` (
   `iddiseasegroup` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(100) NOT NULL,
   PRIMARY KEY (`iddiseasegroup`)
-) ENGINE=InnoDB AUTO_INCREMENT=81 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -196,7 +196,7 @@ CREATE TABLE `exomestat` (
   KEY `exomestatsample` (`idsample`),
   KEY `exomestatlibpair` (`idlibpair`),
   CONSTRAINT `exomestatsample` FOREIGN KEY (`idsample`) REFERENCES `sample` (`idsample`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=121434 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -220,7 +220,7 @@ CREATE TABLE `gene` (
   PRIMARY KEY (`idgene`),
   UNIQUE KEY `genesymbol` (`genesymbol`),
   KEY `omim` (`omim`)
-) ENGINE=InnoDB AUTO_INCREMENT=856921 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -352,7 +352,7 @@ CREATE TABLE `invoice` (
   `lastdate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`idinvoice`),
   UNIQUE KEY `my` (`my`)
-) ENGINE=InnoDB AUTO_INCREMENT=720 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -406,7 +406,7 @@ CREATE TABLE `omimfulltext` (
   `omim_cs` longtext NOT NULL,
   `omim_fulltext` longtext NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM AUTO_INCREMENT=26700 DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -422,7 +422,7 @@ CREATE TABLE `organism` (
   `ormenuflag` varchar(1) DEFAULT 'T',
   PRIMARY KEY (`idorganism`),
   UNIQUE KEY `orname_UNIQUE` (`orname`)
-) ENGINE=InnoDB AUTO_INCREMENT=30 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -479,7 +479,7 @@ CREATE TABLE `pipeline` (
   PRIMARY KEY (`idpipeline`),
   KEY `idsample_pipeline` (`idsample`),
   CONSTRAINT `idsample_pipeline` FOREIGN KEY (`idsample`) REFERENCES `sample` (`idsample`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=161457 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -504,7 +504,7 @@ CREATE TABLE `project` (
   `idcooperation` int(11) DEFAULT NULL,
   PRIMARY KEY (`idproject`),
   UNIQUE KEY `pname_UNIQUE` (`pname`)
-) ENGINE=InnoDB AUTO_INCREMENT=321 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -568,7 +568,7 @@ CREATE TABLE `rnaseqcstat` (
   PRIMARY KEY (`idrnaseqcstats`),
   KEY `rnaseqcstats_idsample_index` (`idsample`) USING BTREE,
   CONSTRAINT `rnaseqcstats_idsample` FOREIGN KEY (`idsample`) REFERENCES `sample` (`idsample`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=13400 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -621,7 +621,7 @@ CREATE TABLE `sample` (
   CONSTRAINT `cooperation` FOREIGN KEY (`idcooperation`) REFERENCES `cooperation` (`idcooperation`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `idinvoice` FOREIGN KEY (`idinvoice`) REFERENCES `invoice` (`idinvoice`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `idproject` FOREIGN KEY (`idproject`) REFERENCES `project` (`idproject`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=86228 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -637,7 +637,7 @@ CREATE TABLE `tissue` (
   `menuflag` varchar(1) DEFAULT 'T',
   PRIMARY KEY (`idtissue`),
   UNIQUE KEY `tissuename_UNIQUE` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=42 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -657,7 +657,7 @@ CREATE TABLE `transcript` (
   PRIMARY KEY (`idtranscript`),
   KEY `fk_transcript_gene` (`idgene`),
   KEY `transcript_name` (`name`)
-) ENGINE=MyISAM AUTO_INCREMENT=36542 DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -684,7 +684,7 @@ CREATE TABLE `transcriptmedianstat` (
   KEY `fk_transcriptmedianstat_transcript` (`idtranscript`),
   KEY `transcriptmedianstat-search` (`type`,`idtranscript`),
   KEY `type` (`type`)
-) ENGINE=MyISAM AUTO_INCREMENT=518300 DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -712,7 +712,7 @@ CREATE TABLE `transcriptstat` (
   UNIQUE KEY `transcriptstat-unique` (`idsample`,`idtranscript`,`idlibtype`,`idlibpair`),
   KEY `fk_transcriptstat_transcript` (`idtranscript`),
   KEY `fk_transcriptstat_sample` (`idsample`)
-) ENGINE=MyISAM AUTO_INCREMENT=3369068722 DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
