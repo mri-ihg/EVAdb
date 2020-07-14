@@ -15,6 +15,7 @@ use DBI;
 use Crypt::Eksblowfish::Bcrypt;
 
 my $gapplication   = "ExomeEdit";
+my $maindbForLogin = "database=solexa;host=localhost";
 my $maindb         = "solexa";
 my $exomedb        = "exomehg19";
 my $logindb        = "exomevcfe";
@@ -124,7 +125,7 @@ my $api       = $yubikey{api};
 my $nonce     = "";
 
 #select password and yubikey from user table
-my $dbh = DBI->connect("DBI:mysql:$maindb", "$logins{dblogin}", "$logins{dbpasswd}") || die print "$DBI::errstr";
+my $dbh = DBI->connect("DBI:mysql:$maindbForLogin", "$logins{dblogin}", "$logins{dbpasswd}") || die print "$DBI::errstr";
 #$dbh->{Profile} = 4;
 #$dbh->{LongTruncOk} = 1;
 my $query = "SELECT password,yubikey,igvport,role,edit FROM $logindb.user WHERE name=?";
@@ -269,7 +270,7 @@ my $session     = CGI::Session->load($sess_id) or die CGI::Session->errstr;
 	}
 	close IN;
 
-	my $dbh = DBI->connect("DBI:mysql:$maindb", "$logins{dblogin}", "$logins{dbpasswd}") || die print "$DBI::errstr";
+	my $dbh = DBI->connect("DBI:mysql:$maindbForLogin", "$logins{dblogin}", "$logins{dbpasswd}") || die print "$DBI::errstr";
 	my $query = "SELECT iduser FROM $logindb.user WHERE name=?";
 	my $out = $dbh->prepare($query) || die print "$DBI::errstr";
 	$out->execute($user) || die print "$DBI::errstr";
@@ -10692,10 +10693,10 @@ s.snanodrop,concat("=$shearing_DNA/M",$k+1),concat("=$shearing_TE-N",$k+1),
 FROM
 $exomedb.sample s
 INNER JOIN $exomedb.project p ON s.idproject=p.idproject
-LEFT JOIN $maindb.sample2library sl ON (s.idsample = sl.idsample)
-LEFT JOIN $maindb.library l ON (sl.lid = l.lid)
-LEFT JOIN $maindb.tag t ON (l.idtag = t.idtag)
-LEFT JOIN $maindb.tag tt ON (l.idtag2 = t.idtag)
+LEFT JOIN sample2library sl ON (s.idsample = sl.idsample)
+LEFT JOIN library l ON (sl.lid = l.lid)
+LEFT JOIN tag t ON (l.idtag = t.idtag)
+LEFT JOIN tag tt ON (l.idtag2 = t.idtag)
 LEFT JOIN library2pool lo ON (l.lid = lo.lid)
 LEFT JOIN pool o ON (lo.idpool = o.idpool)
 LEFT JOIN stock st ON l.lkit= st.sid
@@ -10796,10 +10797,10 @@ s.snanodrop,concat("=$shearing_DNA/M",$k+1),concat("=$shearing_TE-N",$k+1),
 concat("=W",$k+1,"*3-30"),'',concat("=Y",$k+1,"*1000/650*200/U",$k+1)
 FROM
 $exomedb.sample s 
-LEFT JOIN $maindb.sample2library sl ON (s.idsample = sl.idsample)
-LEFT JOIN $maindb.library l ON (sl.lid = l.lid)
-LEFT JOIN $maindb.tag t ON (l.idtag = t.idtag)
-LEFT JOIN $maindb.tag tt ON (l.idtag2 = t.idtag)
+LEFT JOIN sample2library sl ON (s.idsample = sl.idsample)
+LEFT JOIN library l ON (sl.lid = l.lid)
+LEFT JOIN tag t ON (l.idtag = t.idtag)
+LEFT JOIN tag tt ON (l.idtag2 = t.idtag)
 LEFT JOIN library2pool lo ON (l.lid = lo.lid)
 LEFT JOIN pool o ON (lo.idpool = o.idpool)
 WHERE l.lid  = '$lid'
@@ -10897,10 +10898,10 @@ s.splate,s.scolumn,s.srow,s.name,s.sbarcode,
 concat("=U",$k+1,"*3-30"),'',concat("=W",$k+1,"*1000/650*200/S",$k+1)
 FROM
 $exomedb.sample s 
-LEFT JOIN $maindb.sample2library sl ON (s.idsample = sl.idsample)
-LEFT JOIN $maindb.library l ON (sl.lid = l.lid)
-LEFT JOIN $maindb.tag t ON (l.idtag = t.idtag)
-LEFT JOIN $maindb.tag tt ON (l.idtag2 = t.idtag)
+LEFT JOIN sample2library sl ON (s.idsample = sl.idsample)
+LEFT JOIN library l ON (sl.lid = l.lid)
+LEFT JOIN tag t ON (l.idtag = t.idtag)
+LEFT JOIN tag tt ON (l.idtag2 = t.idtag)
 LEFT JOIN library2pool lo ON (l.lid = lo.lid)
 LEFT JOIN pool o ON (lo.idpool = o.idpool)
 WHERE l.lid  = '$lid'
@@ -10996,10 +10997,10 @@ s.splate,s.scolumn,s.srow,s.name,s.sbarcode,
 concat("=T",$k+1,"*3-30"),'',concat("=V",$k+1,"*1000/650*200/R",$k+1)
 FROM
 $exomedb.sample s 
-LEFT JOIN $maindb.sample2library sl ON (s.idsample = sl.idsample)
-LEFT JOIN $maindb.library l ON (sl.lid = l.lid)
-LEFT JOIN $maindb.tag t ON (l.idtag = t.idtag)
-LEFT JOIN $maindb.tag tt ON (l.idtag2 = t.idtag)
+LEFT JOIN sample2library sl ON (s.idsample = sl.idsample)
+LEFT JOIN library l ON (sl.lid = l.lid)
+LEFT JOIN tag t ON (l.idtag = t.idtag)
+LEFT JOIN tag tt ON (l.idtag2 = t.idtag)
 LEFT JOIN library2pool lo ON (l.lid = lo.lid)
 LEFT JOIN pool o ON (lo.idpool = o.idpool)
 WHERE l.lid  = '$lid'
@@ -11103,9 +11104,9 @@ s.name,l.lname,$k,t.tname,
 '',concat("=$shearing_DNA/J",$k+1),concat("=$shearing_TE-K",$k+1)
 FROM
 $exomedb.sample s 
-LEFT JOIN $maindb.sample2library sl ON (s.idsample = sl.idsample)
-LEFT JOIN $maindb.library l ON (sl.lid = l.lid)
-LEFT JOIN $maindb.tag t ON (l.idtag = t.idtag)
+LEFT JOIN sample2library sl ON (s.idsample = sl.idsample)
+LEFT JOIN library l ON (sl.lid = l.lid)
+LEFT JOIN tag t ON (l.idtag = t.idtag)
 WHERE l.lid='$libid'
 ORDER BY
 t.tname

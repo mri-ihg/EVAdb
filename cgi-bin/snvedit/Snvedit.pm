@@ -20,7 +20,7 @@ my $demo = 0;
 
 my $gapplication   = "ExomeEdit";
 my $solexa         = "solexa";
-my $humanexomedb   = "exomehg19";
+my $humanexomedb   = "database=exomehg19;host=localhost";
 my $logindb        = "exomevcfe";
 my $text           = "/srv/tools/text.txt"; #database
 my $text2          = "/srv/tools/textreadonly2.txt"; #yubikey id and api
@@ -36,7 +36,7 @@ my $role           = ""; #not used
 my $warningtdbg   = "class='warning'";
 
 if ($demo) {
-	$humanexomedb   = "exomecore";
+	$humanexomedb   = "database=exomecore;host=localhost";
 	$logindb        = "exomewrite";
 	$cookie_only_when_https = 0;
 }
@@ -1799,7 +1799,16 @@ my @AoH = (
 	  	value       => "F",
 	  	values      => "T, F",
 	  	bgcolor     => "formbg",
-          }
+          },
+	  {
+	  	label       => "Project and cooperation in samplesheet<br>samplesheet version 06.2020",
+	  	labels      => "True, False",
+	  	type        => "radio",
+	  	name        => "projcoopinsamplesheet",
+	  	value       => "F",
+	  	values      => "T, F",
+	  	bgcolor     => "formbg",
+          }	  
 );
 
 $ref = \@AoH;
@@ -3475,7 +3484,7 @@ e.clusterCountPF/e.clusterCountRaw,
 avg(od.duplicates),
 avg(od.opticalduplicates) as opticalDuplicates,
 avg(es.mix) as contamination
-FROM $humanexomedb.sample s 
+FROM sample s 
 INNER JOIN $solexa.sample2library    sl ON s.idsample=sl.idsample
 INNER JOIN $solexa.library            l ON sl.lid=l.lid
 INNER JOIN $solexa.library2pool      lo ON l.lid=lo.lid
@@ -3483,7 +3492,7 @@ INNER JOIN $solexa.pool               o ON lo.idpool=o.idpool
 INNER JOIN $solexa.lane               a ON o.idpool=a.idpool
 INNER JOIN $solexa.rread              e ON a.aid=e.aid
 INNER JOIN $solexa.run                r ON r.rid=a.rid
-INNER JOIN $humanexomedb.exomestat   es ON s.idsample=es.idsample
+INNER JOIN exomestat   es ON s.idsample=es.idsample
 INNER JOIN $solexa.opticalduplicates od ON r.rname=od.rname and a.alane=od.lane
 WHERE 
 a.aread1failed='F'
@@ -3666,7 +3675,7 @@ e.clusterCountPF/e.clusterCountRaw,
 avg(es.duplicates),
 avg(es.opticalduplicates) as opticalDuplicates,
 avg(es.mix) as contamination
-FROM $humanexomedb.sample s 
+FROM sample s 
 INNER JOIN $solexa.sample2library sl ON s.idsample=sl.idsample
 INNER JOIN $solexa.library         l ON sl.lid=l.lid
 INNER JOIN $solexa.library2pool   lo ON l.lid=lo.lid
@@ -3674,7 +3683,7 @@ INNER JOIN $solexa.pool            o ON lo.idpool=o.idpool
 INNER JOIN $solexa.lane            a ON o.idpool=a.idpool
 INNER JOIN $solexa.rread           e ON a.aid=e.aid
 INNER JOIN $solexa.run             r ON r.rid=a.rid
-INNER JOIN $humanexomedb.exomestat   es ON s.idsample=es.idsample
+INNER JOIN exomestat   es ON s.idsample=es.idsample
 WHERE 
 a.aread1failed='F'
 $whereR
@@ -5358,35 +5367,68 @@ my $createlibrary = 1; # ( $ref->{createlibrary} eq "yes" ? 1 : 0 );
 my $fileextension = $ref->{'fileextension'};
 my $allowexisting = ( $ref->{'allowexisting'} eq "T" ) ? 1 : 0;
 
+my $projcoopinsamplesheet = ( $ref->{'projcoopinsamplesheet'} eq "T" ) ? 1 : 0;
 
 # Library creation auxiliaries
 my $libextens="LIB1";
 
-%assignment=
-(
-"Sample ID"                 => "name",
-"Foreign ID"                => "foreignid",
-"Pedigree"                  => "pedigree",
-"Comment"                   => "scomment",
-"Sex"                       => "sex",
-"Affected"                  => "saffected",
-"Organism"                  => "idorganism",
-"Tissue"                    => "idtissue",
-"Disease"                   => "iddisease",
-"Library Type"              => "libtype",
-"Read Type"                 => "readtype",
-"Exome Assay"               => "exomeassay"
-#"Concentration (ng/ul)"     => "snanodrop",
-#"Volume (ul)"               => "volume",
-#"A260/280"                  => "a260280",
-#"Barcode"                   => "sbarcode",
-#"Plate"                     => "splate",
-#"Row"                       => "srow",
-#"Column"                    => "scolumn",
-#"Analysis"                  => "analysis",
-#"Cooperation"               => "idcooperation",
-#"Project"                   => "idproject",
-);
+# Project can be in SampleSheet version 2020
+if ( $projcoopinsamplesheet )
+{
+	%assignment=
+	(
+	"Sample ID"                 => "name",
+	"Foreign ID"                => "foreignid",
+	"Pedigree"                  => "pedigree",
+	"Comment"                   => "scomment",
+	"Sex"                       => "sex",
+	"Affected"                  => "saffected",
+	"Organism"                  => "idorganism",
+	"Tissue"                    => "idtissue",
+	"Disease"                   => "iddisease",
+	"Library Type"              => "libtype",
+	"Read Type"                 => "readtype",
+	"Exome Assay"               => "exomeassay",
+	#"Concentration (ng/ul)"     => "snanodrop",
+	#"Volume (ul)"               => "volume",
+	#"A260/280"                  => "a260280",
+	#"Barcode"                   => "sbarcode",
+	#"Plate"                     => "splate",
+	#"Row"                       => "srow",
+	#"Column"                    => "scolumn",
+	#"Analysis"                  => "analysis",
+	"Cooperation"               => "idcooperation",
+	"Project"                   => "idproject"
+	);
+}
+else
+{
+	%assignment=
+	(
+	"Sample ID"                 => "name",
+	"Foreign ID"                => "foreignid",
+	"Pedigree"                  => "pedigree",
+	"Comment"                   => "scomment",
+	"Sex"                       => "sex",
+	"Affected"                  => "saffected",
+	"Organism"                  => "idorganism",
+	"Tissue"                    => "idtissue",
+	"Disease"                   => "iddisease",
+	"Library Type"              => "libtype",
+	"Read Type"                 => "readtype",
+	"Exome Assay"               => "exomeassay"
+	#"Concentration (ng/ul)"     => "snanodrop",
+	#"Volume (ul)"               => "volume",
+	#"A260/280"                  => "a260280",
+	#"Barcode"                   => "sbarcode",
+	#"Plate"                     => "splate",
+	#"Row"                       => "srow",
+	#"Column"                    => "scolumn",
+	#"Analysis"                  => "analysis",
+	#"Cooperation"               => "idcooperation",
+	#"Project"                   => "idproject",
+	);
+}
 
 
 # Load all samples in a transaction, if something fail, fail.
@@ -5430,7 +5472,7 @@ if ($file ne "") {
 }
 
 # If no exit event : commit transaction
-my $sql="COMMIT;";
+my $sql="commit;";
 $dbh->do($sql) || die print "$DBI::errstr";
 
 # If no error and library insertion is selected, give command
@@ -5481,8 +5523,6 @@ $dbh->do($sql) || die print "$DBI::errstr";
 			exit(1);
 		}
 
-		$values{'idcooperation'}=$idcooperation;
-		$values{'idproject'}=$idproject;
 		$values{'analysis'}=$analysis;
 		
 		if ($values{'name'} eq "") {
@@ -5490,13 +5530,13 @@ $dbh->do($sql) || die print "$DBI::errstr";
 			exit(1);
 		}
 
-		if ($values{'idcooperation'} eq "") {
+		if (($values{'idcooperation'} eq "") && (! $projcoopinsamplesheet)) {
 			print "Cooperation missing.<br>";
-			exit(1);
+		#	exit(1);
 		}
-		if ($values{'idproject'} eq "") {
+		if (($values{'idproject'} eq "") && (! $projcoopinsamplesheet)) {
 			print "Project missing.<br>";
-			exit(1);
+		#	exit(1);
 		}
 		if ($values{'idorganism'} eq "") {
 			print "Organism missing.<br>";
@@ -5507,30 +5547,85 @@ $dbh->do($sql) || die print "$DBI::errstr";
 			exit(1);
 		}
 	
-		# Get cooperation
-		$sql = "SELECT idcooperation FROM cooperation
-			WHERE idcooperation = '$values{idcooperation}'",
-		$sth = $dbh->prepare($sql) || die print "$DBI::errstr";
-		$sth->execute() || die print "$DBI::errstr";
-		$tmp = $sth->fetchrow_array;
-		if ($tmp eq "") {
-			print "Cooperation not in database.<br>.";
-			exit();
-		}
-		$values{idcooperation}=$tmp;
 	
-		# Get project
-		$sql = "SELECT idproject, pname FROM project
-			WHERE idproject = '$values{idproject}'",
-		$sth = $dbh->prepare($sql) || die print "$DBI::errstr";
-		$sth->execute() || die print "$DBI::errstr";
-		my ($tmpidproject, $tmpprojectname) = $sth->fetchrow_array;
-		if ($tmpidproject eq "") {
-			print "Project not in database.<br>.";
-			exit();
-		}
-		$values{idproject}=$tmpidproject;
+		my ($tmpidproject, $tmpprojectname, $tmpidcooperation);
+	
+		if ( $projcoopinsamplesheet ) {
+			# Proj / Coop from Samplesheet
+			# Get project
+			$sql = "SELECT idproject, pname, idcooperation FROM project
+				WHERE pdescription = '$values{idproject}'",
+			$sth = $dbh->prepare($sql) || die print "$DBI::errstr";
+			$sth->execute() || die print "$DBI::errstr";
+			($tmpidproject, $tmpprojectname, $tmpidcooperation) = $sth->fetchrow_array;
+			if ($tmpidproject eq "") {
+				print "Project not in database.<br>.";
+				exit();
+			}
+			$values{idproject}=$tmpidproject;
 
+			# If no cooperation provided, pick the default cooperation 
+			if ( $values{idcooperation} eq "" ) {
+				if ( $tmpidcooperation eq "" || $tmpidcooperation eq "NULL" )
+				{
+					print "Please specify cooperation or set default cooperation for project.<br>.";
+					exit();	
+				}
+				$values{idcooperation}=$tmpidcooperation;
+			
+			}
+			else
+			{
+				# TODO: POTENTIAL error where two surnames are equal
+				# Get cooperation
+				$sql = "SELECT idcooperation FROM cooperation
+					WHERE name = '$values{idcooperation}'",
+				$sth = $dbh->prepare($sql) || die print "$DBI::errstr";
+				$sth->execute() || die print "$DBI::errstr";
+				$tmp = $sth->fetchrow_array;
+				if ($tmp eq "") {
+					print "Cooperation not in database.<br>.";
+					exit();
+				}
+				$values{idcooperation}=$tmp;
+				}
+		
+		}
+		else
+		{
+			# Proj / Coop from FORM POST
+						
+			$values{'idcooperation'}=$idcooperation;
+			$values{'idproject'}=$idproject;	
+			
+			# Get project
+			$sql = "SELECT idproject, pname FROM project
+				WHERE idproject = '$values{idproject}'",
+			$sth = $dbh->prepare($sql) || die print "$DBI::errstr";
+			$sth->execute() || die print "$DBI::errstr";
+			($tmpidproject, $tmpprojectname) = $sth->fetchrow_array;
+			if ($tmpidproject eq "") {
+				print "Project not in database.<br>.";
+				exit();
+			}
+			$values{idproject}=$tmpidproject;
+
+	
+			# Get cooperation
+			$sql = "SELECT idcooperation FROM cooperation
+				WHERE idcooperation = '$values{idcooperation}'",
+			$sth = $dbh->prepare($sql) || die print "$DBI::errstr";
+			$sth->execute() || die print "$DBI::errstr";
+			$tmp = $sth->fetchrow_array;
+			if ($tmp eq "") {
+				print "Cooperation not in database.<br>.";
+				exit();
+			}
+			$values{idcooperation}=$tmp;
+			
+		}
+			
+		
 		# Get organism
 		$sql = "SELECT idorganism FROM organism
 			WHERE orname = '$values{idorganism}'",
@@ -5636,6 +5731,8 @@ $dbh->do($sql) || die print "$DBI::errstr";
 			$sth->execute(@values) || die print "$DBI::errstr";
 			$idsample=$sth->{mysql_insertid};
 		}
+
+		print "Inserted into Project: $idproject, cooperation $idcooperation<br>";
 
 		# Get disease
 		if ($diseasename ne "") {
