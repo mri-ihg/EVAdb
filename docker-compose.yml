@@ -1,0 +1,60 @@
+version: '2'
+
+services:
+  db:
+    image: mariadb:latest
+    user: ${CURRENT_UID}
+    container_name: evadb_mariadb
+    environment:
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+    command: --default-authentication-plugin=mysql_native_password --local-infile=ON
+    volumes:
+      - "${DATABASE_DIR}:/var/lib/mysql"
+  evadb_user:
+    build:
+      context: ./docker/snv-hg19p
+    container_name: evadb_docker_user
+    environment:
+      - DB_HOST=db
+      - DB_USER=${MYSQL_USER}
+      - DB_PASSWD=${MYSQL_PASSWORD}
+      - YUBIKEY_ID=${YUBIKEY_ID}
+      - YUBIKEY_APIKEY=${YUBIKEY_APIKEY}
+    volumes:
+      - "${CERT_DIR}:/ssl:ro"
+    ports:
+      - "7443:443"
+  evadb_admin:
+    build:
+      context: ./docker/snvedit
+    container_name: evadb_docker_admin
+    environment:
+      - DB_HOST=db
+      - DB_USER=${MYSQL_USER}
+      - DB_PASSWD=${MYSQL_PASSWORD}
+      - YUBIKEY_ID=${YUBIKEY_ID}
+      - YUBIKEY_APIKEY=${YUBIKEY_APIKEY}
+    volumes:
+      - "${CERT_DIR}:/ssl:ro"
+    ports:
+      - "7444:443"
+  evadb_init:
+    build:
+      context: ./helperscripts
+    container_name: evadb_docker_init
+    environment:
+      - DB_HOST=db
+      - DB_USER=root
+      - DB_PASSWD=${MYSQL_ROOT_PASSWORD}
+      - DB_USER_NONPRIV=${MYSQL_USER}
+      - DB_PASSWD_NONPRIV=${MYSQL_PASSWORD}
+      - INITIAL_USER=${INITIAL_USER}
+      - INITIAL_USER_PASSWD=${INITIAL_USER_PASSWD}
+      - IMPORT_DGV=1
+      - IMPORT_CADD=1
+      - IMPORT_CLINVAR=1
+    volumes:
+      - "${ANNO_DB_DIR}:/library"
+      - "./database:/database:ro"
