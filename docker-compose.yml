@@ -9,7 +9,7 @@ services:
       - MYSQL_USER=${MYSQL_USER}
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
-    command: --default-authentication-plugin=mysql_native_password --local-infile=ON
+    command: --sql_mode="" --default-authentication-plugin=mysql_native_password --local-infile=ON
     volumes:
       - "${DATABASE_DIR}:/var/lib/mysql"
   evadb_user:
@@ -55,6 +55,19 @@ services:
       - IMPORT_DGV=1
       - IMPORT_CADD=1
       - IMPORT_CLINVAR=1
+      - INIT_DB=0
+      - INIT_USER=0
     volumes:
       - "${ANNO_DB_DIR}:/library"
       - "./database:/database:ro"
+  annotation:
+    build:
+      context: ./annotation
+    container_name: evadb_docker_annotation
+    environment:
+      - DB_HOST=db
+      - DB_USER=${MYSQL_USER}
+      - DB_PASSWD=${MYSQL_PASSWORD}
+    volumes:
+      - "/home/brand/data:/data"
+      - "/home/brand/Projects/snakemake-pipeline/library:/library:ro"
