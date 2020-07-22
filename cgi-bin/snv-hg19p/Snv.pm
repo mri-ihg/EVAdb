@@ -6,7 +6,7 @@
 
 use strict;
 package Snv;
-use warnings;
+#use warnings;
 
 ####### change only here #############
 
@@ -34,12 +34,12 @@ my $sv_menu        = 0;
 my $mtdna_menu     = 0;
 my $cgidir         = "";
 my $logindb        = "";
-my $sampledb       = "";
+our $sampledb       = "";
 my $maindb         = "";
 my $rnadb          = "";
 my $rnagenedb      = "";
-my $coredb         = "exomehg19";
-my $exomevcfe      = "";
+our $coredb         = "exomehg19";
+our $exomevcfe      = "";
 my $solexa         = "solexa";
 my $hgmdserver     = "ihgseq13.helmholtz-muenchen.de";
 my $igvserver      = "";
@@ -296,10 +296,10 @@ elsif ($fhcl) {
 	$rnagenedb  = "exomevcf";
 	$mtdna_menu = 0;
 }
-else {
+else { ();
 	exit;
 }
-
+    
 my $hgmito        = "hg38";
 my $dbsnp         = "dbSNP 142";
 my $ucscSite      = "genome-euro";
@@ -1169,6 +1169,7 @@ my $session     = CGI::Session->load($sess_id) or die CGI::Session->errstr;
 		$project .= " p.pname = '$tmp'";
 		$i++;
 	}
+	#$project ="p.pname = 'S0100'";
 	#print "project $project<br>";
 	if ($project ne "") {
 		$query = "
@@ -1188,7 +1189,7 @@ my $session     = CGI::Session->load($sess_id) or die CGI::Session->errstr;
 		push(@allowedprojects,'-999');
 	}
 	#print "$#allowedprojects\n";
-	#print "al @allowedprojects<br>";
+	#print "all @allowedprojects<br>";
 
 return($dbh,$user,$csrfsalt);
 }
@@ -5656,6 +5657,57 @@ $ref = \@AoH;
 return($ref);
 }
 ########################################################################
+# init for report initreport
+########################################################################
+sub initSearchReport {
+my $self         = shift;
+my $sname        = shift;
+my $ref          = "";
+
+
+my @AoH = (
+	  {
+	  	label       => "DNA ID",
+	  	type        => "text",
+		name        => "samplename",
+	  	value       => "",
+		size        => "30",
+		maxlength   => "30",
+	  	bgcolor     => "formbg",
+	  },
+	  {
+	  	label       => "Salutation",
+	  	labels      => "Sehr geehrte Frau Kollegin , Sehr geehrter Herr Kollege, Sehr geehrte KollegInnen",
+	  	type        => "radio",
+		name        => "salutation",
+	  	value       => "kollegin",
+	  	values      => "kollegin, kollege, kolleginnen",
+	  	bgcolor     => "formbg",
+	  },
+	  {
+	  	label       => "CNV filter",
+	  	labels      => "CNV filter, No because of different protocol, No because of bad quality",
+	  	type        => "radio",
+		name        => "cnvfilter",
+	  	value       => "yes",
+	  	values      => "yes, noprotocol, noquality",
+	  	bgcolor     => "formbg",
+	  },
+	  {
+	  	label       => "Write report for<br>likely/pathgenic variants or VUS.<br>Overwrites automatic selection.",
+	  	labels      => "automatically, likely/pathogenic, Variant of unknown significance (VUS)",
+	  	type        => "radio",
+		name        => "userprobability",
+	  	value       => "",
+	  	values      => ", pathogenic, vus",
+	  	bgcolor     => "formbg",
+	  },
+);
+
+$ref = \@AoH;
+return($ref);
+}
+########################################################################
 # init for searchIbs
 ########################################################################
 sub initSearchIbs {
@@ -5788,6 +5840,7 @@ my $query        = "";
 my @AoH          = ();
 
 # changed 2020-01-28 in order to add end position. In order to be able to distinghish CNV with the same start position
+# changed 2020-07-16 in order to add cause (primary disease) and omimphenotype
 
 if ($table eq "wholegenomehg19.variant") {
 $query = "
@@ -5990,8 +6043,44 @@ if ($user eq "tim") {
 	  	labels      => "Unknown, Pathogenic, Likely pathogenic, Unknown significance, Likely benign, Benign",
 	  	type        => "radio",
 		name        => "patho",
-	  	value       => "unkown",
+	  	value       => "unknown",
 		values      => "unknown, pathogenic, likely pathogenic, unknown significance, likely benign, benign",
+	  	bgcolor     => "formbg",
+	  },
+	  {
+	  	label       => "Cause for ...<br>Required for Report<br>and ClinVar submission",
+	  	labels      => "Unknown, Primary disease, Incidental finding",
+	  	type        => "radio",
+		name        => "causefor",
+	  	value       => "unknown",
+		values      => "unknown, primary, incidental",
+	  	bgcolor     => "formbg",
+	  },
+	  {
+	  	label       => "MIM Phenotype (phenotype number, not gene number)<br>Required for Report<br>and ClinVar submission",
+	  	type        => "text",
+		name        => "omimphenotype",
+	  	value       => "",
+		size        => "20",
+		maxlength   => "10",
+	  	bgcolor     => "formbg",
+	  },
+	  {
+	  	label       => "PubMedID if the variant is published<br>Required for ClinVar submission",
+	  	type        => "text",
+		name        => "pmid",
+	  	value       => "",
+		size        => "20",
+		maxlength   => "10",
+	  	bgcolor     => "formbg",
+	  },
+	  {
+	  	label       => "Affected gene symbol",
+	  	type        => "text",
+		name        => "genesymbol",
+	  	value       => "",
+		size        => "80",
+		maxlength   => "150",
 	  	bgcolor     => "formbg",
 	  },
 	  {
@@ -6222,8 +6311,44 @@ else {
 	  	labels      => "Unknown, Pathogenic, Likely pathogenic, Unknown significance, Likely benign, Benign",
 	  	type        => "radio",
 		name        => "patho",
-	  	value       => "unkown",
+	  	value       => "unknown",
 		values      => "unknown, pathogenic, likely pathogenic, unknown significance, likely benign, benign",
+	  	bgcolor     => "formbg",
+	  },
+	  {
+	  	label       => "Cause for ...<br>Required for Report<br>and ClinVar submission",
+	  	labels      => "Unknown, Primary disease, Incidental finding",
+	  	type        => "radio",
+		name        => "causefor",
+	  	value       => "unknown",
+		values      => "unknown, primary, incidental",
+	  	bgcolor     => "formbg",
+	  },
+	  {
+	  	label       => "MIM Phenotype (phenotype number, not gene number)<br>Required for Report<br>and ClinVar submission",
+	  	type        => "text",
+		name        => "omimphenotype",
+	  	value       => "",
+		size        => "20",
+		maxlength   => "10",
+	  	bgcolor     => "formbg",
+	  },
+	  {
+	  	label       => "PubMedID if the variant is published<br>Required for ClinVar submission",
+	  	type        => "text",
+		name        => "pmid",
+	  	value       => "",
+		size        => "20",
+		maxlength   => "10",
+	  	bgcolor     => "formbg",
+	  },
+	  {
+	  	label       => "Affected gene symbol",
+	  	type        => "text",
+		name        => "genesymbol",
+	  	value       => "",
+		size        => "80",
+		maxlength   => "150",
 	  	bgcolor     => "formbg",
 	  },
 	  {
@@ -6269,7 +6394,8 @@ my $csrf_token = $ref->{wwwcsrf};
 my $status = check_csrf_token($user, $csrfsalt, $csrf_token,\%options);
 die "Wrong CSRF token" unless ($status == CSRF_OK);
 delete($ref->{wwwcsrf});
-
+$ref->{omimphenotype} =~ s/\#//;
+$ref->{omimphenotype} =~ s/\s+//;
 
 @values = ($ref->{'idsample'},$ref->{'idsnv'});
 $sql = "
@@ -6477,8 +6603,8 @@ my @AoH = (
 	  	bgcolor     => "formbg",
 	  },
 	  {
-	  	label       => "MIM phenotype (values must be diseases, but not genes)",
-	  	type        => "text",
+	  	label       => "MIM phenotype (values must be diseases, but not genes)<br>Use the new fields in the comment form",
+	  	type        => "readonly2",
 		name        => "omimphenotype",
 	  	value       => "",
 		size        => "20",
@@ -6486,8 +6612,8 @@ my @AoH = (
 	  	bgcolor     => "formbg",
 	  },
 	  {
-	  	label       => "PubMedID if the case is published",
-	  	type        => "text",
+	  	label       => "PubMedID if the case is published<br>Use the new fields in the comment form",
+	  	type        => "readonly2",
 		name        => "pmid",
 	  	value       => "",
 		size        => "20",
@@ -6496,7 +6622,7 @@ my @AoH = (
 	  },
 	  {
 	  	label       => "Affected gene symbol",
-	  	type        => "text",
+	  	type        => "readonly2",
 		name        => "genesymbol",
 	  	value       => "",
 		size        => "80",
@@ -6938,6 +7064,8 @@ my $csrf_token = $ref->{wwwcsrf};
 my $status = check_csrf_token($user, $csrfsalt, $csrf_token,\%options);
 die "Wrong CSRF token" unless ($status == CSRF_OK);
 delete($ref->{wwwcsrf});
+$ref->{omimphenotype} =~ s/\#//;
+$ref->{omimphenotype} =~ s/\s+//;
 
 
 @values = ($ref->{'idsample'});
@@ -15340,7 +15468,7 @@ print "</tbody></table>";
 #statistics
 #determine number exomes
 
-if ($test == 1) {
+if (($test == 1) or ($user eq "weishaupt")) {
 
 print "<br><br>All samples";
 $query=qq#
@@ -18915,9 +19043,9 @@ s.saffected,
 d.name,
 c.name,
 cl.solved,
-cl.genesymbol,
-cl.omimphenotype,
-cl.pmid,
+GROUP_CONCAT(DISTINCT co.genesymbol SEPARATOR " "),
+GROUP_CONCAT(DISTINCT co.omimphenotype SEPARATOR " "),
+GROUP_CONCAT(DISTINCT co.pmid SEPARATOR " "),
 cl.conclusion,
 cl.comment,
 s.entered,
@@ -18928,8 +19056,8 @@ datediff(cl.indate,s.entered),
 cl.changedate,
 GROUP_CONCAT(DISTINCT '<a href="listPosition.pl?idsnv=', v.idsnv,'" title="All carriers of this variant">',g.genesymbol,'</a>',
  ', ',v.class, ', ', co.genotype, ', ', co.inheritance, ', ', co.patho, if(co.clinvardate>"0000-00-00", concat(", ",co.clinvardate),"") SEPARATOR " <br>"),
-GROUP_CONCAT(h.hpo SEPARATOR " <br>"),
-GROUP_CONCAT(h.symptoms SEPARATOR " <br>"),
+GROUP_CONCAT(DISTINCT h.hpo SEPARATOR " <br>"),
+GROUP_CONCAT(DISTINCT h.symptoms SEPARATOR " <br>"),
 s.idsample
 FROM
 $sampledb.sample s 
@@ -18945,6 +19073,7 @@ LEFT  JOIN gene                      g ON g.idgene = y.idgene
 LEFT  JOIN $exomevcfe.hpo            h ON s.idsample = h.idsample
 $where
 AND $allowedprojects
+AND (h.active=1 OR ISNULL(h.active))
 GROUP BY s.idsample
 ORDER BY
 $order
@@ -21191,7 +21320,7 @@ $out->execute(@values2) || die print "$DBI::errstr";
 	'Disease',
 	'Project',
 	'Status',
-	'No to<br>sequence',
+	'Not to<br>sequence',
 	'Cooperation',
 	'Comment',
 	'Entered',
@@ -23468,6 +23597,7 @@ print qq(
 <td align="center" class="header"><a class="$login" href="login.pl">Login / Logout</a></td>
 <td align="center" class="header"><a class="$importHPO"  href="importHPO.pl">Import HPO</a></td>
 <td align="center" class="header"><a class="$searchHPO"  href="searchHPO.pl">Search HPO</a></td>
+<td align="center" class="header"><a class="$report" href="report.pl">Report</a></td>
 );
 
 if ($role eq "admin") {
@@ -23479,7 +23609,6 @@ print qq(
 
 if ($test) {
 print qq(
-<td align="center" class="header"><a class="$report" href="report.pl">Report</a></td>
 );
 }
 

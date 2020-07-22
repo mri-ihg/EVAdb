@@ -6,10 +6,12 @@
 
 use strict;
 BEGIN {require './Snv.pm';}
+BEGIN {require './Report.pm';}
 
 my $cgi          = new CGI;
 my $ref          = $cgi->Vars;
 my $snv          = new Snv;
+my $report       = new Report;
 
 ########################################################################
 # main
@@ -18,12 +20,12 @@ my $snv          = new Snv;
 $snv->printHeader();
 my ($dbh) = $snv->loadSessionId();
 
-#$ref = $snv->htmlencodehash($ref);
+$ref = $snv->htmlencodehash($ref);
 
 $snv->showMenu('report');
 print "<span class=\"big\">Report</span><br><br>" ;
 
-$snv->report($dbh,$ref);
+$report->report($dbh,$ref);
 
 $dbh->disconnect;
 
