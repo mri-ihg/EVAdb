@@ -141,4 +141,4 @@ echo "insert into exomehg19.gene (genesymbol) ( select name2 from hg19.wgEncodeG
 # fill coding sequence table (required for annotation)
 # NOTE: in this configuration runs only for the default knownGene table
 # This step takes some hours
-./cdsdb.pl
+./cdsdb.pl -se hg19_plus
