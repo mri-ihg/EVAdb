@@ -7,9 +7,10 @@
 #cron
 #0 6 * * 1   <path>/ClinVarForCron.sh  
 
-scriptdir= .
-user=<user>
-password=<password>
+scriptdir=/src/ClinVarImport
+host="$DB_HOST"
+user="$DB_USER"
+password="$DB_PASSWD"
 
 #download
 wget ftp://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh37/clinvar.vcf.gz -O $scriptdir/clinvar.vcf.gz
@@ -25,7 +26,7 @@ fi;
 $scriptdir/parse_vcf.pl
 
 # create table exomehg19.clinvar
-mysql -u $user -p$password hg19 < $scriptdir/clinvar.sql
+mysql -h $host -u $user -p$password hg19 < $scriptdir/clinvar.sql
 
 # import data into clinvar table
-mysqlimport -u $user -p$password -L hg19 $scriptdir/clinvar.txt
+mysqlimport -h $host -u $user -p$password -L hg19 $scriptdir/clinvar.txt

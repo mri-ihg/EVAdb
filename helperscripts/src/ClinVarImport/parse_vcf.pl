@@ -27,7 +27,7 @@ my @clnacc       = ();
 my @clnsig       = ();
 my @clnsigconf   = ();
 my $clnsigout    = "";
-my $scriptdir    = "/home/tim/database/ClinVarForCron";
+my $scriptdir    = "/src/ClinVarImport";
 
 
 open(IN ,"$scriptdir/clinvar.vcf");

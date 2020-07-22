@@ -52,8 +52,9 @@ services:
       - DB_PASSWD_NONPRIV=${MYSQL_PASSWORD}
       - INITIAL_USER=${INITIAL_USER}
       - INITIAL_USER_PASSWD=${INITIAL_USER_PASSWD}
-      - IMPORT_DGV=1
-      - IMPORT_CADD=1
+      - IMPORT_DBNSFP=0
+      - IMPORT_DGV=0
+      - IMPORT_CADD=0
       - IMPORT_CLINVAR=1
       - INIT_DB=0
       - INIT_USER=0
@@ -70,4 +71,4 @@ services:
       - DB_PASSWD=${MYSQL_PASSWORD}
     volumes:
       - "/home/brand/data:/data"
-      - "/home/brand/Projects/snakemake-pipeline/library:/library:ro"
+      - "/home/brand/Projects/snakemake-pipeline/library:/library"
