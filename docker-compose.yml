@@ -25,7 +25,7 @@ services:
     volumes:
       - "${CERT_DIR}:/ssl:ro"
     ports:
-      - "7443:443"
+      - "443:443"
   evadb_admin:
     build:
       context: ./docker/snvedit
@@ -39,7 +39,7 @@ services:
     volumes:
       - "${CERT_DIR}:/ssl:ro"
     ports:
-      - "7444:443"
+      - "8443:443"
   evadb_init:
     build:
       context: ./helperscripts
@@ -52,22 +52,12 @@ services:
       - DB_PASSWD_NONPRIV=${MYSQL_PASSWORD}
       - INITIAL_USER=${INITIAL_USER}
       - INITIAL_USER_PASSWD=${INITIAL_USER_PASSWD}
-      - IMPORT_DGV=1
-      - IMPORT_CADD=1
+      - IMPORT_DGV=0
+      - IMPORT_DBNSFP=0
+      - IMPORT_CADD=0
       - IMPORT_CLINVAR=1
       - INIT_DB=0
       - INIT_USER=0
     volumes:
       - "${ANNO_DB_DIR}:/library"
       - "./database:/database:ro"
-  annotation:
-    build:
-      context: ./annotation
-    container_name: evadb_docker_annotation
-    environment:
-      - DB_HOST=db
-      - DB_USER=${MYSQL_USER}
-      - DB_PASSWD=${MYSQL_PASSWORD}
-    volumes:
-      - "/home/brand/data:/data"
-      - "/home/brand/Projects/snakemake-pipeline/library:/library:ro"
