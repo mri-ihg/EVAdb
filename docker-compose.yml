@@ -25,7 +25,7 @@ services:
     volumes:
       - "${CERT_DIR}:/ssl:ro"
     ports:
-      - "7443:443"
+      - "443:443"
   evadb_admin:
     build:
       context: ./docker/snvedit
@@ -39,7 +39,7 @@ services:
     volumes:
       - "${CERT_DIR}:/ssl:ro"
     ports:
-      - "7444:443"
+      - "8443:443"
   evadb_init:
     build:
       context: ./helperscripts
@@ -61,6 +61,8 @@ services:
     volumes:
       - "${ANNO_DB_DIR}:/library"
       - "./database:/database:ro"
+<<<<<<< HEAD
+=======
   annotation:
     build:
       context: ./annotation
@@ -72,3 +74,4 @@ services:
     volumes:
       - "/home/brand/data:/data"
       - "/home/brand/Projects/snakemake-pipeline/library:/library"
+>>>>>>> a4846c9ea1d3a14a7e34f4b5361d2cf3efbfdfe5

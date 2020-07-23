@@ -12,8 +12,9 @@ host="$DB_HOST"
 user="$DB_USER"
 password="$DB_PASSWD"
 
+
 #download
-wget ftp://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh37/clinvar.vcf.gz -O $scriptdir/clinvar.vcf.gz
+wget https://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh37/clinvar.vcf.gz -O $scriptdir/clinvar.vcf.gz
 gunzip -f $scriptdir/clinvar.vcf.gz
 if [ "$?" != "0" ]
 then
