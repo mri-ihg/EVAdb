@@ -29,7 +29,7 @@ ENV IMPORT_GNOMAD 1
 ENV IMPORT_DGV 1
 ENV IMPORT_CLINVAR 1
 ENV IMPORT_UCSC 1
-
+ENV IMPORT_CDSDB 1
 
 ##
 # Install Binaries and create directories

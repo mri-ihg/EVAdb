@@ -84,10 +84,10 @@ if [[ $IMPORT_UCSC = "1" ]]; then
 fi
 
 if [[ $IMPORT_CDSDB = "1" ]]; then
-  echo -e "Import coding sequenc table..."
+  echo -e "Import coding sequence table..."
 
   REFERENCE=$(ls /library/*.fasta)
-  sed -ie "s:/PATHTO/hg19/chromosome/hg19.fa:/library/$REFERENCE:g" /src/annotation/current.config.xml
+  sed -ie "s:<reference>.*</reference>:<reference>$REFERENCE</reference>:g" /src/annotation/current.config.xml
 
   time perl /src/annotation/cdsdb.pl -se hg19_plus
 fi
