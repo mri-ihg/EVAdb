@@ -484,7 +484,7 @@ my $genefunction = "<i>$vepgene[$i]</i> kodiert f&uuml;r ein Protein $xxx.";
 my $diagnosis = "";
 if ($omimnumber[$i] ne "") {
 $diagnosis = "Varianten in diesem Gen sind mit der $mode_of_inheritance vererbten Erkrankung 
-\"$omimdisease[$i]\" (OMIM \#$omimnumber[$i]) assoziert worden.";
+\"$omimdisease[$i]\" (OMIM \#$omimnumber[$i]) assoziiert worden.";
 }
 else {
 $diagnosis = "$xxx Varianten in diesem Gen sind im Zusammenhang mit $xxx beschrieben (PMID; $xxx). Diese Erkrankung ist nicht in OMIM gelistet.";
@@ -567,10 +567,10 @@ if ($omimnumber[$i] ne "") {
 }
 else {
 	if ($probability2 eq "unklar") {
-		$diagnosis = "Unklarer Befund: Verdacht auf \"<i>$vepgene[0]</i>-assozierte Erkrankung\" (nicht in OMIM gelistet)";
+		$diagnosis = "Unklarer Befund: Verdacht auf \"<i>$vepgene[0]</i>-assoziierte Erkrankung\" (nicht in OMIM gelistet)";
 	}
 	else {
-		$diagnosis = "Diagnose: \"<i>$vepgene[0]</i>-assozierte Erkrankung\" (nicht in OMIM gelistet)";
+		$diagnosis = "Diagnose: \"<i>$vepgene[0]</i>-assoziierte Erkrankung\" (nicht in OMIM gelistet)";
 	}
 }
 
