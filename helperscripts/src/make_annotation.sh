@@ -2,11 +2,12 @@
 
 echo "Importing annotation databases..."
 
+ESC_PWD=$(echo "${DB_PASSWD}" | sed -e 's/[](&|$|\|{|}).*[\^]/\\&/g')  
 sed -ie "s/SERVER13/${DB_HOST}/g" /src/annotation/current.config.xml
 sed -ie "s:<host>localhost</host>:<host>${DB_HOST}</host>:g" /src/annotation/current.config.xml
 sed -ie "s/DBPORT/3306/g" /src/annotation/current.config.xml
 sed -ie "s/DBUSER/${DB_USER}/g" /src/annotation/current.config.xml
-sed -ie "s/DBPWD/${DB_PASSWD}/g" /src/annotation/current.config.xml
+sed -ie "s/DBPWD/${ESC_PWD}/g" /src/annotation/current.config.xml
 
 DBNSFP="/library/dbNSFP${DBNSFP_VERSION}.zip"
 CADD="/library/whole_genome_SNVs.tsv.gz"
@@ -54,18 +55,18 @@ fi
 
 if [[ $IMPORT_UCSC = "1" ]]; then
   echo -e "Import UCSC tables for hg 19..."
-  mysqldump --lock-tables=false --user=genomep --password=password --host=genome-mysql.cse.ucsc.edu hg19 knownGene kgXref knownGenePep refGene | mysql -h $DB_HOST -u $DB_USER -p${DB_PASSWD} hg19
-  echo "delete from hg19.knownGene where chrom='chrM';" | mysql -h $DB_HOST -u $DB_USER -p${DB_PASSWD} hg19
-  mysqldump --lock-tables=false --user=genomep --password=password --host=genome-mysql.cse.ucsc.edu hg38 wgEncodeGencodeBasicV20 | mysql -h $DB_HOST -u $DB_USER -p${DB_PASSWD} hg19
+  mysqldump --lock-tables=false --user=genomep --password=password --host=genome-mysql.cse.ucsc.edu hg19 knownGene kgXref knownGenePep refGene | mysql -h $DB_HOST -u $DB_USER -p"${DB_PASSWD}" hg19
+  echo "delete from hg19.knownGene where chrom='chrM';" | mysql -h $DB_HOST -u $DB_USER -p"${DB_PASSWD}" hg19
+  mysqldump --lock-tables=false --user=genomep --password=password --host=genome-mysql.cse.ucsc.edu hg38 wgEncodeGencodeBasicV20 | mysql -h $DB_HOST -u $DB_USER -p"${DB_PASSWD}" hg19
 
-  echo "CREATE VIEW knownGeneSymbol AS select kg.name AS name,kg.chrom AS chrom,kg.strand AS strand,kg.txStart AS txStart,kg.txEnd AS txEnd,kg.cdsStart AS cdsStart,kg.cdsEnd AS cdsEnd,kg.exonCount AS exonCount,kg.exonStarts AS exonStarts,kg.exonEnds AS exonEnds,kg.proteinID AS proteinID,kg.alignID AS alignID,x.geneSymbol AS geneSymbol from (knownGene kg join kgXref x on((x.kgID = kg.name)))" | mysql -h $DB_HOST -u $DB_USER -p${DB_PASSWD} hg19
-  echo "insert into gene (geneSymbol,nonsynpergene,delpergene) select distinct replace(geneSymbol , ' ','_'),0,0 from hg19.knownGeneSymbol;" | mysql -h $DB_HOST -u $DB_USER -p${DB_PASSWD} exomehg19plus
-  echo "insert into gene (geneSymbol,nonsynpergene,delpergene) select distinct replace(name2 , ' ','_'),0,0 from hg19.refGene;" | mysql -h $DB_HOST -u $DB_USER -p${DB_PASSWD} exomehg19
-  echo "insert into transcript (idgene,name,chrom,exonStarts,exonEnds) select (select idgene from exomehg19.gene where geneSymbol=replace(r.name2 , ' ','_')),name,chrom,exonStarts,exonEnds from hg19.refGene r where cdsEnd>cdsStart;" | mysql -h $DB_HOST -u $DB_USER -p${DB_PASSWD} exomehg19
+  echo "CREATE VIEW knownGeneSymbol AS select kg.name AS name,kg.chrom AS chrom,kg.strand AS strand,kg.txStart AS txStart,kg.txEnd AS txEnd,kg.cdsStart AS cdsStart,kg.cdsEnd AS cdsEnd,kg.exonCount AS exonCount,kg.exonStarts AS exonStarts,kg.exonEnds AS exonEnds,kg.proteinID AS proteinID,kg.alignID AS alignID,x.geneSymbol AS geneSymbol from (knownGene kg join kgXref x on((x.kgID = kg.name)))" | mysql -h $DB_HOST -u $DB_USER -p"${DB_PASSWD}" hg19
+  echo "insert into gene (geneSymbol,nonsynpergene,delpergene) select distinct replace(geneSymbol , ' ','_'),0,0 from hg19.knownGeneSymbol;" | mysql -h $DB_HOST -u $DB_USER -p"${DB_PASSWD}" exomehg19plus
+  echo "insert into gene (geneSymbol,nonsynpergene,delpergene) select distinct replace(name2 , ' ','_'),0,0 from hg19.refGene;" | mysql -h $DB_HOST -u $DB_USER -p"${DB_PASSWD}" exomehg19
+  echo "insert into transcript (idgene,name,chrom,exonStarts,exonEnds) select (select idgene from exomehg19.gene where geneSymbol=replace(r.name2 , ' ','_')),name,chrom,exonStarts,exonEnds from hg19.refGene r where cdsEnd>cdsStart;" | mysql -h $DB_HOST -u $DB_USER -p"${DB_PASSWD}" exomehg19
 
   # add the mitochondrial genome from hg38
-  echo "insert into exomehg19plus.gene (genesymbol) ( select name2 from hg19.wgEncodeGencodeBasicV20 where chrom='chrM' group by name2);" | mysql -h $DB_HOST -u $DB_USER -p${DB_PASSWD} exomehg19plus
-  echo "insert into exomehg19.gene (genesymbol) ( select name2 from hg19.wgEncodeGencodeBasicV20 where chrom='chrM' group by name2);" | mysql -h $DB_HOST -u $DB_USER -p${DB_PASSWD} exomehg19
+  echo "insert into exomehg19plus.gene (genesymbol) ( select name2 from hg19.wgEncodeGencodeBasicV20 where chrom='chrM' group by name2);" | mysql -h $DB_HOST -u $DB_USER -p"${DB_PASSWD}" exomehg19plus
+  echo "insert into exomehg19.gene (genesymbol) ( select name2 from hg19.wgEncodeGencodeBasicV20 where chrom='chrM' group by name2);" | mysql -h $DB_HOST -u $DB_USER -p"${DB_PASSWD}" exomehg19
 fi
 
 if [[ $IMPORT_CDSDB = "1" ]]; then
