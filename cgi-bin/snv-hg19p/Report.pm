@@ -320,10 +320,116 @@ my $td_left_t  = "style='text-align:left;font-family:Arial;font-size:8pt;border-
 my $td_left_b  = "style='text-align:left;font-family:Arial;font-size:8pt;border-top:0;border-bottom:1px solid black;border-left:0;border-right:0;'";
 my $td_left_wo = "style='text-align:left;font-family:Arial;font-size:8pt;border-top:0;border-bottom:0;border-left:0;border-right:0;'";
 my $left       = "style='text-align:left;font-family:Arial;font-size:9pt;margin-bottom:0pt;margin-top:4pt'";
+my $left8      = "style='text-align:left;font-family:Arial;font-size:8pt;margin-bottom:0pt;margin-top:4pt'";
 my $justify    = "style='text-align:justify;font-family:Arial;font-size:9pt;margin-bottom:0pt;margin-top:4pt'";
 my $justify0   = "style='text-align:justify;font-family:Arial;font-size:9pt;margin-bottom:0pt;margin-top:0pt'";
 my $sup        = "style='font-family:Arial;font-size:75%;'";
 my $xxx        = "<span style='color:red'>xxx</span>";
+
+my $help = qq#
+{
+"Prename"         : "Vorname",
+"Name"            : "Nachname",
+"Birth"           : "Geburtstag",
+"Received"        : "Eingang",
+"Mother_Name"     : "Mutter",
+"Mother_Prename"  : "Muttervorname",
+"Mother_Birth"    : "Geburtstag",
+"Mother_Received" : "Eingang",
+"Father_Name"     : "Vater",
+"Father_Prename"  : "Vatervorname",
+"Father_Birth"    : "Geburtstag",
+"Father_Received" : "Eingang",
+"Synopsis"        : "Synopse",
+"Casehistory"     : "Anamnese",
+"Prevfindings"    : "Vorbefunde",
+"Indication"      : "Indikation"
+}
+#;
+
+print qq#
+<script type="text/javascript">
+  function loadFile() {
+    var input, file, fr;
+
+    if (typeof window.FileReader !== 'function') {
+      alert("The file API isn't supported on this browser yet.");
+      return;
+    }
+
+    input = document.getElementById('fileinput');
+    if (!input) {
+      alert("Um, couldn't find the fileinput element.");
+    }
+    else if (!input.files) {
+      alert("This browser doesn't seem to support the `files` property of file inputs.");
+    }
+    else if (!input.files[0]) {
+      alert("Please select a file before clicking 'Load'");
+    }
+    else {
+      file = input.files[0];
+      fr = new FileReader();
+      fr.onload = receivedText;
+      fr.readAsText(file);
+    }
+
+    function receivedText(e) {
+	let lines = e.target.result;
+	var newArr = JSON.parse(lines); 
+	if (document.querySelector(".prename").innerHTML !== null) {
+	document.querySelector(".prename").innerHTML   = newArr.Prename;
+	}
+	if (document.querySelector(".prename2").innerHTML !== null) {
+	document.querySelector(".prename2").innerHTML   = newArr.Prename;
+	}
+	if (document.querySelector(".prename3").innerHTML !== null) {
+	document.querySelector(".prename3").innerHTML   = newArr.Prename;
+	}
+	document.querySelector(".name").innerHTML      = newArr.Name.concat(', ', newArr.Prename);
+	document.querySelector(".birth").innerHTML     = newArr.Birth;
+	document.querySelector(".received").innerHTML  = newArr.Received;
+	if (document.querySelector(".mname").innerHTML !== null) {
+	document.querySelector(".mname").innerHTML     = newArr.Mother_Name.concat(', ', newArr.Mother_Prename);
+	}
+	if (document.querySelector(".mbirth").innerHTML !== null) {
+	document.querySelector(".mbirth").innerHTML    = newArr.Mother_Birth;
+	}
+	if (document.querySelector(".mreceived").innerHTML !== null) {
+	document.querySelector(".mreceived").innerHTML = newArr.Mother_Received;
+	}
+	if (document.querySelector(".fname").innerHTML !== null) {
+	document.querySelector(".fname").innerHTML     = newArr.Father_Name.concat(', ', newArr.Father_Prename);
+	}
+	if (document.querySelector(".fbirth").innerHTML !== null) {
+	document.querySelector(".fbirth").innerHTML    = newArr.Father_Birth;
+	}
+	if (document.querySelector(".freceived").innerHTML !== null) {
+	document.querySelector(".freceived").innerHTML = newArr.Father_Received;
+	}
+ 	if (document.querySelector(".synopsis").innerHTML !== null) {
+	document.querySelector(".synopsis").innerHTML = newArr.Synopsis;
+	}
+	if (document.querySelector(".casehistory").innerHTML !== null) {
+	document.querySelector(".casehistory").innerHTML = newArr.Casehistory;
+	}
+	if (document.querySelector(".prevfindings").innerHTML !== null) {
+	document.querySelector(".prevfindings").innerHTML = newArr.Prevfindings;
+	}
+	if (document.querySelector(".indication").innerHTML !== null) {
+	document.querySelector(".indication").innerHTML = newArr.Indication;
+	}
+   }
+  }
+</script>
+#;
+print qq#
+<form id="jsonFile" name="jsonFile" enctype="multipart/form-data" method="post">
+    <h2>Insert personal data</h2>
+     <input type='file' id='fileinput'>
+     <input type='button' id='btnLoad' value='Load' onclick='loadFile();' title='$help'>
+</form>
+#;
 
 my $mode             = "";
 my $mode_of_inheritance = "";
@@ -489,9 +595,9 @@ $diagnosis = "Varianten in diesem Gen sind mit der $mode_of_inheritance vererbte
 else {
 $diagnosis = "$xxx Varianten in diesem Gen sind im Zusammenhang mit $xxx beschrieben (PMID; $xxx). Diese Erkrankung ist nicht in OMIM gelistet.";
 }
-my $conclusion = "Klinische Ph&auml;notypen beschriebener Patienten stimmen mit denen von $xxx &uuml;berein (PMID: $xxx).
+my $conclusion = qq#Klinische Ph&auml;notypen beschriebener Patienten stimmen mit denen von <span class="prename2"></span> $xxx &uuml;berein (PMID: $xxx).
 In Zusammenschau der Befunde ist nach unserer Einsch&auml;tzung eine urs&auml;chliche Assoziation der identifizierten Variante/n mit der Erkrankung 
-von $xxx $probability2. $probability1";
+von <span class="prename3"></span> $xxx $probability2. $probability1#;
 
 print qq#
 <p $left><b>Beurteilung</b></p>
@@ -519,32 +625,32 @@ else {
 
 print qq#
 <table style='width:$width;border-collapse:collapse;border-right:0;'>
-<tr><td $td_left_t width="28%">Name,Vorname</td><td $td_left_t width="44%"></td><td $td_left_t width="12%">Material</td><td $td_left_t width="16%">EDTA-Blut</td></tr> 
-<tr><td $td_left_wo>Geburtsdatum</td><td $td_left_wo></td><td $td_left_wo>Eingang</td><td $td_left_wo></td></tr> 
+<tr><td $td_left_t width="28%">Name,Vorname</td><td $td_left_t width="44%"><span $left8 class="name"></span></td><td $td_left_t width="12%">Material</td><td $td_left_t width="16%">EDTA-Blut</td></tr> 
+<tr><td $td_left_wo>Geburtsdatum</td><td $td_left_wo><span $left8 class="birth"></span></td><td $td_left_wo>Eingang</td><td $td_left_wo><span $left8 class="received"></span></td></tr> 
 <tr><td $td_left_wo>Geschlecht</td><td $td_left_wo>$sex_g</td><td $td_left_wo>DNA-ID</td><td $td_left_wo>$samplename</td></tr> 
 <tr><td $td_left_b>Ph&auml;notyp</td><td $td_left_b>$affected (Index)</td><td $td_left_b>Alias-ID</td><td $td_left_b>$foreignid</td></tr> 
 #;
 if ($mother ne "") {
 print qq#
-<tr><td $td_left_t width="28%">Name,Vorname</td><td $td_left_t width="44%"></td><td $td_left_t width="12%">Material</td><td $td_left_t width="16%">EDTA-Blut</td></tr> 
-<tr><td $td_left_wo>Geburtsdatum</td><td $td_left_wo></td><td $td_left_wo>Eingang</td><td $td_left_wo></td></tr> 
+<tr><td $td_left_t width="28%">Name,Vorname</td><td $td_left_t width="44%"><span $left8 class="mname"></span></td><td $td_left_t width="12%">Material</td><td $td_left_t width="16%">EDTA-Blut</td></tr> 
+<tr><td $td_left_wo>Geburtsdatum</td><td $td_left_wo><span $left8 class="mbirth"></span></td><td $td_left_wo>Eingang</td><td $td_left_wo><span $left8 class="mreceived"></span></td></tr> 
 <tr><td $td_left_wo>Geschlecht</td><td $td_left_wo>weiblich</td><td $td_left_wo>DNA-ID</td><td $td_left_wo>$mother</td></tr> 
 <tr><td $td_left_b>Ph&auml;notyp</td><td $td_left_b>$f_affected (Mutter)</td><td $td_left_b>Alias-ID</td><td $td_left_b>$f_foreignid</td></tr> 
 #;
 }
 if ($father ne "") {
 print qq#
-<tr><td $td_left_t width="28%">Name,Vorname</td><td $td_left_t width="44%"></td><td $td_left_t width="12%">Material</td><td $td_left_t width="16%">EDTA-Blut</td></tr> 
-<tr><td $td_left_wo>Geburtsdatum</td><td $td_left_wo></td><td $td_left_wo>Eingang</td><td $td_left_wo></td></tr> 
+<tr><td $td_left_t width="28%">Name,Vorname</td><td $td_left_t width="44%"><span $left8 class="fname"></span></td><td $td_left_t width="12%">Material</td><td $td_left_t width="16%">EDTA-Blut</td></tr> 
+<tr><td $td_left_wo>Geburtsdatum</td><td $td_left_wo><span $left8 class="fbirth"></span></td><td $td_left_wo>Eingang</td><td $td_left_wo><span $left8 class="freceived"></span></td></tr> 
 <tr><td $td_left_wo>Geschlecht</td><td $td_left_wo>m&auml;nnlich</td><td $td_left_wo>DNA-ID</td><td $td_left_wo>$father</td></tr> 
 <tr><td $td_left_b>Ph&auml;notyp</td><td $td_left_b>$m_affected (Vater)</td><td $td_left_b>Alias-ID</td><td $td_left_b>$m_foreignid</td></tr> 
 #;
 }
 print qq#
-<tr><td $td_left>Synopse</td><td colspan="3" $td_left></td></tr> 
-<tr><td $td_left>Familienanamnese</td><td colspan="3" $td_left></td></tr> 
-<tr><td $td_left>Genet. Vorbefunde</td><td colspan="3" $td_left></td></tr> 
-<tr><td $td_left>Indikation</td><td colspan="3" $td_left></td></tr> 
+<tr><td $td_left>Synopse</td><td colspan="3" $td_left><span $left8 class="synopsis"></td></tr> 
+<tr><td $td_left>Familienanamnese</td><td colspan="3" $td_left><span $left8 class="casehistory"></td></tr> 
+<tr><td $td_left>Genet. Vorbefunde</td><td colspan="3" $td_left><span $left8 class="prevfindings"></td></tr> 
+<tr><td $td_left>Indikation</td><td colspan="3" $td_left><span $left8 class="indication"></td></tr> 
 <tr><td $td_left>Klinische Suchbegriffe</td><td colspan="3" $td_left>$clinical</td></tr> 
 <tr><td $td_left>HPO-Termini</td><td colspan="3" $td_left>$hpo</td></tr> 
 <tr><td $td_left>Auswertung</td><td $td_left></td><td $td_left>Datum</td><td $td_left>$todaysdate</td></tr> 
@@ -679,7 +785,7 @@ $eltern = "und seiner Eltern" if (($sex eq "male") and ($mother ne ""));
 $eltern = "und ihrer Eltern" if (($sex eq "female") and ($mother ne ""));
 print qq#
 <p $left><br><br>$salutation,</p>
-<p $justify>wir bedanken uns f&uuml;r die Zusendung der Blutproben von <span style='color:red'>xxx</span> $eltern zur diagnostischen Exomsequenzierung.</p>
+<p $justify>wir bedanken uns f&uuml;r die Zusendung der Blutproben von <span class="prename"></span> <span style='color:red'>xxx</span> $eltern zur diagnostischen Exomsequenzierung.</p>
 <p $left><b>Ergebnis</b></p>
 <p $justify>Die in den Exomdaten des Patienten identifizierten Varianten wurden unter Ber&uuml;cksichtigung verschiedener Vererbungsformen und 
 Analyseverfahren ausgewertet.</p>
