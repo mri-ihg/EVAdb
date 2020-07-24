@@ -328,22 +328,24 @@ my $xxx        = "<span style='color:red'>xxx</span>";
 
 my $help = qq#
 {
-"Prename"         : "Vorname",
-"Name"            : "Nachname",
-"Birth"           : "Geburtstag",
-"Received"        : "Eingang",
-"Mother_Name"     : "Mutter",
-"Mother_Prename"  : "Muttervorname",
-"Mother_Birth"    : "Geburtstag",
-"Mother_Received" : "Eingang",
-"Father_Name"     : "Vater",
-"Father_Prename"  : "Vatervorname",
-"Father_Birth"    : "Geburtstag",
-"Father_Received" : "Eingang",
-"Synopsis"        : "Synopse",
-"Casehistory"     : "Anamnese",
-"Prevfindings"    : "Vorbefunde",
-"Indication"      : "Indikation"
+"Prename"             : "Vorname",
+"Name"                : "Nachname",
+"Birth"               : "Geburtstag",
+"Received"            : "Eingang",
+"Mother_Name"         : "Mutter",
+"Mother_Prename"      : "Muttervorname",
+"Mother_Birth"        : "Geburtstag",
+"Mother_Received"     : "Eingang",
+"Father_Name"         : "Vater",
+"Father_Prename"      : "Vatervorname",
+"Father_Birth"        : "Geburtstag",
+"Father_Received"     : "Eingang",
+"Synopsis"            : "Synopse",
+"Casehistory"         : "Anamnese",
+"Prevfindings"        : "Vorbefunde",
+"Indication"          : "Indikation",
+"Referring_clinician" : "Frau/Herr Dr.",
+"Secondary_address"   : "Frau/Herr Dr."
 }
 #;
 
@@ -376,7 +378,21 @@ print qq#
 
     function receivedText(e) {
 	let lines = e.target.result;
+	lines = lines.replace("[", "");
+	lines = lines.replace("]", "");
 	var newArr = JSON.parse(lines); 
+	if (newArr.Referring_clinician === undefined) {
+		newArr.Referring_clinician = "";
+	}
+	else {
+		newArr.Referring_clinician = newArr.Referring_clinician.replace(/\\n/g, "<br>");
+	}
+	if (newArr.Secondary_address === undefined) {
+		newArr.Secondary_address = "";
+	}
+	else {
+		newArr.Secondary_address = newArr.Secondary_address.replace(/\\n/g, "<br>");
+	}
 	if (document.querySelector(".prename").innerHTML !== null) {
 	document.querySelector(".prename").innerHTML   = newArr.Prename;
 	}
@@ -418,6 +434,12 @@ print qq#
 	}
 	if (document.querySelector(".indication").innerHTML !== null) {
 	document.querySelector(".indication").innerHTML = newArr.Indication;
+	}
+	if (document.querySelector(".referring_clinician").innerHTML !== null) {
+	document.querySelector(".referring_clinician").innerHTML = newArr.Referring_clinician;
+	}
+	if (document.querySelector(".secondary_address").innerHTML !== null) {
+	document.querySelector(".secondary_address").innerHTML = newArr.Secondary_address;
 	}
    }
   }
@@ -615,6 +637,14 @@ $recommendation
 
 ##################################
 sub head {
+
+print qq#
+<span $left class="referring_clinician"></span>
+<br><br>
+<span $left class="secondary_address"></span>
+<br><br>
+#;
+
 print "<p $left><b>MOLEKULARGENETISCHER BEFUND";
 if (($mother ne "") and ($father ne "")) {
 	print " - Trio-Exomsequenzierung</b><br><br></p>";
