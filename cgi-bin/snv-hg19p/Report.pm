@@ -425,7 +425,7 @@ print qq#
 #;
 print qq#
 <form id="jsonFile" name="jsonFile" enctype="multipart/form-data" method="post">
-    <h2>Insert personal data</h2>
+    <h2>Insert personal data from JSON file (move mouse over 'Load' button).</h2>
      <input type='file' id='fileinput'>
      <input type='button' id='btnLoad' value='Load' onclick='loadFile();' title='$help'>
 </form>
