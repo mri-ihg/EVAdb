@@ -406,40 +406,52 @@ print qq#
 	document.querySelector(".birth").innerHTML     = newArr.Birth;
 	document.querySelector(".received").innerHTML  = newArr.Received;
 	if (document.querySelector(".mname").innerHTML !== null) {
-	document.querySelector(".mname").innerHTML     = newArr.Mother_Name.concat(', ', newArr.Mother_Prename);
+		document.querySelector(".mname").innerHTML     = newArr.Mother_Name.concat(', ', newArr.Mother_Prename);
 	}
 	if (document.querySelector(".mbirth").innerHTML !== null) {
-	document.querySelector(".mbirth").innerHTML    = newArr.Mother_Birth;
+		document.querySelector(".mbirth").innerHTML    = newArr.Mother_Birth;
 	}
 	if (document.querySelector(".mreceived").innerHTML !== null) {
-	document.querySelector(".mreceived").innerHTML = newArr.Mother_Received;
+		document.querySelector(".mreceived").innerHTML = newArr.Mother_Received;
 	}
 	if (document.querySelector(".fname").innerHTML !== null) {
-	document.querySelector(".fname").innerHTML     = newArr.Father_Name.concat(', ', newArr.Father_Prename);
+		document.querySelector(".fname").innerHTML     = newArr.Father_Name.concat(', ', newArr.Father_Prename);
 	}
 	if (document.querySelector(".fbirth").innerHTML !== null) {
-	document.querySelector(".fbirth").innerHTML    = newArr.Father_Birth;
+		document.querySelector(".fbirth").innerHTML    = newArr.Father_Birth;
 	}
 	if (document.querySelector(".freceived").innerHTML !== null) {
-	document.querySelector(".freceived").innerHTML = newArr.Father_Received;
+		document.querySelector(".freceived").innerHTML = newArr.Father_Received;
 	}
  	if (document.querySelector(".synopsis").innerHTML !== null) {
-	document.querySelector(".synopsis").innerHTML = newArr.Synopsis;
+		if (newArr.Synopsis === undefined) {
+			newArr.Synopsis = "";
+		}
+		document.querySelector(".synopsis").innerHTML = newArr.Synopsis;
 	}
 	if (document.querySelector(".casehistory").innerHTML !== null) {
-	document.querySelector(".casehistory").innerHTML = newArr.Casehistory;
+		if (newArr.Casehistory === undefined) {
+			newArr.Casehistory = "";
+		}
+		document.querySelector(".casehistory").innerHTML = newArr.Casehistory;
 	}
 	if (document.querySelector(".prevfindings").innerHTML !== null) {
-	document.querySelector(".prevfindings").innerHTML = newArr.Prevfindings;
+		if (newArr.Prevfindings === undefined) {
+			newArr.Prevfindings = "";
+		}
+		document.querySelector(".prevfindings").innerHTML = newArr.Prevfindings;
 	}
 	if (document.querySelector(".indication").innerHTML !== null) {
-	document.querySelector(".indication").innerHTML = newArr.Indication;
+		if (newArr.Indication === undefined) {
+			newArr.Indication = "";
+		}
+		document.querySelector(".indication").innerHTML = newArr.Indication;
 	}
 	if (document.querySelector(".referring_clinician").innerHTML !== null) {
-	document.querySelector(".referring_clinician").innerHTML = newArr.Referring_clinician;
+		document.querySelector(".referring_clinician").innerHTML = newArr.Referring_clinician;
 	}
 	if (document.querySelector(".secondary_address").innerHTML !== null) {
-	document.querySelector(".secondary_address").innerHTML = newArr.Secondary_address;
+		document.querySelector(".secondary_address").innerHTML = newArr.Secondary_address;
 	}
    }
   }
