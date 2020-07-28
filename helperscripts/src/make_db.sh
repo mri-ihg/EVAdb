@@ -1,5 +1,13 @@
 #! /bin/bash
 
+function import_file {
+  DB=$(basename $1 | cut -d'_' -f1)
+  if [[ "$DB" = "hgmd" ]]; then
+    DB="hgmd_pro"
+  fi
+  mysql -L -u ${DB_USER} -p${DB_PASSWD} -h ${DB_HOST} $DB < $(realpath "$1")
+}
+
 if [[ $INIT_DB = "1" ]]; then
   echo "Creating database..."
 
@@ -7,12 +15,13 @@ if [[ $INIT_DB = "1" ]]; then
     mysqladmin create $db -u ${DB_USER} -p${DB_PASSWD} -h ${DB_HOST}
   done
 
-  for f in $(find /database -type f -name "*.dmp"); do
-    DB=$(basename $f | cut -d'_' -f1)
-    if [[ "$DB" = "hgmd" ]]; then
-      DB="hgmd_pro"
-    fi
-    mysql -L -u ${DB_USER} -p${DB_PASSWD} -h ${DB_HOST} $DB < $(realpath "$f")
+  # Import nodata dumps first
+  for f in $(find /database -type f -name "*_nodata.dmp"); do
+    import_file $f
+  done
+
+  for f in $(find /database -type f -name "*.dmp" ! -name "*nodata*"); do
+    import_file $f
   done
 
   echo "Creating database user..."
