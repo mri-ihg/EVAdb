@@ -55,14 +55,15 @@ services:
       - IMPORT_DBNSFP=0
       - IMPORT_DGV=0
       - IMPORT_CADD=0
-      - IMPORT_CLINVAR=1
+      - IMPORT_CLINVAR=0
+      - IMPORT_GNOMAD=0
+      - IMPORT_CDSDB=0
+      - IMPORT_UCSC=0
       - INIT_DB=0
       - INIT_USER=0
     volumes:
       - "${ANNO_DB_DIR}:/library"
       - "./database:/database:ro"
-<<<<<<< HEAD
-=======
   annotation:
     build:
       context: ./annotation
@@ -72,6 +73,6 @@ services:
       - DB_USER=${MYSQL_USER}
       - DB_PASSWD=${MYSQL_PASSWORD}
     volumes:
-      - "/home/brand/data:/data"
-      - "/home/brand/Projects/snakemake-pipeline/library:/library"
->>>>>>> a4846c9ea1d3a14a7e34f4b5361d2cf3efbfdfe5
+      - "/gluster/gluster01/share/exome/:/data"
+      - "/gluster/gluster01/share/brand/library:/library"
+      - "/gluster/gluster01/share/brand/annotation_db:/anno_db"
