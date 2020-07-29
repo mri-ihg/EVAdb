@@ -1045,6 +1045,7 @@ else {
 }
 }
 
+return($dbh);
 }
 ########################################################################
 # delete sessionid
@@ -6824,7 +6825,7 @@ delete($ref->{password});
 if ($ref->{name} eq "") {
 	showMenu("");
 	print "Please fill in Name. Nothing done.<br>";
-	printFooter();
+	printFooter("",$dbh);
 	exit(1);
 }
 
@@ -6878,7 +6879,7 @@ else { # insert
 	if ($password eq "") {
 		showMenu("");
 		print "Please fill in Password. Nothing done.<br>";
-		printFooter();
+		printFooter("",$dbh);
 		exit(1);
 	}
 
@@ -23623,11 +23624,62 @@ print qq(
 }
 #<td align="center" class="header"><a class="$searchHom" href="searchHom.pl">Homozygous statistics</a></td>
 ########################################################################
+# login_message
+########################################################################
+
+sub login_message {
+my $self        = shift;
+
+my $item          = "";
+my $value         = "";
+my %logins        = ();
+my $login_message = "";
+
+open(IN, "$text");
+while (<IN>) {
+	chomp;
+	($item,$value)=split(/\:/);
+	$logins{$item}=$value;
+}
+close IN;
+my $dbh = DBI->connect("DBI:mysql:$maindb", "$logins{dblogin}", "$logins{dbpasswd}") || die print "$DBI::errstr";
+
+my $query = "SELECT module FROM $exomevcfe.textmodules WHERE name='login_message'";
+my $out = $dbh->prepare($query) || die print "$DBI::errstr";
+$out->execute() || die print "$DBI::errstr";
+my $login_message = $out->fetchrow_array;
+
+return($dbh,$login_message);
+}
+########################################################################
 # printFooter
 ########################################################################
 
 sub printFooter {
 my $self        = shift;
+my $dbh         = shift;
+
+my $item  = "";
+my $value = "";
+my %logins = ();
+# select footer from exomevcfe.textmodules
+#select password from file
+if ($dbh eq "asdf") {
+	open(IN, "$text");
+	while (<IN>) {
+		chomp;
+		($item,$value)=split(/\:/);
+		$logins{$item}=$value;
+	}
+	close IN;
+	$dbh = DBI->connect("DBI:mysql:$maindb", "$logins{dblogin}", "$logins{dbpasswd}") || die print "$DBI::errstr";
+}
+
+my $query = "SELECT module FROM $exomevcfe.textmodules WHERE name='footer'";
+my $out = $dbh->prepare($query) || die print "$DBI::errstr";
+$out->execute() || die print "$DBI::errstr";
+my $footer = $out->fetchrow_array;
+
 
 print qq(
 <br><br>
@@ -23635,9 +23687,7 @@ print qq(
 <div id="footer">
 <br>
 <div class="footertext ">
-<a href="http://ihg.helmholtz-muenchen.de">Institute of Human Genetics,</a> Helmholtz Zentrum M&uuml;nchen
-<br>
-<a href="http://www.helmholtz-muenchen.de/en/imprint/index.html">Legal</a>
+$footer
 <br><br>
 </div>
 </div>

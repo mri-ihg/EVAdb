@@ -14,6 +14,7 @@ my $ref          = $cgi->Vars;
 my $snv          = new Snv;
 my %options = ('MaxAge' => 60); #for WWW::CSRF
 #$ref = $snv->htmlencodehash($ref);
+my ($dbh) = "";
 
 my $item  = "";
 my $value = "";
@@ -36,10 +37,10 @@ die "Wrong CSRF token" unless ($status == CSRF_OK);
 
 if (($ref->{name} eq '' or $ref->{password} eq '')) {
 	$snv->printHeader();
-	my ($dbh) = $snv->loadSessionId();
+	($dbh) = $snv->loadSessionId();
 }
 else {
-	$snv->createSessionId($ref);
+	($dbh) = $snv->createSessionId($ref);
 }
 
-$snv->printFooter();
+$snv->printFooter($dbh);

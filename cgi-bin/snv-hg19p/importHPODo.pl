@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w
+#!/usr/bin/perl
 
 ########################################################################
 # Tim M Strom   Sept 2010
@@ -27,4 +27,4 @@ $snv->importHPO($dbh,$ref);
 
 $dbh->disconnect;
 
-$snv->printFooter();
+$snv->printFooter($dbh);

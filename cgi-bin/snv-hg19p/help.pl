@@ -615,4 +615,4 @@ print qq(
 
 print "</table>";
 
-$snv->printFooter();
+$snv->printFooter($dbh);

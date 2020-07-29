@@ -26,4 +26,4 @@ $snv->showHPO($dbh,$idsample);
 
 $dbh->disconnect;
 
-$snv->printFooter();
+$snv->printFooter($dbh);

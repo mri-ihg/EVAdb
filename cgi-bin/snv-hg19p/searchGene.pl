@@ -12,7 +12,7 @@ my $cgi         = new CGI;
 my $ref         = $cgi->Vars;
 
 $snv->printHeader();
-$snv->loadSessionId();
+my ($dbh) = $snv->loadSessionId();
 
 #$ref = $snv->htmlencodehash($ref);
 my $search      = $snv->initSearchGene($ref->{'g.genesymbol'});
@@ -26,4 +26,4 @@ $snv->drawMask($search);
 
 print "</form>" ;
 
-$snv->printFooter();
+$snv->printFooter($dbh);

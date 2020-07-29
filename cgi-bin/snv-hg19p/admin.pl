@@ -34,4 +34,4 @@ print $cgi->hidden(-name=>'mode',-default=>$mode);
 
 print "</form>" ;
 
-$snv->printFooter();
+$snv->printFooter($dbh);

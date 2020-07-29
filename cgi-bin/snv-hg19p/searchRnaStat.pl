@@ -11,7 +11,7 @@ my $snv         = new Snv;
 my $search      = $snv->initSearchRnaStat();
 
 $snv->printHeader();
-$snv->loadSessionId();
+my ($dbh) = $snv->loadSessionId();
 
 my $search      = $snv->initSearchRnaStat();
 	
@@ -24,4 +24,4 @@ $snv->drawMask($search);
 
 print "</form>" ;
 
-$snv->printFooter();
+$snv->printFooter($dbh);

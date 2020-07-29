@@ -24,7 +24,7 @@ if ($burdentest eq "0") {
 	print "<span class=\"big\">Search results</span><br><br>" ;
 	$snv->searchResultsDiseaseGene($dbh,$ref);
 	$dbh->disconnect;
-	$snv->printFooter();
+	$snv->printFooter($dbh);
 }
 else { # because of fork no header
 	my ($dbh) = $snv->loadSessionId();

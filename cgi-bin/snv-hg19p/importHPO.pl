@@ -76,7 +76,7 @@ print "</form>" ;
 #print qq( <script type="text/javascript" src="/gif/autocompletePhenotype.js"></script> );
 print "</div>";
 
-$snv->printFooter();
+$snv->printFooter($dbh);
 
 
 #################################################################################

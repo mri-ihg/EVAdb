@@ -26,4 +26,4 @@ $snv->printVCF($dbh,$idsamplesvcf,$idsnvsvcf);
 
 $dbh->disconnect;
 
-$snv->printFooter();
+$snv->printFooter($dbh);

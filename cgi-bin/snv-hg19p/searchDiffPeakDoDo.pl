@@ -33,4 +33,4 @@ $snv->searchDiffPeakDoDo($dbh,$ref,$casesref,$controlsref);
 
 $dbh->disconnect;
 
-$snv->printFooter();
+$snv->printFooter($dbh);

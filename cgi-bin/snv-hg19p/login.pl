@@ -71,7 +71,9 @@ print qq(
 </form>
 );
 
+# database access for exomevcfe.textmodules for footer and login_message
 
+my ($dbh,$login_message) = $snv->login_message();
 
 if($demo){
 	
@@ -251,33 +253,9 @@ List all sample information. Disease is a required feature.
 	
 }
 else{
+
 print qq(
-<br><br><br>
-<h1>Databases</h1>
-You have access to five different databases.<br><br>
-<a href='https://evadb.helmholtz-muenchen.de/cgi-bin/mysql/snv-vcf/login.pl'>Default human exome database</a><br>
-Reference sequence: hg37. The pseudoautosomal region PAR1 of the Y chromosome has been masked to allow variant calling in this region.
-<br>Alignment software: BWA.<br>Variant caller: SAMtools.<br><br>
-<a href='https://evadb.helmholtz-muenchen.de/cgi-bin/mysql/snv-hg19p/login.pl'>Alternative human exome database</a><br>
-Reference sequence: hg37. The pseudoautosomal region PAR1 of the Y chromosome has been masked to allow variant calling in this region.<br>
-The mitochondrial sequence has been replaced by the version of hg38. Use this reference for variants in the mitochondrial sequence.<br>
-To display the corresponding reference sequence in the Integrative Genomics Viewer (
-<a href='http://software.broadinstitute.org/software/igv/'>IGV</a>
-), you have to download it within the IGV from the following URL:<br>
-https://evadb.helmholtz-muenchen.de/hg19p/hg19p.genome<br> 
-Variants called in genomes that correspond to exomic regions are imported into this database to allow a faster search than in the genome database.
-<br>Alignment software: BWA-MEM.<br>Variant caller: GATK HaplotypeCaller.<br><br>
-<a href='https://evadb.helmholtz-muenchen.de/cgi-bin/mysql/snv-genomegatk/login.pl'>Human genome database</a><br>
-Reference sequence: hg37. The pseudoautosomal region PAR1 of the Y chromosome has been masked to allow variant calling in this region.<br>
-The mitochondrial sequence has been replaced by the version of hg38. Use this reference for variants in the mitochondrial sequence.<br>
-To display the corresponding reference sequence in the Integrative Genomics Viewer (
-<a href='http://software.broadinstitute.org/software/igv/'>IGV</a>
-), you have to download it within the IGV from the following URL:<br>
-https://evadb.helmholtz-muenchen.de/hg19p/hg19p.genome
-<br>Alignment software: BWA-MEM.<br>Variant caller: GATK HaplotypeCaller.<br><br>
-<a href='https://evadb.helmholtz-muenchen.de/cgi-bin/mysql/snv-mm10/login.pl'>Mouse exome database</a><br><br>
-<a href='https://evadb.helmholtz-muenchen.de/cgi-bin/mysql/snv-genomemm10/login.pl'>Mouse genome database</a><br>
-<br>
+$login_message
 );
 
 my $news ="
@@ -299,4 +277,4 @@ Solr returns scores. The output is arranged from the highest to the lowest score
 ";
 }
 
-$snv->printFooter();
+$snv->printFooter($dbh);

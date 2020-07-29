@@ -1,0 +1,51 @@
+-- MySQL dump 10.15  Distrib 10.0.35-MariaDB, for Linux (x86_64)
+--
+-- Host: localhost    Database: exomevcfe
+-- ------------------------------------------------------
+-- Server version	10.0.35-MariaDB
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8 */;
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+/*!40103 SET TIME_ZONE='+00:00' */;
+/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+
+--
+-- Table structure for table `textmodules`
+--
+
+DROP TABLE IF EXISTS `textmodules`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `textmodules` (
+  `name` varchar(45) DEFAULT '',
+  `module` text,
+  UNIQUE KEY `textmodulesname` (`name`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `textmodules`
+--
+
+LOCK TABLES `textmodules` WRITE;
+/*!40000 ALTER TABLE `textmodules` DISABLE KEYS */;
+INSERT INTO `textmodules` VALUES ('munich_main_remarks','<p $left><b>Allgemeine Bemerkungen</b></p>\n<p $justify>Bei Auftreten neuer klinischer Merkmale oder der Ver&ouml;ffentlichung neuer Krankheitsgene mit &auml;hnlicher Klinik kann jederzeit \neine erneute Auswertung der Daten erfolgen.</p>\n<p $justify>Allgemein weisen wir darauf hin, dass die durchgef&uuml;hrte Exomanalyse nicht als abschlie&szlig;ende Beurteilung aller Abschnitte aller \nGene betrachtet werden darf. So k&ouml;nnen beispielsweise Varianten in nicht angereicherten Regionen (untranslatierte Bereiche, \nIntrons, Promotor- und Enhancer-Regionen), Repeat-Expansionen, Duplikationen und Deletionen nicht sicher detektiert und ausgeschlossen \nwerden. Bei entsprechendem klinischem Verdacht kann eine konventionelle Analyse (Sanger-Sequenzierung, MLPA) trotz des vorliegenden \nExombefundes indiziert sein. Hinsichtlich der Beurteilung identifizierter Varianten besteht die M&ouml;glichkeit, dass sich aufgrund der \nVerf&uuml;gbarkeit neuer Daten die Einsch&auml;tzung ihrer Pathogenit&auml;t und klinischen Relevanz zu einem sp&auml;teren Zeitpunkt \nver&auml;ndern k&ouml;nnte. Auf Wunsch kann eine Bereitstellung des Datensatzes erfolgen.</p>\n<p $justify>Gem&auml;&szlig; dem Gendiagnostikgesetz (GenDG) sollte der Befund im Rahmen eines humangenetischen Beratungsgespr&auml;chs mitgeteilt werden. \nF&uuml;r R&uuml;ckfragen stehen wir selbstverständlich jederzeit gerne zur Verf&uuml;gung.</p>'),('footer','<a href=\"http://ihg.helmholtz-muenchen.de\">Institute of Human Genetics,</a> Helmholtz Zentrum M&uuml;nchen\n<br>\n<a href=\"http://www.helmholtz-muenchen.de/en/imprint/index.html\">Legal</a>\n'),('login_message','\n<br><br><br>\n<h1>Databases</h1>\nYou have access to five different databases.<br><br>\n<a href=\'https://evadb.helmholtz-muenchen.de/cgi-bin/mysql/snv-vcf/login.pl\'>Default human exome database</a><br>\nReference sequence: hg37. The pseudoautosomal region PAR1 of the Y chromosome has been masked to allow variant calling in this region.\n<br>Alignment software: BWA.<br>Variant caller: SAMtools.<br><br>\n<a href=\'https://evadb.helmholtz-muenchen.de/cgi-bin/mysql/snv-hg19p/login.pl\'>Alternative human exome database</a><br>\nReference sequence: hg37. The pseudoautosomal region PAR1 of the Y chromosome has been masked to allow variant calling in this region.<br>\nThe mitochondrial sequence has been replaced by the version of hg38. Use this reference for variants in the mitochondrial sequence.<br>\nTo display the corresponding reference sequence in the Integrative Genomics Viewer (\n<a href=\'http://software.broadinstitute.org/software/igv/\'>IGV</a>\n), you have to download it within the IGV from the following URL:<br>\nhttps://evadb.helmholtz-muenchen.de/hg19p/hg19p.genome<br> \nVariants called in genomes that correspond to exomic regions are imported into this database to allow a faster search than in the genome database.\n<br>Alignment software: BWA-MEM.<br>Variant caller: GATK HaplotypeCaller.<br><br>\n<a href=\'https://evadb.helmholtz-muenchen.de/cgi-bin/mysql/snv-genomegatk/login.pl\'>Human genome database</a><br>\nReference sequence: hg37. The pseudoautosomal region PAR1 of the Y chromosome has been masked to allow variant calling in this region.<br>\nThe mitochondrial sequence has been replaced by the version of hg38. Use this reference for variants in the mitochondrial sequence.<br>\nTo display the corresponding reference sequence in the Integrative Genomics Viewer (\n<a href=\'http://software.broadinstitute.org/software/igv/\'>IGV</a>\n), you have to download it within the IGV from the following URL:<br>\nhttps://evadb.helmholtz-muenchen.de/hg19p/hg19p.genome\n<br>Alignment software: BWA-MEM.<br>Variant caller: GATK HaplotypeCaller.<br><br>\n<a href=\'https://evadb.helmholtz-muenchen.de/cgi-bin/mysql/snv-mm10/login.pl\'>Mouse exome database</a><br><br>\n<a href=\'https://evadb.helmholtz-muenchen.de/cgi-bin/mysql/snv-genomemm10/login.pl\'>Mouse genome database</a><br>\n<br>\n');
+/*!40000 ALTER TABLE `textmodules` ENABLE KEYS */;
+UNLOCK TABLES;
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
+
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+
+-- Dump completed on 2020-07-29 15:39:10

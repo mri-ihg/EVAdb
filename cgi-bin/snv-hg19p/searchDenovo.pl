@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w
+#!/usr/bin/perl 
 
 ########################################################################
 # Tim M Strom   February 2007
@@ -16,7 +16,7 @@ my $cgiquery    = new CGI;
 my $search      = $snv->initSearchDenovo();
 
 $snv->printHeader();
-$snv->loadSessionId();
+my ($dbh) = $snv->loadSessionId();
 	
 $snv->showMenu("searchDenovo");
 print "<span class=\"big\">Search</span><br><br>" ;
@@ -27,4 +27,4 @@ $snv->drawMask($search);
 
 print "</form>" ;
 
-$snv->printFooter();
+$snv->printFooter($dbh);
