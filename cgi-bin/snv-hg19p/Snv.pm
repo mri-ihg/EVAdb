@@ -19464,7 +19464,7 @@ SELECT
 s.name,
 concat(cl.solved,' ',cl.genesymbol),
 h.idsample,
-s.pedigree,s.sex,s.foreignid,e.sry,c.name,
+s.pedigree,s.sex,s.foreignid,s.externalseqid,e.sry,c.name,
 group_concat(DISTINCT l.lname),lt.ltlibtype,lp.lplibpair,a.name,
 e.mix,
 e.duplicates*100,e.opticalduplicates*100,e.reads,e.mapped,e.percentm,e.properlyp,e.seq,
@@ -19530,6 +19530,7 @@ $out->execute(@values2) || die print "$DBI::errstr";
 	'Pedigree',
 	'Sex',
 	'Foreign ID',
+	'External<br>SeqID',
 	'SRY',
 	'Cooperation',
 	'Libraries',
@@ -19617,7 +19618,7 @@ while (@row = $out->fetchrow_array) {
 				print "<td><a href='importHPO.pl?sname=$sname'>New</a></td>";
 			}
 		}
-		elsif ($i == 6) { # SRY
+		elsif ($i == 7) { # SRY
 			if ( ($row[$i] ne '') and ($row[$i] < 100 ) and ($row[$i-2] eq "male") and ($row[8] eq 'exomic')) {
 				print "<td $warningtdbg>$row[$i]</td>";
 			}
@@ -19634,7 +19635,7 @@ while (@row = $out->fetchrow_array) {
 				print "<td>$row[$i]</td>";
 			}
 		}
-		elsif ($i == 12) { # Contamination
+		elsif ($i == 13) { # Contamination
 			if ( ($row[$i] ne '') and ($row[$i] >= 0.03) ) {
 				print "<td $warningtdbg>$row[$i]</td>";
 			}
@@ -19642,7 +19643,7 @@ while (@row = $out->fetchrow_array) {
 				print "<td> $row[$i]</td>";
 			}
 		}
-		elsif ($i == 19) { # Seq (GB)
+		elsif ($i == 20) { # Seq (GB)
 			if ( ($row[$i] ne '') and ($row[$i] < 8) ) {
 				print "<td class='textred'>$row[$i]</td>";
 			}
@@ -19650,7 +19651,7 @@ while (@row = $out->fetchrow_array) {
 				print "<td> $row[$i]</td>";
 			}
 		}
-		elsif ($i == 37) { 
+		elsif ($i == 38) { 
 			print "<td class='width230'>$row[$i]</td>";
 		}
 		else {
