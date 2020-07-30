@@ -17,7 +17,7 @@ my $importmtdnasamples = $solexa->initImportmtDNASamples();
 ########################################################################
 
 $solexa->printHeader;
-$solexa->loadSessionId();
+my ($dbh) = $solexa->loadSessionId();
 
 $solexa->showMenu("importmtdnasamples");
 print "<span class=\"big\">Import mtDNA sample information</span><br><br>" ;
@@ -34,4 +34,4 @@ print qq#
 </form>
 #;
 
-$solexa->printFooter();
+$solexa->printFooter($dbh);

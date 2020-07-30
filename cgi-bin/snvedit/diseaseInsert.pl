@@ -52,6 +52,6 @@ $snv->showMenu();
 $snv->showAllDisease($dbh,$ref->{iddisease});
 
 
-$snv->printFooter();
+$snv->printFooter($dbh);
 
 

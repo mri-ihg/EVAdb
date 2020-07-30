@@ -66,6 +66,6 @@ else {
 
 #end
 
-$snvedit->printFooter();
+$snvedit->printFooter($dbh);
 
 

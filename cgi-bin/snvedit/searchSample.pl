@@ -15,7 +15,7 @@ my $cgiquery    = new CGI;
 my $project    = $cgiquery->param('project');
 
 $snv->printHeader("","cgisessid");
-$snv->loadSessionId();
+my ($dbh) = $snv->loadSessionId();
 my $search      = $snv->initSearchSample($project);
 	
 $snv->showMenu("searchsample");
@@ -27,4 +27,4 @@ $snv->drawMask($search);
 
 print "</form>" ;
 
-$snv->printFooter();
+$snv->printFooter($dbh);

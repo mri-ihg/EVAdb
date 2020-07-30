@@ -52,6 +52,6 @@ $snv->showMenu();
 $snv->showAllInvoice($dbh,$ref->{idinvoice});
 
 
-$snv->printFooter();
+$snv->printFooter($dbh);
 
 

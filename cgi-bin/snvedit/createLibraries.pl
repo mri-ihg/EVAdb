@@ -15,7 +15,7 @@ my $cgiquery    = new CGI;
 my $search      = $snv->initCreateLibrary();
 
 $snv->printHeader("","cgisessid");
-$snv->loadSessionId();
+my ($dbh) = $snv->loadSessionId();
 	
 $snv->showMenu("createlibraries");
 print "<span class=\"big\">Search</span><br><br>" ;
@@ -26,4 +26,4 @@ $snv->drawMask($search);
 
 print "</form>" ;
 
-$snv->printFooter();
+$snv->printFooter($dbh);

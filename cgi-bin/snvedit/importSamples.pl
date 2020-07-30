@@ -16,7 +16,7 @@ my $solexa      = new Snvedit;
 ########################################################################
 
 $solexa->printHeader;
-$solexa->loadSessionId();
+my ($dbh) = $solexa->loadSessionId();
 
 $solexa->showMenu('importsamples');
 print "<span class=\"big\">Import sample information</span><br><br>" ;
@@ -39,4 +39,4 @@ value='Import Samples' >
 </form>
 #;
 
-$solexa->printFooter();
+$solexa->printFooter($dbh);

@@ -22,6 +22,7 @@ my $gapplication   = "ExomeEdit";
 my $solexa         = "solexa";
 my $humanexomedb   = "database=exomehg19;host=localhost";
 my $logindb        = "exomevcfe";
+my $exomevcfe      = "exomevcfe";
 my $text           = "/srv/tools/text.txt"; #database
 my $text2          = "/srv/tools/textreadonly2.txt"; #yubikey id and api
 my $cgidir         = "/cgi-bin/mysql/snvedit";
@@ -2354,13 +2355,13 @@ my $sth = "";
 if ($ref->{name} eq "") {
 	showMenu("");
 	print "Please fill in sample id. Nothing done.<br>";
-	printFooter();
+	printFooter("",$dbh);
 	exit(1);
 }
 if ($ref->{idproject} eq "") {
 	showMenu("");
 	print "Please fill in a project. Nothing done.<br>";
-	printFooter();
+	printFooter("",$dbh);
 	exit(1);
 }
 
@@ -2399,13 +2400,13 @@ $ref->{user} = $iduser;
 if ($ref->{name} eq "") {
 	showMenu("");
 	print "Please fill in a sample id. Nothing done.<br>";
-	printFooter();
+	printFooter("",$dbh);
 	exit(1);
 }
 if ($ref->{idproject} eq "") {
 	showMenu("");
 	print "Please fill in a project. Nothing done.<br>";
-	printFooter();
+	printFooter("",$dbh);
 	exit(1);
 }
 
@@ -2467,7 +2468,7 @@ my $sth = "";
 if ($ref->{my} eq "") {
 	showMenu("");
 	print "Please fill in invoice no.Nothing done.<br>";
-	printFooter();
+	printFooter("",$dbh);
 	exit(1);
 }
 
@@ -2504,7 +2505,7 @@ my $value     = "";
 if ($ref->{my} eq "") {
 	showMenu("");
 	print "Please fill in a invoice no.Nothing done.<br>";
-	printFooter();
+	printFooter("",$dbh);
 	exit(1);
 }
 
@@ -2549,13 +2550,13 @@ my $sth = "";
 if ($ref->{name} eq "") {
 	showMenu("");
 	print "Please fill in name. Nothing done.<br>";
-	printFooter();
+	printFooter("",$dbh);
 	exit(1);
 }
 if ($ref->{symbol} eq "") {
 	showMenu("");
 	print "Please fill in symbol. Nothing done.<br>";
-	printFooter();
+	printFooter("",$dbh);
 	exit(1);
 }
 
@@ -2592,13 +2593,13 @@ my $value     = "";
 if ($ref->{name} eq "") {
 	showMenu("");
 	print "Please fill in name. Nothing done.<br>";
-	printFooter();
+	printFooter("",$dbh);
 	exit(1);
 }
 if ($ref->{symbol} eq "") {
 	showMenu("");
 	print "Please fill in symbol. Nothing done.<br>";
-	printFooter();
+	printFooter("",$dbh);
 	exit(1);
 }
 
@@ -2640,7 +2641,7 @@ my $sth = "";
 if ($ref->{name} eq "") {
 	showMenu("");
 	print "Please fill in 'Name'.Nothing done.<br>";
-	printFooter();
+	printFooter("",$dbh);
 	exit(1);
 }
 
@@ -2677,7 +2678,7 @@ my $value     = "";
 if ($ref->{name} eq "") {
 	showMenu("");
 	print "Please fill in a 'Name'.Nothing done.<br>";
-	printFooter();
+	printFooter("",$dbh);
 	exit(1);
 }
 
@@ -2721,7 +2722,7 @@ my $sth = "";
 if ($ref->{pname} eq "") {
 	showMenu("");
 	print "Please fill in a project name. Nothing done.<br>";
-	printFooter();
+	printFooter("",$dbh);
 	exit(1);
 }
 my @fields           = sort keys %$ref;
@@ -2758,7 +2759,7 @@ $ref->{user} = $iduser;
 if ($ref->{pname} eq "") {
 	showMenu("");
 	print "Please fill in a project name.Nothing done.<br>";
-	printFooter();
+	printFooter("",$dbh);
 	exit(1);
 }
 
@@ -2783,7 +2784,7 @@ if ($@) {
 	eval { $dbh->rollback };
 	showMenu("");
 	print "Rollback done.<br>";
-	printFooter();
+	printFooter("",$dbh);
 	exit(0);
 }
 else {
@@ -2821,7 +2822,7 @@ $actversion = $sth->fetchrow_array;
 if ($version != $actversion) {
 	showMenu("");
 	print "Data have been updated by another user. Nothing done.<br>";
-	printFooter();
+	printFooter("",$dbh);
 	exit(0);
 }
 else {
@@ -2911,7 +2912,7 @@ $query = qq#
 SELECT
 concat('<a href="sample.pl?id=',s.idsample,'&amp;mode=edit">',s.idsample,'</a>'),
 s.name,splate,srow,scolumn,
-s.foreignid,s.pedigree,s.sex,s.saffected,org.orname,ti.name,
+s.foreignid,s.externalseqid,s.pedigree,s.sex,s.saffected,org.orname,ti.name,
 d.name,
 s.analysis,s.entered,u.name,s.scomment,p.pdescription,c.name,
 s.nottoseq,s.accounting
@@ -2946,7 +2947,8 @@ $out->execute(@values2) || die print "$DBI::errstr";
 	'Plate',
 	'Row',
 	'Column',
-	'Foreign Id',
+	'Foreign ID',
+	'External<br>SeqID',
 	'Pedigree',
 	'Sex',
 	'Affected',
@@ -2970,7 +2972,7 @@ $query = qq#
 SELECT
 concat('<a href="sample.pl?id=',s.idsample,'&amp;mode=edit">',s.idsample,'</a>'),
 s.name,splate,srow,scolumn,
-s.foreignid,s.pedigree,s.sex,s.saffected,org.orname,ti.name,
+s.foreignid,s.externalseqid,s.pedigree,s.sex,s.saffected,org.orname,ti.name,
 d.name,
 s.analysis,s.entered,u.name,s.scomment,p.pdescription,c.name,
 concat('<a href="../solexa/library.pl?id=',l.lid,'&amp;mode=edit">',l.lname,'</a>'),
@@ -3016,6 +3018,7 @@ $out->execute(@values2) || die print "$DBI::errstr";
 	'Row',
 	'Column',
 	'Foreign Id',
+	'External<br>SeqID',
 	'Pedigree',
 	'Sex',
 	'Affected',
@@ -6375,7 +6378,7 @@ sub selectdb {
 	my $sql      = "";
 	my $sth      = "";
 	my @row      = ();
-	my $dbh      = &loadSessionId();
+	my ($dbh)    = &loadSessionId();
 	my $htmltext = "";
 	my $menuflag = "";
 	
@@ -6730,6 +6733,29 @@ print qq(
 
 sub printFooter {
 my $self        = shift;
+my $dbh         = shift;
+
+my $item  = "";
+my $value = "";
+my %logins = ();
+# select footer from exomevcfe.textmodules
+#select password from file
+if ($dbh eq "") {
+	open(IN, "$text");
+	while (<IN>) {
+		chomp;
+		($item,$value)=split(/\:/);
+		$logins{$item}=$value;
+	}
+	close IN;
+	$dbh = DBI->connect("DBI:mysql:$humanexomedb", "$logins{dblogin}", "$logins{dbpasswd}") || die print "$DBI::errstr";
+}
+
+my $query = "SELECT module FROM $exomevcfe.textmodules WHERE name='footer'";
+my $out = $dbh->prepare($query) || die print "$DBI::errstr";
+$out->execute() || die print "$DBI::errstr";
+my $footer = $out->fetchrow_array;
+
 
 print qq(
 <br><br>
@@ -6737,10 +6763,7 @@ print qq(
 <div id="footer">
 <br>
 <div style="position:relative; left:50px; ">
-Institute of Human Genetics, Helmholtz Zentrum M&uuml;nchen
-<br>
-<a href="http://www.helmholtz-muenchen.de/en/imprint/index.html">Legal</a>
-<br><br>
+$footer
 </div>
 </div>
 </div>

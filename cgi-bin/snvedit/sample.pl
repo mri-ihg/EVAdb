@@ -45,4 +45,4 @@ print $cgiquery->hidden(-name=>'mode',-default=>$mode);
 
 print "</form>" ;
 
-$snv ->printFooter();
+$snv ->printFooter($dbh);
