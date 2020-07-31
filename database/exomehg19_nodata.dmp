@@ -68,7 +68,7 @@ CREATE TABLE `cooperation` (
   `sendstatus` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`idcooperation`),
   UNIQUE KEY `cname` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=237 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=239 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -89,7 +89,7 @@ CREATE TABLE `disease` (
   KEY `dsymbol` (`symbol`),
   KEY `fk_diseasegroup` (`iddiseasegroup`),
   CONSTRAINT `fk_diseasegroup` FOREIGN KEY (`iddiseasegroup`) REFERENCES `diseasegroup` (`iddiseasegroup`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=552 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=553 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -132,7 +132,7 @@ CREATE TABLE `disease2sample` (
   KEY `d2sidsample` (`idsample`),
   CONSTRAINT `d2siddisease` FOREIGN KEY (`iddisease`) REFERENCES `disease` (`iddisease`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `d2sidsample` FOREIGN KEY (`idsample`) REFERENCES `sample` (`idsample`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=93957 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=94099 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -196,7 +196,7 @@ CREATE TABLE `exomestat` (
   KEY `exomestatsample` (`idsample`),
   KEY `exomestatlibpair` (`idlibpair`),
   CONSTRAINT `exomestatsample` FOREIGN KEY (`idsample`) REFERENCES `sample` (`idsample`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=123515 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=123516 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -356,6 +356,22 @@ CREATE TABLE `invoice` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Table structure for table `invoiceitem`
+--
+
+DROP TABLE IF EXISTS `invoiceitem`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `invoiceitem` (
+  `idinvoiceitem` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `idinvoice` int(11) unsigned NOT NULL,
+  `idservice` int(11) unsigned NOT NULL,
+  `count` decimal(11,3) NOT NULL,
+  PRIMARY KEY (`idinvoiceitem`)
+) ENGINE=InnoDB AUTO_INCREMENT=2598 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `mouse`
 --
 
@@ -406,7 +422,7 @@ CREATE TABLE `omimfulltext` (
   `omim_cs` longtext NOT NULL,
   `omim_fulltext` longtext NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM AUTO_INCREMENT=26803 DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM AUTO_INCREMENT=26814 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -479,7 +495,7 @@ CREATE TABLE `pipeline` (
   PRIMARY KEY (`idpipeline`),
   KEY `idsample_pipeline` (`idsample`),
   CONSTRAINT `idsample_pipeline` FOREIGN KEY (`idsample`) REFERENCES `sample` (`idsample`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=163872 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=164011 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -504,7 +520,7 @@ CREATE TABLE `project` (
   `idcooperation` int(11) DEFAULT NULL,
   PRIMARY KEY (`idproject`),
   UNIQUE KEY `pname_UNIQUE` (`pname`)
-) ENGINE=InnoDB AUTO_INCREMENT=327 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=331 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -622,7 +638,24 @@ CREATE TABLE `sample` (
   CONSTRAINT `cooperation` FOREIGN KEY (`idcooperation`) REFERENCES `cooperation` (`idcooperation`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `idinvoice` FOREIGN KEY (`idinvoice`) REFERENCES `invoice` (`idinvoice`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `idproject` FOREIGN KEY (`idproject`) REFERENCES `project` (`idproject`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=92558 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=92700 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `service`
+--
+
+DROP TABLE IF EXISTS `service`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `service` (
+  `idservice` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(45) DEFAULT '',
+  `description` varchar(250) DEFAULT '',
+  `menuflag` tinyint(4) DEFAULT '1',
+  PRIMARY KEY (`idservice`),
+  UNIQUE KEY `servicename` (`name`)
+) ENGINE=InnoDB AUTO_INCREMENT=32 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -713,7 +746,7 @@ CREATE TABLE `transcriptstat` (
   UNIQUE KEY `transcriptstat-unique` (`idsample`,`idtranscript`,`idlibtype`,`idlibpair`),
   KEY `fk_transcriptstat_transcript` (`idtranscript`),
   KEY `fk_transcriptstat_sample` (`idsample`)
-) ENGINE=MyISAM AUTO_INCREMENT=3437991222 DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM AUTO_INCREMENT=3438060834 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -725,4 +758,4 @@ CREATE TABLE `transcriptstat` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2020-07-22 13:05:50
+-- Dump completed on 2020-07-31 23:47:31
