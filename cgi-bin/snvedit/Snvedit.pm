@@ -1989,7 +1989,7 @@ se.name,
 se.description,
 ii.count
 FROM invoice i
-LEFT JOIN invoiceitem  ii ON i.idinvoice=ii.idinvoice
+INNER JOIN invoiceitem  ii ON i.idinvoice=ii.idinvoice
 LEFT JOIN service      se ON ii.idservice=se.idservice
 WHERE i.idinvoice = $id
 #;
@@ -2001,19 +2001,21 @@ print "<br>\n";
 if ($mode ne 'Y') {
 	print qq#<a href="invoiceitem.pl?idinvoice=$id">Add_item</a>#;
 }
-print "<br><br>\n";
-print qq(<table border="1" cellspacing="0" cellpadding="3">);
-while (@row = $sth->fetchrow_array) {
-	print "<tr>";
-	$i=0;
-	foreach (@row) {
-		print "<td> $row[$i]</td>";
-		$i++;
-	}
-	print "</tr>\n";
-}
 
-print "</table>";
+if ($sth->rows > 0){
+	print "<br><br>\n";
+	print qq(<table border="1" cellspacing="0" cellpadding="3">);
+	while (@row = $sth->fetchrow_array) {
+		print "<tr>";
+		$i=0;
+		foreach (@row) {
+			print "<td> $row[$i]</td>";
+			$i++;
+		}
+		print "</tr>\n";
+	}
+	print "</table>";
+}
 print "<br><br>\n";
 
 $sth->finish;
