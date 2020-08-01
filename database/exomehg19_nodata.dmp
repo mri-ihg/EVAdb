@@ -196,7 +196,7 @@ CREATE TABLE `exomestat` (
   KEY `exomestatsample` (`idsample`),
   KEY `exomestatlibpair` (`idlibpair`),
   CONSTRAINT `exomestatsample` FOREIGN KEY (`idsample`) REFERENCES `sample` (`idsample`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=123516 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=123518 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -367,6 +367,7 @@ CREATE TABLE `invoiceitem` (
   `idinvoice` int(11) unsigned NOT NULL,
   `idservice` int(11) unsigned NOT NULL,
   `count` decimal(11,3) NOT NULL,
+  `lastdate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`idinvoiceitem`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2598 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -746,7 +747,7 @@ CREATE TABLE `transcriptstat` (
   UNIQUE KEY `transcriptstat-unique` (`idsample`,`idtranscript`,`idlibtype`,`idlibpair`),
   KEY `fk_transcriptstat_transcript` (`idtranscript`),
   KEY `fk_transcriptstat_sample` (`idsample`)
-) ENGINE=MyISAM AUTO_INCREMENT=3438060834 DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM AUTO_INCREMENT=3438165252 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -758,4 +759,4 @@ CREATE TABLE `transcriptstat` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2020-07-31 23:47:31
+-- Dump completed on 2020-08-01  7:56:18

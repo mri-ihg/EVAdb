@@ -1216,6 +1216,45 @@ return($ref);
 }
 
 ########################################################################
+# init for invoiceSearch
+########################################################################
+sub initInvoiceSearch {
+my $self         = shift;
+
+my $ref          = "";
+
+my @AoH = (
+	  {
+	  	label       => "Date >= (yyyy-mm-dd)",
+	  	type        => "jsdate",
+		name        => "mydate",
+	  	value       => "",
+		size        => "10",
+		maxlength   => "10",
+	  	bgcolor     => "formbg",
+	  },
+	  {
+	  	label       => "Cooperation",
+	  	type        => "selectdb",
+		name        => "idcooperation",
+	  	value       => "",
+	  	bgcolor     => "formbg",
+	  },
+	  {
+	  	label       => "Item",
+	  	type        => "selectdb",
+		name        => "idservice",
+	  	value       => "",
+	  	bgcolor     => "formbg",
+	  },
+);
+
+$ref = \@AoH;
+return($ref);
+
+}
+
+########################################################################
 # init for initCreateLibrary
 ########################################################################
 sub initCreateLibrary {
@@ -4322,27 +4361,41 @@ print "</tbody></table></div>";
 $out->finish;
 }
 ########################################################################
-# listInvoice resultsinvoice
+# searchInvoice resultsinvoice
 ########################################################################
-sub listInvoice {
-my $self         = shift;
-my $dbh          = shift;
-my $ref          = shift;
+sub searchInvoice {
+my $self        = shift;
+my $dbh         = shift;
+my $ref         = shift;
 
-my @labels    = ();
-my $out       = "";
-my @row       = ();
-my $query     = "";
-my $i         = 0;
-my $n         = 1;
-my $count     = 1;
-my $tmp       = "";
+my @labels      = ();
+my $out         = "";
+my @row         = ();
+my $query       = "";
+my $i           = 0;
+my $n           = 1;
+my $count       = 1;
+my $tmp         = "";
 my @individuals = ();
 my $individuals = "";
+my $where       = "WHERE 1=1";
+my @where       = ();
+#my @fields      = sort keys %$ref;
+#my @values      = @{$ref}{@fields};
 
-my @fields    = sort keys %$ref;
-my @values    = @{$ref}{@fields};
 
+if ($ref->{'mydate'} ne "") {
+	$where  .= " AND i.mydate >= ? ";
+	push(@where, $ref->{'mydate'});
+}
+if ($ref->{'idcooperation'} ne "") {
+	$where  .= " AND i.idcooperation = ? ";
+	push(@where, $ref->{'idcooperation'});
+}
+if ($ref->{'idservice'} ne "") {
+	$where  .= " AND ii.idservice = ? ";
+	push(@where, $ref->{'idservice'});
+}
 		
 $i=0;
 $query = qq#
@@ -4350,8 +4403,8 @@ SELECT
 concat("<a href='invoice.pl?mode=edit&amp;id=",i.idinvoice,"'>",i.idinvoice,"</a>"),
 my,
 mydate,
-substr(lastdate,1,10),
-fa,replace(fadate,'0000-00-00',''),
+substr(ii.lastdate,1,10),
+fa,replace(i.fadate,'0000-00-00',''),
 sum,
 funds,
 costs,
@@ -4366,13 +4419,15 @@ invoice i
 LEFT JOIN cooperation   c ON i.idcooperation = c.idcooperation
 LEFT JOIN invoiceitem  ii ON i.idinvoice = ii.idinvoice
 LEFT JOIN service      se ON ii.idservice = se.idservice
+$where
 ORDER BY
 mydate DESC, my, se.name
 #;
 #print "query = $query<br>";
 
 $out = $dbh->prepare($query) || die print "$DBI::errstr";
-$out->execute() || die print "$DBI::errstr";
+$out->execute(@where) || die print "$DBI::errstr";
+
 
 @labels	= (
 	'n',
@@ -4381,7 +4436,7 @@ $out->execute() || die print "$DBI::errstr";
 	'Date',
 	'Last change',
 	'FA no',
-	'Date',
+	'FA Date',
 	'Invoices',
 	'Third-party funds',
 	'ILV',
@@ -4390,7 +4445,7 @@ $out->execute() || die print "$DBI::errstr";
 	'Comment',
 	'Service Name',
 	'Service Description',
-	'Service Count'
+	'Service Quantity'
 	);
 
 $i=0;
@@ -6196,7 +6251,7 @@ my $importsamplesexternal = "menu";
 my $cooperation           = "menu";
 my $listcooperation       = "menu";
 my $invoice               = "menu";
-my $listinvoice           = "menu";
+my $searchinvoice           = "menu";
 my $login                 = "menu";
 my $disease               = "menu";
 my $listdisease           = "menu";
@@ -6232,8 +6287,8 @@ if ($menu eq "listCooperation") {
 if ($menu eq "invoice") {
 	$invoice = "menuactive";
 }
-if ($menu eq "listInvoice") {
-	$listinvoice = "menuactive";
+if ($menu eq "searchInvoice") {
+	$searchinvoice = "menuactive";
 }
 if ($menu eq "listProject") {
 	$listproject = "menuactive";
@@ -6272,7 +6327,7 @@ print qq(
 <td align="center" class="header"><a class="$project" href="project.pl">New Project</a></td>
 <td align="center" class="header"><a class="$listproject" href="listProject.pl">List Project</a></td>
 <td align="center" class="header"><a class="$invoice" href="invoice.pl">New invoice</a></td>
-<td align="center" class="header"><a class="$listinvoice" href="listInvoice.pl">List invoice</a></td>
+<td align="center" class="header"><a class="$searchinvoice" href="invoiceSearch.pl">Search invoice</a></td>
 <td align="center" class="header"><a class="$importsamplesexternal" href="importSamplesExternal.pl">Import external samples</a></td>
 <td align="center" class="header"><a class="$importmtdnasamples" href="importmtDNASamples.pl">Import mtDNA samples</a></td>
 <td align="center" class="header"><a class="$statistics" href="statistics.pl">Statistics</a></td>
