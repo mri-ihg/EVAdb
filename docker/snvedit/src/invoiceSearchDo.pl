@@ -1,7 +1,7 @@
-#!/usr/bin/perl -w
+#!/usr/bin/perl
 
 ########################################################################
-# Tim M Strom   Oct 2010
+# Tim M Strom   Sept 2010
 ########################################################################
 
 use strict;
@@ -12,7 +12,7 @@ use DBI;
 my $cgiquery     = new CGI;
 my $ref          = $cgiquery->Vars;
 
-my $snv          = new Snvedit;
+my $snv       = new Snvedit;
 
 ########################################################################
 # main
@@ -21,11 +21,10 @@ my $snv          = new Snvedit;
 $snv->printHeader();
 my $dbh = $snv->loadSessionId();
 
-$snv->showMenu("listInvoice");
-print "<span class=\"big\">Search results</span><br><br>" ;
+$snv->showMenu('searchInvoice');
 
-$snv->listInvoice($dbh,$ref);
+$snv->searchInvoice($dbh,$ref);
 
 $dbh->disconnect;
 
-$snv->printFooter();
+$snv->printFooter($dbh);

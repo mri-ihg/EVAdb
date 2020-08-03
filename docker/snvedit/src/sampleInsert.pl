@@ -52,6 +52,6 @@ $snv->showMenu();
 $snv->showAllSample($dbh,$ref->{idsample});
 
 
-$snv->printFooter();
+$snv->printFooter($dbh);
 
 

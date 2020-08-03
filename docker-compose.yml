@@ -61,8 +61,6 @@ services:
     volumes:
       - "${ANNO_DB_DIR}:/library"
       - "./database:/database:ro"
-<<<<<<< HEAD
-=======
   annotation:
     build:
       context: ./annotation
@@ -74,4 +72,4 @@ services:
     volumes:
       - "/home/brand/data:/data"
       - "/home/brand/Projects/snakemake-pipeline/library:/library"
->>>>>>> a4846c9ea1d3a14a7e34f4b5361d2cf3efbfdfe5
+      - "/home/brand/Projects/evadb/base/raw_db:/anno_db"

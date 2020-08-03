@@ -17,7 +17,7 @@ my $importsamplemaskexternal = $solexa->initImportSamplesExternal();
 ########################################################################
 
 $solexa->printHeader;
-$solexa->loadSessionId();
+my ($dbh) = $solexa->loadSessionId();
 
 $solexa->showMenu('importsamplesexternal');
 print "<span class=\"big\">Import sample information.<br>Only external samples!</span><br><br>" ;
@@ -30,4 +30,4 @@ $solexa->drawMask($importsamplemaskexternal);
 print "</form>";
 
 
-$solexa->printFooter();
+$solexa->printFooter($dbh);

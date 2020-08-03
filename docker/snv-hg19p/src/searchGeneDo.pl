@@ -27,4 +27,4 @@ $snv->searchResultsGene($dbh,$ref);
 
 $dbh->disconnect;
 
-$snv->printFooter();
+$snv->printFooter($dbh);

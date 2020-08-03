@@ -28,4 +28,4 @@ $snvedit->importSamples($dbh,$ref,$file);
 
 $dbh->disconnect;
 
-$snvedit->printFooter();
+$snvedit->printFooter($dbh);

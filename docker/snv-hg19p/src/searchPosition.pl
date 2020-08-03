@@ -13,7 +13,7 @@ my $position    = $cgi->param('position');
 my $name        = $cgi->param('name');
 
 $snv->printHeader();
-$snv->loadSessionId();
+my ($dbh) = $snv->loadSessionId();
 
 #$name           = $snv->htmlencode($name);
 #$position       = $snv->htmlencode($position);
@@ -28,4 +28,4 @@ $snv->drawMask($search);
 
 print "</form>" ;
 
-$snv->printFooter();
+$snv->printFooter($dbh);

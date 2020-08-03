@@ -12,7 +12,7 @@ my $cgiquery    = new CGI;
 my $search      = $snv->initSearchStatistics();
 
 $snv->printHeader();
-$snv->loadSessionId();
+my ($dbh) = $snv->loadSessionId();
 	
 $snv->showMenu("searchStat");
 print "<span class=\"big\">Search</span><br><br>" ;
@@ -23,4 +23,4 @@ $snv->drawMask($search);
 
 print "</form>" ;
 
-$snv->printFooter();
+$snv->printFooter($dbh);

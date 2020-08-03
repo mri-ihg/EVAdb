@@ -22,6 +22,7 @@ my $gapplication   = "ExomeEdit";
 my $solexa         = "solexa";
 my $humanexomedb   = "database=exomehg19;host=localhost";
 my $logindb        = "exomevcfe";
+my $exomevcfe      = "exomevcfe";
 my $text           = "/srv/tools/text.txt"; #database
 my $text2          = "/srv/tools/textreadonly2.txt"; #yubikey id and api
 my $cgidir         = "/cgi-bin/mysql/snvedit";
@@ -356,6 +357,21 @@ my $ref          = "";
 
 $ref = $self->initCooperation   ();
 $self->getShowCooperation($dbh,$id,$ref,'Y');
+
+}
+
+########################################################################
+# showAllInvoiceitem
+########################################################################
+
+sub showAllInvoiceitem {
+my $self         = shift;
+my $dbh          = shift;
+my $id           = shift;
+my $ref          = "";
+
+$ref = $self->initInvoiceitem   ();
+$self->getShowInvoiceitem($dbh,$id,$ref,'Y');
 
 }
 
@@ -701,7 +717,7 @@ my @AoH = (
 	  	bgcolor     => "formbg",
 	  },
 	  {
-	  	label       => "Date (yyyy-mm-dd)",
+	  	label       => "FA Date (yyyy-mm-dd)",
 	  	type        => "jsdate",
 		name        => "fadate",
 	  	value       =>  "",
@@ -756,281 +772,6 @@ my @AoH = (
 	  	label       => "Comment",
 	  	type        => "text",
 		name        => "comment",
-	  	value       =>  "",
-		size        => "45",
-		maxlength   => "255",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Exome Lib",
-	  	type        => "text",
-		name        => "exome",
-	  	value       =>  "",
-		size        => "45",
-		maxlength   => "255",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Genome Lib",
-	  	type        => "text",
-		name        => "genome",
-	  	value       =>  "",
-		size        => "45",
-		maxlength   => "255",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Exome library without Kit",
-	  	type        => "text",
-		name        => "exomelibwithout",
-	  	value       =>  "",
-		size        => "45",
-		maxlength   => "255",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Genome library without Kit",
-	  	type        => "text",
-		name        => "genomelibwithout",
-	  	value       =>  "",
-		size        => "45",
-		maxlength   => "255",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Exome library extern",
-	  	type        => "text",
-		name        => "exomelibextern",
-	  	value       =>  "",
-		size        => "45",
-		maxlength   => "255",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Genome library extern",
-	  	type        => "text",
-		name        => "genomelibextern",
-	  	value       =>  "",
-		size        => "45",
-		maxlength   => "255",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Bioinformatics",
-	  	type        => "text",
-		name        => "bioinformatics",
-	  	value       =>  "",
-		size        => "45",
-		maxlength   => "255",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Storage",
-	  	type        => "text",
-		name        => "storage",
-	  	value       =>  "",
-		size        => "45",
-		maxlength   => "255",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Lane 2*150 bp",
-	  	type        => "text",
-		name        => "lane",
-	  	value       =>  "",
-		size        => "45",
-		maxlength   => "255",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Lane 2*100 bp",
-	  	type        => "text",
-		name        => "lane100",
-	  	value       =>  "",
-		size        => "45",
-		maxlength   => "255",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Lane 2*50 bp",
-	  	type        => "text",
-		name        => "lane50",
-	  	value       =>  "",
-		size        => "45",
-		maxlength   => "255",
-	  	bgcolor     => "formbg",
-	  },
-
-
-	  {
-	  	label       => "S4 2*150 bp",
-	  	type        => "text",
-		name        => "S4_150",
-	  	value       =>  "",
-		size        => "45",
-		maxlength   => "255",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "S4 2*100 bp",
-	  	type        => "text",
-		name        => "S4_100",
-	  	value       =>  "",
-		size        => "45",
-		maxlength   => "255",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "S2 2*150 bp",
-	  	type        => "text",
-		name        => "S2_150",
-	  	value       =>  "",
-		size        => "45",
-		maxlength   => "255",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "S2 2*100 bp",
-	  	type        => "text",
-		name        => "S2_100",
-	  	value       =>  "",
-		size        => "45",
-		maxlength   => "255",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "S2 2*50 bp",
-	  	type        => "text",
-		name        => "S2_50",
-	  	value       =>  "",
-		size        => "45",
-		maxlength   => "255",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "S1 2*150 bp",
-	  	type        => "text",
-		name        => "S1_150",
-	  	value       =>  "",
-		size        => "45",
-		maxlength   => "255",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "S1 2*100 bp",
-	  	type        => "text",
-		name        => "S1_100",
-	  	value       =>  "",
-		size        => "45",
-		maxlength   => "255",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "S1 2*50 bp",
-	  	type        => "text",
-		name        => "S1_50",
-	  	value       =>  "",
-		size        => "45",
-		maxlength   => "255",
-	  	bgcolor     => "formbg",
-	  },
-
-
-
-	  {
-	  	label       => "Lane 2*150 bp without Kit",
-	  	type        => "text",
-		name        => "lanewithout",
-	  	value       =>  "",
-		size        => "45",
-		maxlength   => "255",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Lane 2*100 bp without Kit",
-	  	type        => "text",
-		name        => "lanewithout100",
-	  	value       =>  "",
-		size        => "45",
-		maxlength   => "255",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Lane 2*50 bp without Kit",
-	  	type        => "text",
-		name        => "lanewithout50",
-	  	value       =>  "",
-		size        => "45",
-		maxlength   => "255",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "S4 2*150 bp without Kit",
-	  	type        => "text",
-		name        => "S4_150without",
-	  	value       =>  "",
-		size        => "45",
-		maxlength   => "255",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "S4 2*100 bp without Kit",
-	  	type        => "text",
-		name        => "S4_100without",
-	  	value       =>  "",
-		size        => "45",
-		maxlength   => "255",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "S2 2*150 bp without Kit",
-	  	type        => "text",
-		name        => "S2_150without",
-	  	value       =>  "",
-		size        => "45",
-		maxlength   => "255",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "S2 2*100 bp without Kit",
-	  	type        => "text",
-		name        => "S2_100without",
-	  	value       =>  "",
-		size        => "45",
-		maxlength   => "255",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "S2 2*50 bp without Kit",
-	  	type        => "text",
-		name        => "S2_50without",
-	  	value       =>  "",
-		size        => "45",
-		maxlength   => "255",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "S1 2*150 bp without Kit",
-	  	type        => "text",
-		name        => "S1_150without",
-	  	value       =>  "",
-		size        => "45",
-		maxlength   => "255",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "S1 2*100 bp without Kit",
-	  	type        => "text",
-		name        => "S1_100without",
-	  	value       =>  "",
-		size        => "45",
-		maxlength   => "255",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "S1 2*50 bp without Kit",
-	  	type        => "text",
-		name        => "S1_50without",
 	  	value       =>  "",
 		size        => "45",
 		maxlength   => "255",
@@ -1475,6 +1216,45 @@ return($ref);
 }
 
 ########################################################################
+# init for invoiceSearch
+########################################################################
+sub initInvoiceSearch {
+my $self         = shift;
+
+my $ref          = "";
+
+my @AoH = (
+	  {
+	  	label       => "Date >= (yyyy-mm-dd)",
+	  	type        => "jsdate",
+		name        => "mydate",
+	  	value       => "",
+		size        => "10",
+		maxlength   => "10",
+	  	bgcolor     => "formbg",
+	  },
+	  {
+	  	label       => "Cooperation",
+	  	type        => "selectdb",
+		name        => "idcooperation",
+	  	value       => "",
+	  	bgcolor     => "formbg",
+	  },
+	  {
+	  	label       => "Item",
+	  	type        => "selectdb",
+		name        => "idservice",
+	  	value       => "",
+	  	bgcolor     => "formbg",
+	  },
+);
+
+$ref = \@AoH;
+return($ref);
+
+}
+
+########################################################################
 # init for initCreateLibrary
 ########################################################################
 sub initCreateLibrary {
@@ -1865,6 +1645,56 @@ return($ref);
 }
 
 ########################################################################
+# init for invoiceitem
+########################################################################
+sub initInvoiceitem {
+my $self         = shift;
+my $idinvoice    = shift;
+
+my $ref          = "";
+
+my @AoH = (
+	  {
+	  	label       => "IDinvoice",
+	  	type        => "readonly2",
+		name        => "idinvoice",
+	  	value       => "$idinvoice",
+		size        => "10",
+		maxlength   => "10",
+	  	bgcolor     => "formbg",
+	  },
+	  {
+	  	label       => "IDinvoiceitem",
+	  	type        => "readonly2",
+		name        => "idinvoiceitem",
+	  	value       => "",
+		size        => "10",
+		maxlength   => "10",
+	  	bgcolor     => "formbg",
+	  },
+	  {
+	  	label       => "Item",
+	  	type        => "selectdb",
+		name        => "idservice",
+	  	value       => "",
+	  	bgcolor     => "formbg",
+	  },
+	  {
+	  	label       => "Quantity",
+	  	type        => "text",
+		name        => "count",
+	  	value       => "",
+		size        => "10",
+		maxlength   => "10",
+	  	bgcolor     => "formbg",
+	  },
+);
+
+$ref = \@AoH;
+return($ref);
+
+}
+########################################################################
 # insertIntoDisease2sample
 ########################################################################
 
@@ -2146,8 +1976,105 @@ if ($mode eq 'Y') {
 	print "</table>";
 }
 
+# invoiceitem
+my @row = ();
+my $i   = 0;
+
+
+
+$sql = qq#
+SELECT
+concat('<a href="invoiceitem.pl?idinvoiceitem=',ii.idinvoiceitem,'&mode=edit">',ii.idinvoiceitem,'</a>'),
+se.name,
+se.description,
+ii.count
+FROM invoice i
+INNER JOIN invoiceitem  ii ON i.idinvoice=ii.idinvoice
+LEFT JOIN service      se ON ii.idservice=se.idservice
+WHERE i.idinvoice = $id
+#;
+
+$sth = $dbh->prepare($sql) || die print "$DBI::errstr";
+$sth->execute || die print "$DBI::errstr";
+
+print "<br>\n";
+if ($mode ne 'Y') {
+	print qq#<a href="invoiceitem.pl?idinvoice=$id">Add_item</a>#;
+}
+
+if ($sth->rows > 0){
+	print "<br><br>\n";
+	print qq(<table border="1" cellspacing="0" cellpadding="3">);
+	while (@row = $sth->fetchrow_array) {
+		print "<tr>";
+		$i=0;
+		foreach (@row) {
+			print "<td> $row[$i]</td>";
+			$i++;
+		}
+		print "</tr>\n";
+	}
+	print "</table>";
+}
+print "<br><br>\n";
+
 $sth->finish;
 
+}
+########################################################################
+# getShowInvoiceitem
+########################################################################
+
+sub getShowInvoiceitem {
+my $self           = shift;
+my $dbh            = shift;
+my $idinvoiceitem  = shift;
+my $ref            = shift;
+my $mode           = shift;
+
+my $sth            = "";
+my $resultref      = "";
+my $sql            = "";
+my $href           = "";
+
+$sql = "
+	SELECT *
+	FROM invoiceitem 
+	WHERE idinvoiceitem = $idinvoiceitem
+	";
+#print "$sql\n";
+$sth = $dbh->prepare($sql) || die print "$DBI::errstr";
+$sth->execute || die print "$DBI::errstr";
+$resultref = $sth->fetchrow_hashref;
+
+# fill @AoH with results
+if ($mode eq 'Y') {
+	print "<span class=\"big\">Invoice</span><br><br>" ;
+	print qq(<table border="1" cellspacing="0" cellpadding="3">);
+}
+
+for $href ( @{$ref} ) {
+	if (exists $resultref->{$href->{name}}) {
+		$href->{value} = $resultref->{$href->{name}};
+		if ($mode eq 'Y') {
+			if ($href->{name} eq 'idinvoiceitem') {
+				print qq(<tr><td>$href->{label}</td>
+				<td class="person"><a href="invoiceitem.pl?idinvoiceitem=$resultref->{idinvoiceitem}&amp;mode=edit">$resultref->{idinvoiceitem} </a></td></tr>);
+			}
+			else {
+				print "<tr><td>$href->{label}</td>
+				<td>$resultref->{$href->{name}}  &nbsp;</td></tr>";		
+			}
+		}
+	}
+}
+
+if ($mode eq 'Y') {
+	print "</table>";
+}
+
+
+$sth->finish;
 }
 ########################################################################
 # getShowDisease
@@ -2354,13 +2281,13 @@ my $sth = "";
 if ($ref->{name} eq "") {
 	showMenu("");
 	print "Please fill in sample id. Nothing done.<br>";
-	printFooter();
+	printFooter("",$dbh);
 	exit(1);
 }
 if ($ref->{idproject} eq "") {
 	showMenu("");
 	print "Please fill in a project. Nothing done.<br>";
-	printFooter();
+	printFooter("",$dbh);
 	exit(1);
 }
 
@@ -2399,13 +2326,13 @@ $ref->{user} = $iduser;
 if ($ref->{name} eq "") {
 	showMenu("");
 	print "Please fill in a sample id. Nothing done.<br>";
-	printFooter();
+	printFooter("",$dbh);
 	exit(1);
 }
 if ($ref->{idproject} eq "") {
 	showMenu("");
 	print "Please fill in a project. Nothing done.<br>";
-	printFooter();
+	printFooter("",$dbh);
 	exit(1);
 }
 
@@ -2467,7 +2394,7 @@ my $sth = "";
 if ($ref->{my} eq "") {
 	showMenu("");
 	print "Please fill in invoice no.Nothing done.<br>";
-	printFooter();
+	printFooter("",$dbh);
 	exit(1);
 }
 
@@ -2504,7 +2431,7 @@ my $value     = "";
 if ($ref->{my} eq "") {
 	showMenu("");
 	print "Please fill in a invoice no.Nothing done.<br>";
-	printFooter();
+	printFooter("",$dbh);
 	exit(1);
 }
 
@@ -2549,13 +2476,13 @@ my $sth = "";
 if ($ref->{name} eq "") {
 	showMenu("");
 	print "Please fill in name. Nothing done.<br>";
-	printFooter();
+	printFooter("",$dbh);
 	exit(1);
 }
 if ($ref->{symbol} eq "") {
 	showMenu("");
 	print "Please fill in symbol. Nothing done.<br>";
-	printFooter();
+	printFooter("",$dbh);
 	exit(1);
 }
 
@@ -2592,13 +2519,13 @@ my $value     = "";
 if ($ref->{name} eq "") {
 	showMenu("");
 	print "Please fill in name. Nothing done.<br>";
-	printFooter();
+	printFooter("",$dbh);
 	exit(1);
 }
 if ($ref->{symbol} eq "") {
 	showMenu("");
 	print "Please fill in symbol. Nothing done.<br>";
-	printFooter();
+	printFooter("",$dbh);
 	exit(1);
 }
 
@@ -2640,7 +2567,7 @@ my $sth = "";
 if ($ref->{name} eq "") {
 	showMenu("");
 	print "Please fill in 'Name'.Nothing done.<br>";
-	printFooter();
+	printFooter("",$dbh);
 	exit(1);
 }
 
@@ -2677,7 +2604,7 @@ my $value     = "";
 if ($ref->{name} eq "") {
 	showMenu("");
 	print "Please fill in a 'Name'.Nothing done.<br>";
-	printFooter();
+	printFooter("",$dbh);
 	exit(1);
 }
 
@@ -2691,6 +2618,85 @@ foreach $field (@fields) {
 }
 
 $sql = sprintf "UPDATE %s SET %s WHERE idcooperation=$ref->{idcooperation}",
+         $table, join(",", @fields2);
+
+$sth = $dbh->prepare($sql) || die print "$DBI::errstr";
+$sth->execute(@values) || die print "$DBI::errstr";
+
+
+$sth->finish;
+
+}
+########################################################################
+# insertIntoInvoiceitem
+########################################################################
+
+sub insertIntoInvoiceitem {
+my $self      = shift;
+my $ref       = shift;
+my $dbh       = shift;
+my $table     = shift;
+
+$ref->{idinvoiceitem} = 0 ;
+
+my $sql = "";
+my $sth = "";
+
+#check_before_update($ref,$dbh);
+if ($ref->{idservice} eq "") {
+	showMenu("");
+	print "Please fill in 'Item'.Nothing done.<br>";
+	printFooter("",$dbh);
+	exit(1);
+}
+
+my @fields           = sort keys %$ref;
+my @values           = @{$ref}{@fields};
+
+$sql = sprintf "insert into %s (%s) values (%s)",
+         $table, join(",", @fields), join(",", ("?")x@fields);
+
+$sth = $dbh->prepare($sql) || die print "$DBI::errstr";
+$sth->execute(@values) || die print "$DBI::errstr";
+$ref->{idinvoiceitem}=$sth->{mysql_insertid};
+$sth->finish;
+
+}
+########################################################################
+# editInvoiceitem
+########################################################################
+
+sub editInvoiceitem {
+my $self      = shift;
+my $ref       = shift;
+my $dbh       = shift;
+my $table     = shift;
+my $sql       = "";
+my $sth       = "";
+my @fields2   = ();
+my $field     = "";
+my $value     = "";
+
+
+
+#check_before_update($ref,$dbh);
+if ($ref->{idservice} eq "") {
+	showMenu("");
+	print "Please fill in a 'Item'.Nothing done.<br>";
+	printFooter("",$dbh);
+	exit(1);
+}
+
+
+#print "refpversion $ref->{pversion}<br>";
+my @fields    = sort keys %$ref;
+my @values    = @{$ref}{@fields};
+foreach $field (@fields) {
+	$value=$field . " = ?";
+	push(@fields2,$value);
+}
+
+$sql = sprintf "UPDATE %s SET %s WHERE idinvoiceitem=$ref->{idinvoiceitem}",
          $table, join(",", @fields2);
 
 $sth = $dbh->prepare($sql) || die print "$DBI::errstr";
@@ -2721,7 +2727,7 @@ my $sth = "";
 if ($ref->{pname} eq "") {
 	showMenu("");
 	print "Please fill in a project name. Nothing done.<br>";
-	printFooter();
+	printFooter("",$dbh);
 	exit(1);
 }
 my @fields           = sort keys %$ref;
@@ -2758,7 +2764,7 @@ $ref->{user} = $iduser;
 if ($ref->{pname} eq "") {
 	showMenu("");
 	print "Please fill in a project name.Nothing done.<br>";
-	printFooter();
+	printFooter("",$dbh);
 	exit(1);
 }
 
@@ -2783,7 +2789,7 @@ if ($@) {
 	eval { $dbh->rollback };
 	showMenu("");
 	print "Rollback done.<br>";
-	printFooter();
+	printFooter("",$dbh);
 	exit(0);
 }
 else {
@@ -2821,7 +2827,7 @@ $actversion = $sth->fetchrow_array;
 if ($version != $actversion) {
 	showMenu("");
 	print "Data have been updated by another user. Nothing done.<br>";
-	printFooter();
+	printFooter("",$dbh);
 	exit(0);
 }
 else {
@@ -2911,7 +2917,7 @@ $query = qq#
 SELECT
 concat('<a href="sample.pl?id=',s.idsample,'&amp;mode=edit">',s.idsample,'</a>'),
 s.name,splate,srow,scolumn,
-s.foreignid,s.pedigree,s.sex,s.saffected,org.orname,ti.name,
+s.foreignid,s.externalseqid,s.pedigree,s.sex,s.saffected,org.orname,ti.name,
 d.name,
 s.analysis,s.entered,u.name,s.scomment,p.pdescription,c.name,
 s.nottoseq,s.accounting
@@ -2946,7 +2952,8 @@ $out->execute(@values2) || die print "$DBI::errstr";
 	'Plate',
 	'Row',
 	'Column',
-	'Foreign Id',
+	'Foreign ID',
+	'External<br>SeqID',
 	'Pedigree',
 	'Sex',
 	'Affected',
@@ -2970,7 +2977,7 @@ $query = qq#
 SELECT
 concat('<a href="sample.pl?id=',s.idsample,'&amp;mode=edit">',s.idsample,'</a>'),
 s.name,splate,srow,scolumn,
-s.foreignid,s.pedigree,s.sex,s.saffected,org.orname,ti.name,
+s.foreignid,s.externalseqid,s.pedigree,s.sex,s.saffected,org.orname,ti.name,
 d.name,
 s.analysis,s.entered,u.name,s.scomment,p.pdescription,c.name,
 concat('<a href="../solexa/library.pl?id=',l.lid,'&amp;mode=edit">',l.lname,'</a>'),
@@ -3016,6 +3023,7 @@ $out->execute(@values2) || die print "$DBI::errstr";
 	'Row',
 	'Column',
 	'Foreign Id',
+	'External<br>SeqID',
 	'Pedigree',
 	'Sex',
 	'Affected',
@@ -4355,27 +4363,41 @@ print "</tbody></table></div>";
 $out->finish;
 }
 ########################################################################
-# listInvoice resultsinvoice
+# searchInvoice resultsinvoice
 ########################################################################
-sub listInvoice {
-my $self         = shift;
-my $dbh          = shift;
-my $ref          = shift;
+sub searchInvoice {
+my $self        = shift;
+my $dbh         = shift;
+my $ref         = shift;
 
-my @labels    = ();
-my $out       = "";
-my @row       = ();
-my $query     = "";
-my $i         = 0;
-my $n         = 1;
-my $count     = 1;
-my $tmp       = "";
+my @labels      = ();
+my $out         = "";
+my @row         = ();
+my $query       = "";
+my $i           = 0;
+my $n           = 1;
+my $count       = 1;
+my $tmp         = "";
 my @individuals = ();
 my $individuals = "";
+my $where       = "WHERE 1=1";
+my @where       = ();
+#my @fields      = sort keys %$ref;
+#my @values      = @{$ref}{@fields};
 
-my @fields    = sort keys %$ref;
-my @values    = @{$ref}{@fields};
 
+if ($ref->{'mydate'} ne "") {
+	$where  .= " AND i.mydate >= ? ";
+	push(@where, $ref->{'mydate'});
+}
+if ($ref->{'idcooperation'} ne "") {
+	$where  .= " AND i.idcooperation = ? ";
+	push(@where, $ref->{'idcooperation'});
+}
+if ($ref->{'idservice'} ne "") {
+	$where  .= " AND ii.idservice = ? ";
+	push(@where, $ref->{'idservice'});
+}
 		
 $i=0;
 $query = qq#
@@ -4383,56 +4405,31 @@ SELECT
 concat("<a href='invoice.pl?mode=edit&amp;id=",i.idinvoice,"'>",i.idinvoice,"</a>"),
 my,
 mydate,
-substr(lastdate,1,10),
-fa,replace(fadate,'0000-00-00',''),
+substr(ii.lastdate,1,10),
+fa,replace(i.fadate,'0000-00-00',''),
 sum,
 funds,
 costs,
 ilvinstitute,
-group_concat(DISTINCT concat(c.name,', ',c.prename),' '),
+concat(c.name,', ',c.prename),
 i.comment,
-exome,
-genome,
-exomelibextern,
-genomelibextern,
-exomelibwithout,
-genomelibwithout,
-bioinformatics,
-storage,
-lane,
-lane100,
-lane50,
-S4_150,
-S4_100,
-S2_150,
-S2_100,
-S2_50,
-S1_150,
-S1_100,
-S1_50,
-lanewithout,
-lanewithout100,
-lanewithout50,
-S4_150without,
-S4_100without,
-S2_150without,
-S2_100without,
-S2_50without,
-S1_150without,
-S1_100without,
-S1_50without
+se.name,
+se.description,
+ii.count
 FROM
 invoice i 
-LEFT JOIN cooperation c on (i.idcooperation = c.idcooperation)
-GROUP BY
-i.my
+LEFT JOIN cooperation   c ON i.idcooperation = c.idcooperation
+LEFT JOIN invoiceitem  ii ON i.idinvoice = ii.idinvoice
+LEFT JOIN service      se ON ii.idservice = se.idservice
+$where
 ORDER BY
-mydate DESC, my
+mydate DESC, my, se.name
 #;
 #print "query = $query<br>";
 
 $out = $dbh->prepare($query) || die print "$DBI::errstr";
-$out->execute() || die print "$DBI::errstr";
+$out->execute(@where) || die print "$DBI::errstr";
+
 
 @labels	= (
 	'n',
@@ -4441,50 +4438,17 @@ $out->execute() || die print "$DBI::errstr";
 	'Date',
 	'Last change',
 	'FA no',
-	'Date',
+	'FA Date',
 	'Invoices',
 	'Third-party funds',
 	'ILV',
 	'ILV Institute',
 	'Cooperation',
 	'Comment',
-	'Exome Lib (L_GS02)',
-	'Genome Lib (L_GS03)',
-	'Exome library extern',
-	'Genome library extern',
-	'Exome library without kit (L_GS0?)',
-	'Genome library without kit (L_GS0?)',
-	'Bioinformatics (L_GS07)',
-	'Storage (L_GS08)',
-	'Lane 2*150 bp (L_GS05)',
-	'Lane 2*100 bp (L_GS01)',
-	'Lane 2*50 bp (L_GS09)',
-	'Lane S4 2*150 bp (L_GS17)',
-	'Lane S4 2*100 bp (L_GS14)',
-	'Lane S2 2*150 bp (L_GS16)',
-	'Lane S2 2*100 bp (L_GS13)',
-	'Lane S2 2*50 bp (L_GS11)',
-	'Lane S1 2*150 bp (L_GS15)',
-	'Lane S1 2*100 bp (L_GS12)',
-	'Lane S1 2*50 bp (L_GS10)',
-	'Lane 2*150 bp without kit (L_GS04)',
-	'Lane 2*100 bp without kit (L_GS04)',
-	'Lane 2*50 bp without kit (L_GS04)',
-	'Lane S4 2*150 bp without kit (L_GS04)',
-	'Lane S4 2*100 bp without kit (L_GS04)',
-	'Lane S2 2*150 bp without kit (L_GS04)',
-	'Lane S2 2*100 bp without kit (L_GS04)',
-	'Lane S2 2*50 bp without kit (L_GS04)',
-	'Lane S1 2*150 bp without kit (L_GS04)',
-	'Lane S1 2*100 bp without kit (L_GS04)',
-	'Lane S1 2*50 bp without kit (L_GS04)'
+	'Service Name',
+	'Service Description',
+	'Service Quantity'
 	);
-
-#print "Lane: 2181.43<br>";
-#print "Exome Lib: 249.69<br>";
-#print "Genome Lib: 121.71<br>";
-#print "Lane without kit: 868.46<br>";
-#print "<br>";
 
 $i=0;
 
@@ -4505,11 +4469,11 @@ while (@row = $out->fetchrow_array) {
 		if ($i == 0) { #edit
 			print "<td align=\"center\">$n</td>";
 		}
-		if (($i == 5) or ($i == 6) or ($i == 10) or ($i == 11) or ($i == 12) or ($i == 13) or ($i == 14) or ($i == 15) or ($i == 16) or ($i == 17) or ($i == 18)) { #edit
+		if (($i == 6) or ($i == 7)  or ($i == 8) or ($i == 14) ) {
 			print "<td align=\"right\"> $row[$i]</td>";
 		}
 		else {
-			print "<td> $row[$i]</td>";
+			print "<td align=\"center\"> $row[$i]</td>";
 		}
 		$i++;
 	}
@@ -4519,363 +4483,6 @@ while (@row = $out->fetchrow_array) {
 print "</tbody></table></div>";
 &tablescript;
 
-#######################sum invoice
-
-$query = qq#
-SELECT substring(mydate,1,4),sum(sum)
-FROM invoice
-GROUP BY
-substring(mydate,1,4)
-UNION
-SELECT 'Sum',sum(sum)
-FROM invoice
-#;
-$out = $dbh->prepare($query) || die print "$DBI::errstr";
-$out->execute() || die print "$DBI::errstr";
-
-@labels	= (
-	'Year',
-	'Sum'
-	);
-
-print "<br><br>Invoices";
-print q(<table border="1" cellspacing="0" cellpadding="2"> );
-$i=0;
-
-print "<tr>";
-foreach (@labels) {
-	print "<th align=\"center\">$_</th>";
-}
-print "</tr>";
-
-$i=0;
-while (@row = $out->fetchrow_array) {
-	print "<tr>";
-	$i=0;
-	foreach (@row) {
-		print "<td align=\"right\"> $row[$i]</td>";
-		$i++;
-	}
-	print "</tr>\n";
-	$n++;
-}
-print "</table>";
-
-########################sum funds
-
-$query = qq#
-SELECT substring(mydate,1,4),sum(funds)
-FROM invoice
-GROUP BY
-substring(mydate,1,4)
-UNION
-SELECT 'Sum',sum(funds)
-FROM invoice
-#;
-$out = $dbh->prepare($query) || die print "$DBI::errstr";
-$out->execute() || die print "$DBI::errstr";
-
-@labels	= (
-	'Year',
-	'Sum'
-	);
-
-print "<br><br>Third party funds";
-print q(<table border="1" cellspacing="0" cellpadding="2"> );
-$i=0;
-
-print "<tr>";
-foreach (@labels) {
-	print "<th align=\"center\">$_</th>";
-}
-print "</tr>";
-
-$i=0;
-while (@row = $out->fetchrow_array) {
-	print "<tr>";
-	$i=0;
-	foreach (@row) {
-		print "<td align=\"right\"> $row[$i]</td>";
-		$i++;
-	}
-	print "</tr>\n";
-	$n++;
-}
-print "</table>";
-
-########################sum ILV
-
-$query = qq#
-SELECT substring(mydate,1,4),sum(costs)
-FROM invoice
-GROUP BY
-substring(mydate,1,4)
-UNION
-SELECT 'Sum',sum(costs)
-FROM invoice
-#;
-$out = $dbh->prepare($query) || die print "$DBI::errstr";
-$out->execute() || die print "$DBI::errstr";
-
-@labels	= (
-	'Year',
-	'Sum'
-	);
-
-print "<br><br>ILV";
-print q(<table border="1" cellspacing="0" cellpadding="2"> );
-$i=0;
-
-print "<tr>";
-foreach (@labels) {
-	print "<th align=\"center\">$_</th>";
-}
-print "</tr>";
-
-$i=0;
-while (@row = $out->fetchrow_array) {
-	print "<tr>";
-	$i=0;
-	foreach (@row) {
-		print "<td align=\"right\"> $row[$i]</td>";
-		$i++;
-	}
-	print "</tr>\n";
-	$n++;
-}
-print "</table>";
-
-###############################################
-#########################all Invoices Exomes,Genomes,Lanes
-
-$query = qq#
-SELECT substring(mydate,1,4),sum(exome),sum(genome),sum(lane)+sum(lanewithout),sum(lane100)+sum(lanewithout100),sum(lane50)+sum(lanewithout50),
-sum(S4_150)+sum(S4_150without),sum(S4_100)+sum(S4_100without),
-sum(S2_150)+sum(S2_150without),sum(S2_100)+sum(S2_100without),sum(S2_50)+sum(S2_50without),
-sum(S1_150)+sum(S1_150without),sum(S1_100)+sum(S1_100without),sum(S1_50)+sum(S1_50without)
-FROM invoice
-GROUP BY
-substring(mydate,1,4)
-#;
-$out = $dbh->prepare($query) || die print "$DBI::errstr";
-$out->execute() || die print "$DBI::errstr";
-
-@labels	= (
-	'Year',
-	'Exomes',
-	'Genomes',
-	'Lanes + Lanes 2*150 bp without kit',
-	'Lanes + Lanes 2*100 bp without kit',
-	'Lanes + Lanes 2*50 bp without kit',
-	'Lanes + Lanes S4 2*150 bp without kit',
-	'Lanes + Lanes S4 2*100 bp without kit',
-	'Lanes + Lanes S2 2*150 bp without kit',
-	'Lanes + Lanes S2 2*100 bp without kit',
-	'Lanes + Lanes S2 2*50 bp without kit',
-	'Lanes + Lanes S1 2*150 bp without kit',
-	'Lanes + Lanes S1 2*100 bp without kit',
-	'Lanes + Lanes S1 2*50 bp without kit'
-	);
-
-print "<br><br>All: Libraries and Lanes";
-print q(<table border="1" cellspacing="0" cellpadding="2" max-width="300"> );
-$i=0;
-
-print "<tr>";
-foreach (@labels) {
-	print "<th align=\"center\">$_</th>";
-}
-print "</tr>";
-
-$i=0;
-while (@row = $out->fetchrow_array) {
-	print "<tr>";
-	$i=0;
-	foreach (@row) {
-		$row[$i]=~s/^0.00$//;
-		$row[$i]=~s/^0.000$//;
-		print "<td align=\"right\" width=\"60\"> $row[$i]</td>";
-		$i++;
-	}
-	print "</tr>\n";
-	$n++;
-}
-print "</table>";
-
-########################sum Invoices Exomes,Genomes,Lanes
-
-$query = qq#
-SELECT substring(mydate,1,4),sum(exome),sum(genome),sum(lane),sum(lane100),sum(lane50),
-sum(S4_150),sum(S4_100),
-sum(S2_150),sum(S2_100),sum(S2_50),
-sum(S1_150),sum(S1_100),sum(S1_50)
-FROM invoice
-WHERE sum>0
-GROUP BY
-substring(mydate,1,4)
-#;
-$out = $dbh->prepare($query) || die print "$DBI::errstr";
-$out->execute() || die print "$DBI::errstr";
-
-@labels	= (
-	'Year',
-	'Exomes',
-	'Genomes',
-	'Lanes 2*150 bp',
-	'Lanes 2*100 bp',
-	'Lanes 2*50 bp',
-	'Lanes S4 2*150 bp',
-	'Lanes S4 2*100 bp',
-	'Lanes S2 2*150 bp',
-	'Lanes S2 2*100 bp',
-	'Lanes S2 2*50 bp ',
-	'Lanes S1 2*150 bp',
-	'Lanes S1 2*100 bp',
-	'Lanes S1 2*50 bp '
-	);
-
-print "<br><br>Invoices: Libraries and Lanes";
-print q(<table border="1" cellspacing="0" cellpadding="2"> );
-$i=0;
-
-print "<tr>";
-foreach (@labels) {
-	print "<th align=\"center\">$_</th>";
-}
-print "</tr>";
-
-$i=0;
-while (@row = $out->fetchrow_array) {
-	print "<tr>";
-	$i=0;
-	foreach (@row) {
-		$row[$i]=~s/^0.00$//;
-		$row[$i]=~s/^0.000$//;
-		print "<td align=\"right\" width=\"60\"> $row[$i]</td>";
-		$i++;
-	}
-	print "</tr>\n";
-	$n++;
-}
-print "</table>";
-
-########################sum Funds Exomes,Genomes,Lanes
-
-$query = qq#
-SELECT substring(mydate,1,4),sum(exome)+sum(exomelibwithout),sum(genome)+sum(genomelibwithout),
-sum(lane)+sum(lanewithout),sum(lane100)+sum(lanewithout100),sum(lane50)+sum(lanewithout50),
-sum(S4_150)+sum(S4_150without),sum(S4_100)+sum(S4_100without),
-sum(S2_150)+sum(S2_150without),sum(S2_100)+sum(S2_100without),sum(S2_50)+sum(S2_50without),
-sum(S1_150)+sum(S1_150without),sum(S1_100)+sum(S1_100without),sum(S1_50)+sum(S1_50without)
-FROM invoice
-WHERE funds>0
-GROUP BY
-substring(mydate,1,4)
-#;
-$out = $dbh->prepare($query) || die print "$DBI::errstr";
-$out->execute() || die print "$DBI::errstr";
-
-@labels	= (
-	'Year',
-	'Exomes',
-	'Genomes',
-	'Lanes + Lanes 2*150 bp without kit',
-	'Lanes + Lanes 2*100 bp without kit',
-	'Lanes + Lanes 2*50 bp without kit',
-	'Lanes + Lanes S4 2*150 bp without kit',
-	'Lanes + Lanes S4 2*100 bp without kit',
-	'Lanes + Lanes S2 2*150 bp without kit',
-	'Lanes + Lanes S2 2*100 bp without kit',
-	'Lanes + Lanes S2 2*50 bp without kit',
-	'Lanes + Lanes S1 2*150 bp without kit',
-	'Lanes + Lanes S1 2*100 bp without kit',
-	'Lanes + Lanes S1 2*50 bp without kit'
-	);
-
-print "<br><br>Third party funds: Libraries and Lanes";
-print q(<table border="1" cellspacing="0" cellpadding="2"> );
-$i=0;
-
-print "<tr>";
-foreach (@labels) {
-	print "<th align=\"center\">$_</th>";
-}
-print "</tr>";
-
-$i=0;
-while (@row = $out->fetchrow_array) {
-	print "<tr>";
-	$i=0;
-	foreach (@row) {
-		$row[$i]=~s/^0.00$//;
-		$row[$i]=~s/^0.000$//;
-		print "<td align=\"right\" width=\"60\"> $row[$i]</td>";
-		$i++;
-	}
-	print "</tr>\n";
-	$n++;
-}
-print "</table>";
-
-
-########################sum ILV Exomes,Genomes,Lanes
-
-$query = qq#
-SELECT substring(mydate,1,4),sum(exome),sum(genome),sum(lane),sum(lane100),sum(lane50),
-sum(S4_150),sum(S4_100),
-sum(S2_150),sum(S2_100),sum(S2_50),
-sum(S1_150),sum(S1_100),sum(S1_50)
-FROM invoice
-WHERE sum   <= 0.0
-AND   funds <= 0.0
-GROUP BY
-substring(mydate,1,4)
-#;
-$out = $dbh->prepare($query) || die print "$DBI::errstr";
-$out->execute() || die print "$DBI::errstr";
-
-@labels	= (
-	'Year',
-	'Exomes',
-	'Genomes',
-	'Lanes 2*150 bp',
-	'Lanes 2*100 bp',
-	'Lanes 2*50 bp',
-	'Lanes S4 2*150 bp',
-	'Lanes S4 2*100 bp',
-	'Lanes S2 2*150 bp',
-	'Lanes S2 2*100 bp',
-	'Lanes S2 2*50 bp ',
-	'Lanes S1 2*150 bp',
-	'Lanes S1 2*100 bp',
-	'Lanes S1 2*50 bp '
-	);
-
-print "<br><br>ILV: Libraries and Lanes";
-print q(<table border="1" cellspacing="0" cellpadding="2"> );
-$i=0;
-
-print "<tr>";
-foreach (@labels) {
-	print "<th align=\"center\" width=\"60\">$_</th>";
-}
-print "</tr>";
-
-$i=0;
-while (@row = $out->fetchrow_array) {
-	print "<tr>";
-	$i=0;
-	foreach (@row) {
-		$row[$i]=~s/^0.00$//;
-		$row[$i]=~s/^0.000$//;
-		print "<td align=\"right\"> $row[$i]</td>";
-		$i++;
-	}
-	print "</tr>\n";
-	$n++;
-}
-print "</table>";
-print "<br><br>";
 
 $out->finish;
 }
@@ -6375,7 +5982,7 @@ sub selectdb {
 	my $sql      = "";
 	my $sth      = "";
 	my @row      = ();
-	my $dbh      = &loadSessionId();
+	my ($dbh)    = &loadSessionId();
 	my $htmltext = "";
 	my $menuflag = "";
 	
@@ -6488,6 +6095,15 @@ sub selectdb {
 			AND pedigree='$pedigree'
 			AND idsample!='$idsample'
 			ORDER BY pedigree,name";
+		$sth = $dbh->prepare($sql) || die print "$DBI::errstr";
+		$sth->execute || die print "$DBI::errstr";
+	}
+	elsif ($name eq "idservice") {
+		$sql = "SELECT DISTINCT idservice, menuflag, concat(name,', ', description)
+			FROM service 
+			WHERE menuflag=1
+			ORDER BY name;
+			";
 		$sth = $dbh->prepare($sql) || die print "$DBI::errstr";
 		$sth->execute || die print "$DBI::errstr";
 	}
@@ -6637,7 +6253,7 @@ my $importsamplesexternal = "menu";
 my $cooperation           = "menu";
 my $listcooperation       = "menu";
 my $invoice               = "menu";
-my $listinvoice           = "menu";
+my $searchinvoice           = "menu";
 my $login                 = "menu";
 my $disease               = "menu";
 my $listdisease           = "menu";
@@ -6673,8 +6289,8 @@ if ($menu eq "listCooperation") {
 if ($menu eq "invoice") {
 	$invoice = "menuactive";
 }
-if ($menu eq "listInvoice") {
-	$listinvoice = "menuactive";
+if ($menu eq "searchInvoice") {
+	$searchinvoice = "menuactive";
 }
 if ($menu eq "listProject") {
 	$listproject = "menuactive";
@@ -6713,7 +6329,7 @@ print qq(
 <td align="center" class="header"><a class="$project" href="project.pl">New Project</a></td>
 <td align="center" class="header"><a class="$listproject" href="listProject.pl">List Project</a></td>
 <td align="center" class="header"><a class="$invoice" href="invoice.pl">New invoice</a></td>
-<td align="center" class="header"><a class="$listinvoice" href="listInvoice.pl">List invoice</a></td>
+<td align="center" class="header"><a class="$searchinvoice" href="invoiceSearch.pl">Search invoice</a></td>
 <td align="center" class="header"><a class="$importsamplesexternal" href="importSamplesExternal.pl">Import external samples</a></td>
 <td align="center" class="header"><a class="$importmtdnasamples" href="importmtDNASamples.pl">Import mtDNA samples</a></td>
 <td align="center" class="header"><a class="$statistics" href="statistics.pl">Statistics</a></td>
@@ -6730,6 +6346,29 @@ print qq(
 
 sub printFooter {
 my $self        = shift;
+my $dbh         = shift;
+
+my $item  = "";
+my $value = "";
+my %logins = ();
+# select footer from exomevcfe.textmodules
+#select password from file
+if ($dbh eq "") {
+	open(IN, "$text");
+	while (<IN>) {
+		chomp;
+		($item,$value)=split(/\:/);
+		$logins{$item}=$value;
+	}
+	close IN;
+	$dbh = DBI->connect("DBI:mysql:$humanexomedb", "$logins{dblogin}", "$logins{dbpasswd}") || die print "$DBI::errstr";
+}
+
+my $query = "SELECT module FROM $exomevcfe.textmodules WHERE name='footer'";
+my $out = $dbh->prepare($query) || die print "$DBI::errstr";
+$out->execute() || die print "$DBI::errstr";
+my $footer = $out->fetchrow_array;
+
 
 print qq(
 <br><br>
@@ -6737,10 +6376,7 @@ print qq(
 <div id="footer">
 <br>
 <div style="position:relative; left:50px; ">
-Institute of Human Genetics, Helmholtz Zentrum M&uuml;nchen
-<br>
-<a href="http://www.helmholtz-muenchen.de/en/imprint/index.html">Legal</a>
-<br><br>
+$footer
 </div>
 </div>
 </div>

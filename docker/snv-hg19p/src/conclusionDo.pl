@@ -27,4 +27,4 @@ $snv->insertIntoConclusion($ref,$dbh,'conclusion');
 
 $dbh->disconnect;
 
-$snv->printFooter();
+$snv->printFooter($dbh);

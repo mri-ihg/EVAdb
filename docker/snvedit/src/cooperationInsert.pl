@@ -17,7 +17,6 @@ my $cgiquery        = new CGI;
 my $ref             = $cgiquery->Vars;
 my $snv             = new Snvedit;
 my $personref       = "";
-my $dbh             = "";
 my @fields          =();
 my @values          =();
 
@@ -29,7 +28,7 @@ my $sth             = "";
 ########################################################################
 
 $snv->printHeader;
-$dbh = $snv->loadSessionId();
+my ($dbh) = $snv->loadSessionId();
 
 # encoded name
 
@@ -52,6 +51,6 @@ $snv->showMenu();
 $snv->showAllCooperation($dbh,$ref->{idcooperation});
 
 
-$snv->printFooter();
+$snv->printFooter($dbh);
 
 

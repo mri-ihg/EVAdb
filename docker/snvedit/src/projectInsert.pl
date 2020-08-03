@@ -50,6 +50,6 @@ $solexa->showMenu();
 $solexa->showAllProject($dbh,$ref->{idproject});
 
 
-$solexa->printFooter();
+$solexa->printFooter($dbh);
 
 

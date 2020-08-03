@@ -38,6 +38,6 @@ $snv->showMenu("admin");
 $snv->showAllAdmin($dbh,$ref->{iduser});
 
 
-$snv->printFooter();
+$snv->printFooter($dbh);
 
 

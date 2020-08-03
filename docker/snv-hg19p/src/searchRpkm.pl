@@ -12,7 +12,7 @@ my $cgi         = new CGI;
 my $name        = $cgi->param('name');
 
 $snv->printHeader();
-$snv->loadSessionId();
+my ($dbh) = $snv->loadSessionId();
 
 #$name           = $snv->htmlencode($name);
 my $search      = $snv->initSearchRpkm($name);
@@ -26,4 +26,4 @@ $snv->drawMask($search);
 
 print "</form>" ;
 
-$snv->printFooter();
+$snv->printFooter($dbh);

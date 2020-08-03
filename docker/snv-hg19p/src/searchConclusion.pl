@@ -11,7 +11,7 @@ my $snv         = new Snv;
 my $search      = $snv->initSearchConclusion();
 
 $snv->printHeader();
-$snv->loadSessionId();
+my ($dbh) = $snv->loadSessionId();
 	
 $snv->showMenu("searchConclusion");
 print "<span class=\"big\">Search</span><br><br>" ;
@@ -22,4 +22,4 @@ $snv->drawMask($search);
 
 print "</form>" ;
 
-$snv->printFooter();
+$snv->printFooter($dbh);

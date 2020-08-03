@@ -12,7 +12,7 @@ my $cgi         = new CGI;
 my $pedigree    = $cgi->param('pedigree');
 
 $snv->printHeader();
-$snv->loadSessionId();
+my ($dbh) = $snv->loadSessionId();
 
 #$pedigree       = $snv->htmlencode($pedigree);
 my $search      = $snv->initSearchDiffEx($pedigree);
@@ -26,4 +26,4 @@ $snv->drawMask($search);
 
 print "</form>" ;
 
-$snv->printFooter();
+$snv->printFooter($dbh);

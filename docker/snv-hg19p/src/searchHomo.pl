@@ -13,7 +13,7 @@ my $sname       = $cgi->param('sname');
 my $search      = $snv->initSearchHomozygosity($sname);
 
 $snv->printHeader();
-$snv->loadSessionId();
+my ($dbh) = $snv->loadSessionId();
 
 #$sname          = $snv->htmlencode($sname);
 my $search      = $snv->initSearchHomozygosity($sname);
@@ -27,4 +27,4 @@ $snv->drawMask($search);
 
 print "</form>" ;
 
-$snv->printFooter();
+$snv->printFooter($dbh);

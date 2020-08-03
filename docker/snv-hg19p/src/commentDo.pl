@@ -27,4 +27,4 @@ $snv->insertIntoComment($ref,$dbh,'comment');
 
 $dbh->disconnect;
 
-$snv->printFooter();
+$snv->printFooter($dbh);

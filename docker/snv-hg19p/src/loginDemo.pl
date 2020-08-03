@@ -222,4 +222,4 @@ List all sample information. Disease is a required feature.
 </tbody></table>
 );
 
-$snv->printFooter();
+$snv->printFooter($dbh);

@@ -17,7 +17,6 @@ my $cgiquery        = new CGI;
 my $ref             = $cgiquery->Vars;
 my $snv             = new Snvedit;
 my $personref       = "";
-my $dbh             = "";
 my @fields          =();
 my @values          =();
 
@@ -28,28 +27,28 @@ my $sth             = "";
 # main
 ########################################################################
 
-$snv ->printHeader;
-$dbh = $snv ->loadSessionId();
+$snv->printHeader;
+my ($dbh) = $snv->loadSessionId();
 
 # encoded name
 
 # delete beginning and trailing space
-$snv ->deleteSpace($ref);
+$snv->deleteSpace($ref);
 
 if ($ref->{mode} eq "edit") {
 	delete($ref->{"mode"});
-	$snv->editDisease($ref,$dbh,'disease');
+	$snv->editInvoiceitem($ref,$dbh,'invoiceitem');
 }
 else {
 	delete($ref->{"mode"});
-	$snv->insertIntoDisease($ref,$dbh,'disease');
+	$snv->insertIntoInvoiceitem($ref,$dbh,'invoiceitem');
 }
 
 # select and display new entry
 $snv->showMenu();
 
 
-$snv->showAllDisease($dbh,$ref->{iddisease});
+$snv->showAllInvoiceitem($dbh,$ref->{idinvoiceitem});
 
 
 $snv->printFooter($dbh);

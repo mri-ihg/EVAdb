@@ -1,27 +1,26 @@
 #!/usr/bin/perl 
 
 ########################################################################
-# Tim M Strom   February 2007
+# Tim M Strom   Sept 2010
 ########################################################################
 
 use strict;
 use CGI;
 use CGI::Session;
-use CGI::Carp qw(fatalsToBrowser);
-BEGIN {require './Snv.pm';}
+BEGIN {require './Snvedit.pm';}
 use DBI;
 
-my $snv         = new Snv;
+my $snv         = new Snvedit;
 my $cgiquery    = new CGI;
-my $search      = $snv->initSearchDenovo();
 
-$snv->printHeader();
+$snv->printHeader("","cgisessid");
 my ($dbh) = $snv->loadSessionId();
+my $search      = $snv->initInvoiceSearch();
 	
-$snv->showMenu("searchDenovo");
-print "<span class=\"big\">Search</span><br><br>" ;
+$snv->showMenu("searchInvoice");
+print "<span class=\"big\">Invoice</span><br><br>" ;
 
-print "<form action=\"searchDenovoDo.pl\" method=\"post\">" ;
+print "<form action=\"invoiceSearchDo.pl\" method=\"post\" name=\"myform\">" ;
 
 $snv->drawMask($search);
 

@@ -1045,6 +1045,7 @@ else {
 }
 }
 
+return($dbh);
 }
 ########################################################################
 # delete sessionid
@@ -6824,7 +6825,7 @@ delete($ref->{password});
 if ($ref->{name} eq "") {
 	showMenu("");
 	print "Please fill in Name. Nothing done.<br>";
-	printFooter();
+	printFooter("",$dbh);
 	exit(1);
 }
 
@@ -6878,7 +6879,7 @@ else { # insert
 	if ($password eq "") {
 		showMenu("");
 		print "Please fill in Password. Nothing done.<br>";
-		printFooter();
+		printFooter("",$dbh);
 		exit(1);
 	}
 
@@ -19463,7 +19464,7 @@ SELECT
 s.name,
 concat(cl.solved,' ',cl.genesymbol),
 h.idsample,
-s.pedigree,s.sex,s.foreignid,e.sry,c.name,
+s.pedigree,s.sex,s.foreignid,s.externalseqid,e.sry,c.name,
 group_concat(DISTINCT l.lname),lt.ltlibtype,lp.lplibpair,a.name,
 e.mix,
 e.duplicates*100,e.opticalduplicates*100,e.reads,e.mapped,e.percentm,e.properlyp,e.seq,
@@ -19529,6 +19530,7 @@ $out->execute(@values2) || die print "$DBI::errstr";
 	'Pedigree',
 	'Sex',
 	'Foreign ID',
+	'External<br>SeqID',
 	'SRY',
 	'Cooperation',
 	'Libraries',
@@ -19616,7 +19618,7 @@ while (@row = $out->fetchrow_array) {
 				print "<td><a href='importHPO.pl?sname=$sname'>New</a></td>";
 			}
 		}
-		elsif ($i == 6) { # SRY
+		elsif ($i == 7) { # SRY
 			if ( ($row[$i] ne '') and ($row[$i] < 100 ) and ($row[$i-2] eq "male") and ($row[8] eq 'exomic')) {
 				print "<td $warningtdbg>$row[$i]</td>";
 			}
@@ -19633,7 +19635,7 @@ while (@row = $out->fetchrow_array) {
 				print "<td>$row[$i]</td>";
 			}
 		}
-		elsif ($i == 12) { # Contamination
+		elsif ($i == 13) { # Contamination
 			if ( ($row[$i] ne '') and ($row[$i] >= 0.03) ) {
 				print "<td $warningtdbg>$row[$i]</td>";
 			}
@@ -19641,7 +19643,7 @@ while (@row = $out->fetchrow_array) {
 				print "<td> $row[$i]</td>";
 			}
 		}
-		elsif ($i == 19) { # Seq (GB)
+		elsif ($i == 20) { # Seq (GB)
 			if ( ($row[$i] ne '') and ($row[$i] < 8) ) {
 				print "<td class='textred'>$row[$i]</td>";
 			}
@@ -19649,7 +19651,7 @@ while (@row = $out->fetchrow_array) {
 				print "<td> $row[$i]</td>";
 			}
 		}
-		elsif ($i == 37) { 
+		elsif ($i == 38) { 
 			print "<td class='width230'>$row[$i]</td>";
 		}
 		else {
@@ -21273,6 +21275,7 @@ s.name,
 concat(cl.solved,' ',cl.genesymbol),
 h.idsample,
 s.foreignid,
+s.externalseqid,
 s.pedigree,
 s.sex,
 s.saffected,
@@ -21312,7 +21315,8 @@ $out->execute(@values2) || die print "$DBI::errstr";
 	'ID Links',
 	'Con-<br>clusion',
 	'HPO',
-	'Foreign Id',
+	'Foreign ID',
+	'External<br>SeqID',
 	'Pedigree',
 	'Sex',
 	'Affected',
@@ -23623,11 +23627,62 @@ print qq(
 }
 #<td align="center" class="header"><a class="$searchHom" href="searchHom.pl">Homozygous statistics</a></td>
 ########################################################################
+# login_message
+########################################################################
+
+sub login_message {
+my $self        = shift;
+
+my $item          = "";
+my $value         = "";
+my %logins        = ();
+my $login_message = "";
+
+open(IN, "$text");
+while (<IN>) {
+	chomp;
+	($item,$value)=split(/\:/);
+	$logins{$item}=$value;
+}
+close IN;
+my $dbh = DBI->connect("DBI:mysql:$maindb", "$logins{dblogin}", "$logins{dbpasswd}") || die print "$DBI::errstr";
+
+my $query = "SELECT module FROM $exomevcfe.textmodules WHERE name='login_message'";
+my $out = $dbh->prepare($query) || die print "$DBI::errstr";
+$out->execute() || die print "$DBI::errstr";
+my $login_message = $out->fetchrow_array;
+
+return($dbh,$login_message);
+}
+########################################################################
 # printFooter
 ########################################################################
 
 sub printFooter {
 my $self        = shift;
+my $dbh         = shift;
+
+my $item  = "";
+my $value = "";
+my %logins = ();
+# select footer from exomevcfe.textmodules
+#select password from file
+if ($dbh eq "asdf") {
+	open(IN, "$text");
+	while (<IN>) {
+		chomp;
+		($item,$value)=split(/\:/);
+		$logins{$item}=$value;
+	}
+	close IN;
+	$dbh = DBI->connect("DBI:mysql:$maindb", "$logins{dblogin}", "$logins{dbpasswd}") || die print "$DBI::errstr";
+}
+
+my $query = "SELECT module FROM $exomevcfe.textmodules WHERE name='footer'";
+my $out = $dbh->prepare($query) || die print "$DBI::errstr";
+$out->execute() || die print "$DBI::errstr";
+my $footer = $out->fetchrow_array;
+
 
 print qq(
 <br><br>
@@ -23635,9 +23690,7 @@ print qq(
 <div id="footer">
 <br>
 <div class="footertext ">
-<a href="http://ihg.helmholtz-muenchen.de">Institute of Human Genetics,</a> Helmholtz Zentrum M&uuml;nchen
-<br>
-<a href="http://www.helmholtz-muenchen.de/en/imprint/index.html">Legal</a>
+$footer
 <br><br>
 </div>
 </div>

@@ -44,4 +44,4 @@ print $cgiquery->hidden(-name=>'mode',-default=>$mode);
 
 print "</form>" ;
 
-$snvedit->printFooter();
+$snvedit->printFooter($dbh);

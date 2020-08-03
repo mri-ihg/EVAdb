@@ -10,7 +10,7 @@ BEGIN {require './Snv.pm';}
 my $snv         = new Snv;
 
 $snv->printHeader();
-$snv->loadSessionId();
+my ($dbh) = $snv->loadSessionId();
 
 my $search      = $snv->initSearchSample();
 	
@@ -23,4 +23,4 @@ $snv->drawMask($search);
 
 print "</form>" ;
 
-$snv->printFooter();
+$snv->printFooter($dbh);
