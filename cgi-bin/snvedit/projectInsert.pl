@@ -28,7 +28,7 @@ my $sth             = "";
 ########################################################################
 
 $solexa->printHeader;
-my $dbh = $solexa->loadSessionId();
+my ($dbh) = $solexa->loadSessionId();
 
 
 # delete beginning and trailing space

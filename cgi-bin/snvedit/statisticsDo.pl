@@ -9,22 +9,21 @@ use CGI;
 BEGIN {require './Snvedit.pm';}
 use DBI;
 
-my $cgiquery     = new CGI;
-my $ref          = $cgiquery->Vars;
+my $cgiquery    ()() = new CGI;
+my $ref         ()() = $cgiquery->Vars;
 
-my $snv       = new Snvedit;
+my $snv      ()() = new Snvedit;
 
 ########################################################################
 # main
 ########################################################################
 
 $snv->printHeader();
-my $dbh = $snv->loadSessionId();
+my ($dbh) = $snv->loadSessionId();
 
 $snv->showMenu('statistics');
 
 $snv->searchStatistics($dbh,$ref);
 
-$dbh->disconnect;
 
 $snv->printFooter($dbh);

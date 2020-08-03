@@ -21,7 +21,7 @@ $id              = $cgiquery->param('id');
 $project = $solexa->initProject();
 
 $solexa->printHeader();
-my $dbh = $solexa->loadSessionId();
+my ($dbh) = $solexa->loadSessionId();
 
 if ($mode eq 'edit') {
 	$solexa->showMenu("");

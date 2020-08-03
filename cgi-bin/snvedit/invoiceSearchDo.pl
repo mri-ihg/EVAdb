@@ -19,12 +19,11 @@ my $snv       = new Snvedit;
 ########################################################################
 
 $snv->printHeader();
-my $dbh = $snv->loadSessionId();
+my ($dbh) = $snv->loadSessionId();
 
 $snv->showMenu('searchInvoice');
 
 $snv->searchInvoice($dbh,$ref);
 
-$dbh->disconnect;
 
 $snv->printFooter($dbh);

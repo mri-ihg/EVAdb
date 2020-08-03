@@ -25,6 +25,5 @@ print "<span class=\"big\">Conclusion inserted</span><br><br>" ;
 
 $snv->insertIntoConclusion($ref,$dbh,'conclusion');
 
-$dbh->disconnect;
 
 $snv->printFooter($dbh);

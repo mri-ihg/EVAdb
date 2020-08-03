@@ -34,6 +34,5 @@ $snv->drawMask($search);
 print "</form>" ;
 
 
-$dbh->disconnect;
 
 $snv->printFooter($dbh);

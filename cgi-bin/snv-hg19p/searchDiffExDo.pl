@@ -29,6 +29,5 @@ $snv->searchDiffEx($dbh,$ref);
 
 print "</form>";
 
-$dbh->disconnect;
 
 $snv->printFooter($dbh);

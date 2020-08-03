@@ -76,8 +76,8 @@ GROUP_CONCAT(DISTINCT omim.disease),
 s.sex,
 GROUP_CONCAT(DISTINCT hpo.symptoms separator ", "),
 GROUP_CONCAT(DISTINCT hpo.hpo separator " "),
-evs.ea_het+evs.aa_het,
-evs.ea_homalt+evs.aa_homalt,
+evs.het,
+evs.homalt,
 x.coverage,
 (select count(xx.idsample) from snvsample xx where (xx.idsnv=x.idsnv and xx.alleles=1)),
 (select count(xx.idsample) from snvsample xx where (xx.idsnv=x.idsnv and xx.alleles=2)),
@@ -239,22 +239,21 @@ $i=0;
 foreach (@patho) {
 	@vep = &get_vep_for_report($chrom[$i],$start[$i],$refallele[$i],$altallele[$i]);
 	#print "selected @vep<br>";
-	$tmp             = $vep[6];
-	$tmp = "splice-acceptor" if $tmp eq "splice_acceptor_variant";
-	$tmp = "splice-donor" if $tmp eq "splice_donor_variant";
-	$tmp = "nonsense" if $tmp eq "stop_gained";
-	$tmp = "frameshift" if $tmp eq "frameshift_variant";
-	$tmp = "stop-lost" if $tmp eq "stop_lost";
-	$tmp = "start-lost" if $tmp eq "start_lost";
-	$tmp = "inframe-insertion" if $tmp eq "inframe_insertion";
-	$tmp = "inframe-deletion" if $tmp eq "inframe_deletion";
-	$tmp = "missense" if $tmp eq "missense_variant";
-	$tmp = "splice-region" if $tmp eq "splice_region_variant";
-	$tmp = "synonymous" if $tmp eq "synonymous_variant";
-	$tmp = "5-prime-UTR" if $tmp eq "5_prime_UTR_variant";
-	$tmp = "3-prime-UTR" if $tmp eq "3_prime_UTR_variant";
-	$tmp = "intron" if $tmp eq "intron_variant";
-	$tmp = "" if $tmp eq "";
+	$tmp = $vep[6];
+	$tmp = "splice-acceptor"   if $tmp =~ /splice_acceptor_variant/;
+	$tmp = "splice-donor"      if $tmp =~ /splice_donor_variant/;
+	$tmp = "nonsense"          if $tmp =~ /stop_gained/;
+	$tmp = "frameshift"        if $tmp =~ /frameshift_variant/;
+	$tmp = "stop-lost"         if $tmp =~ /stop_lost/;
+	$tmp = "start-lost"        if $tmp =~ /start_lost/;
+	$tmp = "inframe-insertion" if $tmp =~ /inframe_insertion/;
+	$tmp = "inframe-deletion"  if $tmp =~ /inframe_deletion/;
+	$tmp = "missense"          if $tmp =~ /missense_variant/;
+	$tmp = "splice-region"     if $tmp =~ /splice_region_variant/;
+	$tmp = "synonymous"        if $tmp =~ /synonymous_variant/;
+	$tmp = "5-prime-UTR"       if $tmp =~ /5_prime_UTR_variant/;
+	$tmp = "3-prime-UTR"       if $tmp =~ /3_prime_UTR_variant/;
+	$tmp = "intron"            if $tmp =~ /intron_variant/;
 	$vepconseq[$i]   = $tmp;
 	$vepfeature[$i]  = $vep[4];
 	$vepimpact[$i]   = $vep[13];
@@ -393,64 +392,76 @@ print qq#
 	else {
 		newArr.Secondary_address = newArr.Secondary_address.replace(/\\n/g, "<br>");
 	}
-	if (document.querySelector(".prename").innerHTML !== null) {
-	document.querySelector(".prename").innerHTML   = newArr.Prename;
+	if (document.querySelector(".prename") !== null) {
+		document.querySelector(".prename").innerHTML   = newArr.Prename;
 	}
-	if (document.querySelector(".prename2").innerHTML !== null) {
-	document.querySelector(".prename2").innerHTML   = newArr.Prename;
+	if (document.querySelector(".prename2") !== null) {
+		document.querySelector(".prename2").innerHTML   = newArr.Prename;
 	}
-	if (document.querySelector(".prename3").innerHTML !== null) {
-	document.querySelector(".prename3").innerHTML   = newArr.Prename;
+	if (document.querySelector(".prename3") !== null) {
+		document.querySelector(".prename3").innerHTML   = newArr.Prename;
 	}
 	document.querySelector(".name").innerHTML      = newArr.Name.concat(', ', newArr.Prename);
 	document.querySelector(".birth").innerHTML     = newArr.Birth;
 	document.querySelector(".received").innerHTML  = newArr.Received;
-	if (document.querySelector(".mname").innerHTML !== null) {
+	if (document.querySelector(".mname") !== null) {
+		if (newArr.Mother_Name === undefined) {
+			newArr.Mother_Name = "";
+		}
+		if (newArr.Mother_Prename === undefined) {
+			newArr.Mother_Prename = "";
+		}
 		document.querySelector(".mname").innerHTML     = newArr.Mother_Name.concat(', ', newArr.Mother_Prename);
 	}
-	if (document.querySelector(".mbirth").innerHTML !== null) {
+	if (document.querySelector(".mbirth") !== null) {
 		document.querySelector(".mbirth").innerHTML    = newArr.Mother_Birth;
 	}
-	if (document.querySelector(".mreceived").innerHTML !== null) {
+	if (document.querySelector(".mreceived") !== null) {
 		document.querySelector(".mreceived").innerHTML = newArr.Mother_Received;
 	}
-	if (document.querySelector(".fname").innerHTML !== null) {
+	if (document.querySelector(".fname") !== null) {
+		if (newArr.Father_Name === undefined) {
+			newArr.Father_Name = "";
+		}
+		if (newArr.Father_Prename === undefined) {
+			newArr.Father_Prename = "";
+		}
 		document.querySelector(".fname").innerHTML     = newArr.Father_Name.concat(', ', newArr.Father_Prename);
 	}
-	if (document.querySelector(".fbirth").innerHTML !== null) {
+	if (document.querySelector(".fbirth") !== null) {
 		document.querySelector(".fbirth").innerHTML    = newArr.Father_Birth;
 	}
-	if (document.querySelector(".freceived").innerHTML !== null) {
+	if (document.querySelector(".freceived") !== null) {
 		document.querySelector(".freceived").innerHTML = newArr.Father_Received;
 	}
- 	if (document.querySelector(".synopsis").innerHTML !== null) {
+ 	if (document.querySelector(".synopsis") !== null) {
 		if (newArr.Synopsis === undefined) {
 			newArr.Synopsis = "";
 		}
 		document.querySelector(".synopsis").innerHTML = newArr.Synopsis;
 	}
-	if (document.querySelector(".casehistory").innerHTML !== null) {
+	if (document.querySelector(".casehistory") !== null) {
 		if (newArr.Casehistory === undefined) {
 			newArr.Casehistory = "";
 		}
 		document.querySelector(".casehistory").innerHTML = newArr.Casehistory;
 	}
-	if (document.querySelector(".prevfindings").innerHTML !== null) {
+	if (document.querySelector(".prevfindings") !== null) {
 		if (newArr.Prevfindings === undefined) {
 			newArr.Prevfindings = "";
 		}
 		document.querySelector(".prevfindings").innerHTML = newArr.Prevfindings;
 	}
-	if (document.querySelector(".indication").innerHTML !== null) {
+	if (document.querySelector(".indication") !== null) {
 		if (newArr.Indication === undefined) {
 			newArr.Indication = "";
 		}
 		document.querySelector(".indication").innerHTML = newArr.Indication;
 	}
-	if (document.querySelector(".referring_clinician").innerHTML !== null) {
+	if (document.querySelector(".referring_clinician") !== null) {
 		document.querySelector(".referring_clinician").innerHTML = newArr.Referring_clinician;
 	}
-	if (document.querySelector(".secondary_address").innerHTML !== null) {
+	if (document.querySelector(".secondary_address") !== null) {
 		document.querySelector(".secondary_address").innerHTML = newArr.Secondary_address;
 	}
    }
@@ -919,7 +930,7 @@ my $i = shift;
 print qq#
 <p $left>Details zu den Varianten</p>
 <table style='width:$width;border-collapse:collapse;border-right:0;'>
-<tr><td $td_center>Variante</td><td $td_center>Abdeckung<br>in Index</td><td $td_center>VEP IMPACT<sup $sup>1</sup></td><td $td_center>H&auml;ufigkeit in<br>in-house Exomen<sup $sup>2</sup></td><td $td_center>H&auml;ufigkeit in<br>gnomAD<br>European and African</td></tr> 
+<tr><td $td_center>Variante</td><td $td_center>Abdeckung<br>in Index</td><td $td_center>VEP IMPACT<sup $sup>1</sup></td><td $td_center>H&auml;ufigkeit in<br>in-house Exomen<sup $sup>2</sup></td><td $td_center>H&auml;ufigkeit in<br>gnomAD</td></tr> 
 #;
 foreach (@patho) {
 print qq#

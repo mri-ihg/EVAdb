@@ -24,6 +24,5 @@ my ($dbh) = $snv->loadSessionId();
 
 $snv->printVCF($dbh,$idsamplesvcf,$idsnvsvcf);
 
-$dbh->disconnect;
 
 $snv->printFooter($dbh);

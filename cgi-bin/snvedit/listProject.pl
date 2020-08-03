@@ -19,13 +19,11 @@ my $snv          = new Snvedit;
 ########################################################################
 
 $snv ->printHeader();
-my $dbh = $snv ->loadSessionId();
+my ($dbh) = $snv ->loadSessionId();
 
 $snv ->showMenu("listProject");
 print "<span class=\"big\">Search results</span><br><br>" ;
 
 $snv ->listProject($dbh,$ref);
-
-$dbh->disconnect;
 
 $snv ->printFooter($dbh);

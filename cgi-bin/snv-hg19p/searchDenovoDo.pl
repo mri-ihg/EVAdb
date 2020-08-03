@@ -27,6 +27,5 @@ print "<span class=\"big\">Search results</span><br><br>" ;
 
 $snv->searchDenovoResults($dbh,$ref);
 
-$dbh->disconnect;
 
 $snv->printFooter($dbh);

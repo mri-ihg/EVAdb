@@ -25,6 +25,5 @@ print "<span class=\"big\">Comment inserted</span><br><br>" ;
 
 $snv->insertIntoComment($ref,$dbh,'comment');
 
-$dbh->disconnect;
 
 $snv->printFooter($dbh);
