@@ -21,7 +21,7 @@ my $solexa          = new Solexa;
 ########################################################################
 
 $solexa->printHeader;
-my $dbh=$solexa->loadSessionId();
+my ($dbh) =$solexa->loadSessionId();
 
 # delete beginning and trailing space
 $solexa->deleteSpace($ref);
@@ -43,6 +43,6 @@ $solexa->showMenu();
 $solexa->showAllKit($dbh,$ref->{cid});
 
 
-$solexa->printFooter();
+$solexa->printFooter($dbh);
 
 

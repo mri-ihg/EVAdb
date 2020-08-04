@@ -18,13 +18,12 @@ my $samples      = new Solexa;
 ########################################################################
 
 $samples->printHeader;
-my $dbh=$samples->loadSessionId();
+my ($dbh) =$samples->loadSessionId();
 
 $samples->showMenu("importLibInfo");
 print "<span class=\"big\">Import library information</span><br><br>" ;
 
 $samples->importLibInfo($dbh,$ref,$file);
 
-$dbh->disconnect;
 
-$samples->printFooter();
+$samples->printFooter($dbh);

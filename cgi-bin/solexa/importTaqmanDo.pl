@@ -18,13 +18,12 @@ my $samples      = new Solexa;
 ########################################################################
 
 $samples->printHeader;
-my $dbh=$samples->loadSessionId();
+my ($dbh) =$samples->loadSessionId();
 
 $samples->showMenu("importtaqman");
 print "<span class=\"big\">Import Taqman results</span><br><br>" ;
 
 $samples->importTaqman($dbh,$ref,$file);
 
-$dbh->disconnect;
 
-$samples->printFooter();
+$samples->printFooter($dbh);

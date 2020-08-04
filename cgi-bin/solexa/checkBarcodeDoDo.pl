@@ -13,7 +13,7 @@ my $cgiquery    = new CGI;
 my $ref         = $cgiquery->Vars;
 
 $solexa->printHeader();
-my $dbh=$solexa->loadSessionId();
+my ($dbh) = $solexa->loadSessionId();
 
 $solexa->showMenu();
 print "<span class=\"big\">Update Plate Positions</span><br><br>" ;
@@ -21,4 +21,4 @@ print "<span class=\"big\">Update Plate Positions</span><br><br>" ;
 $solexa->updateplatepositions($ref,$dbh);
 
 
-$solexa->printFooter();
+$solexa->printFooter($dbh);

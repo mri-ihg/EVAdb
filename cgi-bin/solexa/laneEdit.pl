@@ -17,7 +17,6 @@ my $cgiquery        = new CGI;
 my $ref             = $cgiquery->Vars;
 my $solexa          = new Solexa;
 my $personref       = "";
-my $dbh             = "";
 
 
 ########################################################################
@@ -25,8 +24,7 @@ my $dbh             = "";
 ########################################################################
 
 $solexa->printHeader;
-
-$dbh = $solexa->dbh;
+my ($dbh) = $solexa->loadSessionId();
 
 # encoded name
 
@@ -40,6 +38,6 @@ $solexa->showMenu();
 
 $solexa->showAllLane($dbh,$ref->{aid});
 
-$solexa->printFooter();
+$solexa->printFooter($dbh);
 
 

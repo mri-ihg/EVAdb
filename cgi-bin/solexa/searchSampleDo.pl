@@ -17,7 +17,7 @@ my $solexa       = new Solexa;
 ########################################################################
 
 $solexa->printHeader();
-my $dbh=$solexa->loadSessionId();
+my ($dbh) =$solexa->loadSessionId();
 
 $solexa->showMenu('searchSample');
 
@@ -65,6 +65,5 @@ $solexa->searchSample($dbh,$ref);
 
 print "</form>";
 
-$dbh->disconnect;
 
-$solexa->printFooter();
+$solexa->printFooter($dbh);

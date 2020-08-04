@@ -15,7 +15,7 @@ my $samples      = new Solexa;
 ########################################################################
 
 $samples->printHeader;
-my $dbh=$samples->loadSessionId();
+my ($dbh) =$samples->loadSessionId();
 
 $samples->showMenu();
 print "<span class=\"big\">Make Pool Extern</span><br><br>" ;
@@ -30,4 +30,4 @@ Nothing is stored in this step.<br />
 </form>
 #;
 
-$samples->printFooter();
+$samples->printFooter($dbh);
