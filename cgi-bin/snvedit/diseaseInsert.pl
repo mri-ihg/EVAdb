@@ -28,7 +28,7 @@ my $sth             = "";
 ########################################################################
 
 $snv ->printHeader;
-($dbh) = $snv ->loadSessionId();
+my ($dbh) = $snv ->loadSessionId();
 
 # encoded name
 
