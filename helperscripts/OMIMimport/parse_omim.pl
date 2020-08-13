@@ -141,7 +141,7 @@ while (<IN>) {
 			#unless ($omimdisease =~ /\d\d\d\d\d\d/) {
 			#	print "Not found $disease $omimdisease\n$_\n\n";
 			#}
-			unless ($omimdisease =~ /\d\d\d\d\d\d/) {
+			if ($omimdisease =~ /\d\d\d\d\d\d/) {
 				$inheritance{$omimdisease}  = $inheritance;
 				$comment{$omimdisease}      = $comment;
 				$inheritance                = "";
