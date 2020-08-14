@@ -19,13 +19,12 @@ my $snvedit      = new Snvedit;
 ########################################################################
 
 $snvedit->printHeader;
-my $dbh = $snvedit->loadSessionId();
+my ($dbh) = $snvedit->loadSessionId();
 
 $snvedit->showMenu("importmtdnatsamples");
 print "<span class=\"big\">Import mtDNA sample information</span><br><br>" ;
 
 $snvedit->importmtDNASamples($dbh,$ref,$file);
 
-$dbh->disconnect;
 
 $snvedit->printFooter($dbh);

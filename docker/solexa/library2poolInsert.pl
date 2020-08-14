@@ -18,7 +18,6 @@ my $cgiquery        = new CGI;
 my $ref             = $cgiquery->Vars;
 my $solexa          = new Solexa;
 my $personref       = "";
-my $dbh             = "";
 my @fields          =();
 my @values          =();
 
@@ -31,8 +30,8 @@ my $forward  = qq#<meta http-equiv="refresh" content="0;  URL=pool.pl?id=$id&mod
 ########################################################################
 
 $solexa->printHeader($forward);
+my ($dbh) = $solexa->loadSessionId();
 
-$dbh = $solexa->dbh;
 
 # encoded name
 
@@ -70,6 +69,6 @@ else {
 #	print "</form>";
 #}
 
-$solexa->printFooter();
+$solexa->printFooter($dbh);
 
 

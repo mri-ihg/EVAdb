@@ -20,7 +20,7 @@ my $idinvoiceitem   = $cgiquery->param('idinvoiceitem');
 $item = $snv ->initInvoiceitem($idinvoice);
 
 $snv->printHeader();
-my $dbh = $snv->loadSessionId();
+my ($dbh) = $snv->loadSessionId();
 
 if ($mode eq 'edit') {
 	$snv->showMenu("");

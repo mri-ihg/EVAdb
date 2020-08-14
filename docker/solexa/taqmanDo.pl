@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w
+#!/usr/bin/perl
 
 ########################################################################
 # Tim M Strom   Sept 2010
@@ -17,7 +17,7 @@ my $solexa       = new Solexa;
 ########################################################################
 
 $solexa->printHeader();
-my $dbh=$solexa->loadSessionId();
+my ($dbh) = $solexa->loadSessionId();
 
 $solexa->showMenu('taqman');
 
@@ -32,6 +32,5 @@ $solexa->searchTaqman($dbh,$ref);
 
 print "</form>";
 
-$dbh->disconnect;
 
-$solexa->printFooter();
+$solexa->printFooter($dbh);

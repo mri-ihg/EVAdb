@@ -14,7 +14,7 @@ my $cgiquery    = new CGI;
 my $statistics  = $solexa->initStatistics();
 
 $solexa->printHeader();
-my $dbh=$solexa->loadSessionId();
+my ($dbh) =$solexa->loadSessionId();
 
 $solexa->showMenu("statistics");
 print "<span class=\"big\">Statistics</span><br><br>" ;
@@ -25,4 +25,4 @@ $solexa->drawMask($statistics);
 
 print "</form>" ;
 
-$solexa->printFooter();
+$solexa->printFooter($dbh);

@@ -23,7 +23,6 @@ if ($burdentest eq "0") {
 	$snv->showMenu('searchDiseaseGene');
 	print "<span class=\"big\">Search results</span><br><br>" ;
 	$snv->searchResultsDiseaseGene($dbh,$ref);
-	$dbh->disconnect;
 	$snv->printFooter($dbh);
 }
 else { # because of fork no header

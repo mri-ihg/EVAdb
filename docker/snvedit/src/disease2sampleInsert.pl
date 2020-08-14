@@ -17,7 +17,6 @@ my $cgiquery        = new CGI;
 my $ref             = $cgiquery->Vars;
 my $snvedit          = new Snvedit;
 my $personref       = "";
-my $dbh             = "";
 my @fields          =();
 my @values          =();
 
@@ -31,7 +30,7 @@ my $forward  = qq#<meta http-equiv="refresh" content="0;  URL=sample.pl?id=$id&m
 ########################################################################
 
 $snvedit->printHeader('','','','',$forward);
-my $dbh = $snvedit->loadSessionId();
+my ($dbh) = $snvedit->loadSessionId();
 
 
 # encoded name

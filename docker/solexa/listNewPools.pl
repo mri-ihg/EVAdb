@@ -11,9 +11,9 @@ use DBI;
 
 my $solexa     = new Solexa;
 my $cgiquery    = new CGI;
-my $dbh         = $solexa->dbh;
 
 $solexa->printHeader();
+my ($dbh) = $solexa->loadSessionId();
 
 $solexa->showMenu("listnewpools");
 print "<span class=\"big\">New Pools</span><br><br>" ;
@@ -22,4 +22,4 @@ $solexa->listNewPools($dbh);
 
 print "</form>" ;
 
-$solexa->printFooter();
+$solexa->printFooter($dbh);

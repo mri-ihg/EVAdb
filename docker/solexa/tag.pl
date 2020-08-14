@@ -20,7 +20,7 @@ $id              = $cgiquery->param('id');
 $tag = $solexa->initTag();
 
 $solexa->printHeader();
-my $dbh=$solexa->loadSessionId();
+my ($dbh) =$solexa->loadSessionId();
 
 if ($mode eq 'edit') {
 	$solexa->showMenu("");
@@ -43,4 +43,4 @@ print $cgiquery->hidden(-name=>'mode',-default=>$mode);
 
 print "</form>" ;
 
-$solexa->printFooter();
+$solexa->printFooter($dbh);

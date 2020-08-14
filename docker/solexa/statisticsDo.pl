@@ -17,13 +17,12 @@ my $solexa        = new Solexa;
 ########################################################################
 
 $solexa->printHeader();
-my $dbh=$solexa->loadSessionId();
+my ($dbh) =$solexa->loadSessionId();
 
 $solexa->showMenu('statistics');
 #print "<span class=\"big\">Statistics</span><br><br>" ;
 
 $solexa->searchErrorRate($dbh,$ref);
 
-$dbh->disconnect;
 
-$solexa->printFooter();
+$solexa->printFooter($dbh);

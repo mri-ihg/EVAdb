@@ -19,13 +19,12 @@ my $snvedit      = new Snvedit;
 ########################################################################
 
 $snvedit->printHeader;
-my $dbh = $snvedit->loadSessionId();
+my ($dbh) = $snvedit->loadSessionId();
 
 $snvedit->showMenu("importsamplesexternal");
 print "<span class=\"big\">Import sample information</span><br><br>" ;
 
 $snvedit->importSamplesExternal($dbh,$ref,$file);
 
-$dbh->disconnect;
 
 $snvedit->printFooter($dbh);

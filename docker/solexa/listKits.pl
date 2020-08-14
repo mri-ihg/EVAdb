@@ -18,13 +18,12 @@ my $snv          = new Solexa;
 ########################################################################
 
 $snv->printHeader();
-my $dbh=$snv->loadSessionId();
+my ($dbh) =$snv->loadSessionId();
 
 $snv->showMenu("listKits");
 print "<span class=\"big\">Search results</span><br><br>" ;
 
 $snv->listKits($dbh,$ref);
 
-$dbh->disconnect;
 
-$snv->printFooter();
+$snv->printFooter($dbh);

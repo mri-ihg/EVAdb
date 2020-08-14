@@ -13,13 +13,13 @@ my $id        = "";
 my $solexa    = new Solexa;
 my $cgiquery  = new CGI;
 my $lane      = "";
-my $dbh       = $solexa->dbh;
 
 $id              = $cgiquery->param('id');
 
 $lane = $solexa->initLane();
 
 $solexa->printHeader();
+my ($dbh) = $solexa->loadSessionId();
 
 $solexa->showMenu("");
 print "<span class=\"big\">Edit Lane</span><br><br>" ;
@@ -32,4 +32,4 @@ $solexa->drawMask($lane);
 
 print "</form>" ;
 
-$solexa->printFooter();
+$solexa->printFooter($dbh);

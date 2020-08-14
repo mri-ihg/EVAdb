@@ -14,7 +14,7 @@ my $cgiquery    = new CGI;
 my $search      = $solexa->initSearchStocks();
 
 $solexa->printHeader();
-my $dbh=$solexa->loadSessionId();
+my ($dbh) =$solexa->loadSessionId();
 	
 $solexa->showMenu("searchstock");
 print "<span class=\"big\">Search</span><br><br>" ;
@@ -25,4 +25,4 @@ $solexa->drawMask($search);
 
 print "</form>" ;
 
-$solexa->printFooter();
+$solexa->printFooter($dbh);

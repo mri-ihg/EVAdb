@@ -14,7 +14,7 @@ my $cgiquery    = new CGI;
 my $search      = $snv->initSequencing();
 
 $snv->printHeader();
-my $dbh=$snv->loadSessionId();
+my ($dbh) =$snv->loadSessionId();
 
 $snv->showMenu("sequencing");
 print "<span class=\"big\">Sequencing</span><br><br>" ;
@@ -25,4 +25,4 @@ $snv->drawMask($search);
 
 print "</form>" ;
 
-$snv->printFooter();
+$snv->printFooter($dbh);

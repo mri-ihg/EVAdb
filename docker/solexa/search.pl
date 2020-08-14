@@ -13,7 +13,7 @@ my $solexa      = new Solexa;
 my $cgiquery    = new CGI;
 
 $solexa->printHeader();
-my $dbh=$solexa->loadSessionId();
+my ($dbh) = $solexa->loadSessionId();
 my $search      = $solexa->initSearchProjects();
 	
 $solexa->showMenu("search");
@@ -25,4 +25,4 @@ $solexa->drawMask($search);
 
 print "</form>" ;
 
-$solexa->printFooter();
+$solexa->printFooter($dbh);

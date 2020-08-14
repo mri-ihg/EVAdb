@@ -21,7 +21,7 @@ my $solexa          = new Solexa;
 ########################################################################
 
 $solexa->printHeader;
-my $dbh=$solexa->loadSessionId();
+my ($dbh) =$solexa->loadSessionId();
 
 # encoded name
 
@@ -44,6 +44,6 @@ $solexa->showMenu();
 $solexa->showAllLibrary($dbh,$ref->{lid});
 
 
-$solexa->printFooter();
+$solexa->printFooter($dbh);
 
 

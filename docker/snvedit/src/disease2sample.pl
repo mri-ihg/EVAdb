@@ -21,7 +21,7 @@ $id              = $cgiquery->param('id'); #idsample
 $project = $snvedit->initDisease2sample($id);
 
 $snvedit->printHeader();
-my $dbh = $snvedit->loadSessionId();
+my ($dbh) = $snvedit->loadSessionId();
 
 if ($mode eq 'edit') {
 	$snvedit->showMenu("");

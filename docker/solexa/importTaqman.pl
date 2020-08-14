@@ -15,7 +15,7 @@ my $solexa      = new Solexa;
 ########################################################################
 
 $solexa->printHeader;
-my $dbh=$solexa->loadSessionId();
+my ($dbh) =$solexa->loadSessionId();
 
 $solexa->showMenu("importtaqman");
 print "<span class=\"big\">Import Taqman results</span><br><br>" ;
@@ -32,4 +32,4 @@ value='Import' >
 </form>
 #;
 
-$solexa->printFooter();
+$solexa->printFooter($dbh);

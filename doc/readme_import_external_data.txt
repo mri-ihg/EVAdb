@@ -114,11 +114,16 @@ Modify path, user and password in ClinVarForCron.sh and run this script.
 
 # Import UCSC tables for hg19
 mysqldump --lock-tables=false --user=genomep --password=password --host=genome-mysql.cse.ucsc.edu hg19 knownGene kgXref knownGenePep refGene | mysql hg19
+mysqldump --lock-tables=false --user=genomep --password=password --host=genome-mysql.cse.ucsc.edu proteins140122  hgncXref | mysql hg19
 # delete the genes on the mitochondrial genome
 echo "delete from hg19.knownGene where chrom='chrM';" | mysql hg19
 
 # We use hg38 for the mitochondrial genome
 mysqldump --lock-tables=false --user=genomep --password=password --host=genome-mysql.cse.ucsc.edu hg38 wgEncodeGencodeBasicV20 | mysql hg19
+
+# Download and import the information from HGNC
+wget ftp://ftp.ebi.ac.uk/pub/databases/genenames/hgnc/tsv/hgnc_complete_set.txt -O hgnc.txt
+mysqlimport -L --ignore-lines=1 --fields-terminated-by='\t' --fields-enclosed-by='"' hg19 hgnc.txt
 
 #############################################################################
 # Import data into gene tables of EVAdb
@@ -132,6 +137,8 @@ echo "CREATE VIEW knownGeneSymbol AS select kg.name AS name,kg.chrom AS chrom,kg
 echo "insert into gene (geneSymbol,nonsynpergene,delpergene) select distinct replace(geneSymbol , ' ','_'),0,0 from hg19.knownGeneSymbol;" | mysql exomehg19plus
 echo "insert into gene (geneSymbol,nonsynpergene,delpergene) select distinct replace(name2 , ' ','_'),0,0 from hg19.refGene;" | mysql exomehg19
 echo "insert into transcript (idgene,name,chrom,exonStarts,exonEnds) select (select idgene from exomehg19.gene where geneSymbol=replace(r.name2 , ' ','_')),name,chrom,exonStarts,exonEnds from hg19.refGene r where cdsEnd>cdsStart;" | mysql exomehg19
+echo "UPDATE exomehg19plus.gene v SET v.hgncId = (SELECT DISTINCT x.hgncId FROM hg19.hgncXref x WHERE  v.genesymbol=x.symbol);" | mysql exomehg19plus
+echo "UPDATE exomehg19plus.gene v SET v.approved = (SELECT x.symbol FROM hg19.hgnc x WHERE  v.hgncId=x.hgnc_id);" | mysql exomehg19plus
 
 # add the mitochondrial genome from hg38
 echo "insert into exomehg19plus.gene (genesymbol) ( select name2 from hg19.wgEncodeGencodeBasicV20 where chrom='chrM' group by name2);" | mysql exomehg19plus

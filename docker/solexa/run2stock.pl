@@ -21,7 +21,7 @@ my $rid          = $cgiquery->param('rid');
 $project = $solexa->initRun2stock($rid); # fuer Vorbelegung von Add Stock in EditRun
 
 $solexa->printHeader();
-my $dbh=$solexa->loadSessionId();
+my ($dbh) =$solexa->loadSessionId();
 
 if ($mode eq 'edit') {
 	$solexa->showMenu("");
@@ -44,4 +44,4 @@ print $cgiquery->hidden(-name=>'mode',-default=>$mode);
 
 print "</form>" ;
 
-$solexa->printFooter();
+$solexa->printFooter($dbh);

@@ -12,7 +12,7 @@ my $solexa     = new Solexa;
 my $cgiquery    = new CGI;
 
 $solexa->printHeader();
-my $dbh=$solexa->loadSessionId();
+my ($dbh) =$solexa->loadSessionId();
 
 $solexa->showMenu("listuser");
 print "<span class=\"big\">Users</span><br><br>" ;
@@ -21,4 +21,4 @@ $solexa->listUser($dbh);
 
 print "</form>" ;
 
-$solexa->printFooter();
+$solexa->printFooter($dbh);

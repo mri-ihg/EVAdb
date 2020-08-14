@@ -24,6 +24,5 @@ print "<span class=\"big\">HPO</span><br><br>" ;
 #$idsample      = $snv->htmlencode($idsample);
 $snv->showHPO($dbh,$idsample);
 
-$dbh->disconnect;
 
 $snv->printFooter($dbh);
