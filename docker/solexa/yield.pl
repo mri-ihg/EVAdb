@@ -15,7 +15,7 @@ my $yield       = $solexa->initYield();
 
 #$solexa->printHeader("","cgisessid");
 $solexa->printHeader("","cgisessid");
-my $dbh=$solexa->loadSessionId();
+my ($dbh) =$solexa->loadSessionId();
 	
 $solexa->showMenu("yield");
 print "<span class=\"big\">Yield</span><br><br>" ;
@@ -26,4 +26,4 @@ $solexa->drawMask($yield);
 
 print "</form>" ;
 
-$solexa->printFooter();
+$solexa->printFooter($dbh);

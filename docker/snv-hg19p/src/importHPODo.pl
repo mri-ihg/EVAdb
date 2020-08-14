@@ -25,6 +25,5 @@ print "<span class=\"big\">Import done</span><br><br>" ;
 
 $snv->importHPO($dbh,$ref);
 
-$dbh->disconnect;
 
 $snv->printFooter($dbh);

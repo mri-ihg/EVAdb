@@ -29,6 +29,5 @@ $snv->searchDiffPeak($dbh,$ref);
 
 print "</form>";
 
-$dbh->disconnect;
 
 $snv->printFooter($dbh);

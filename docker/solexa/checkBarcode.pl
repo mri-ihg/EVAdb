@@ -15,7 +15,7 @@ my $samples      = new Solexa;
 ########################################################################
 
 $samples->printHeader;
-my $dbh=$samples->loadSessionId();
+my ($dbh) =$samples->loadSessionId();
 
 $samples->showMenu();
 print "<span class=\"big\">Check Barcode</span><br><br>" ;
@@ -29,4 +29,4 @@ First line: Rack<br />
 </form>
 );
 
-$samples->printFooter();
+$samples->printFooter($dbh);

@@ -19,6 +19,7 @@ my $maindbForLogin = "database=solexa;host=localhost";
 my $maindb         = "solexa";
 my $exomedb        = "exomehg19";
 my $logindb        = "exomevcfe";
+my $exomevcfe      = "exomevcfe";
 my $text           = "/srv/tools/solexa.txt";
 my $text2          = "/srv/tools/textreadonly2.txt"; #yubikey id and api
 my $cgidir         = "/cgi-bin/mysql/solexa";
@@ -206,6 +207,7 @@ else {
 }
 }
 
+return($dbh);
 }
 ########################################################################
 # delete sessionid
@@ -12381,6 +12383,29 @@ print qq(
 
 sub printFooter {
 my $self        = shift;
+my $dbh         = shift;
+
+my $item  = "";
+my $value = "";
+my %logins = ();
+# select footer from exomevcfe.textmodules
+#select password from file
+if ($dbh eq "") {
+	open(IN, "$text");
+	while (<IN>) {
+		chomp;
+		($item,$value)=split(/\:/);
+		$logins{$item}=$value;
+	}
+	close IN;
+	$dbh = DBI->connect("DBI:mysql:$maindb", "$logins{dblogin}", "$logins{dbpasswd}") || die print "$DBI::errstr";
+}
+
+my $query = "SELECT module FROM $exomevcfe.textmodules WHERE name='footer'";
+my $out = $dbh->prepare($query) || die print "$DBI::errstr";
+$out->execute() || die print "$DBI::errstr";
+my $footer = $out->fetchrow_array;
+
 
 print qq(
 <br><br>
@@ -12388,10 +12413,7 @@ print qq(
 <div id="footer">
 <br>
 <div style="position:relative; left:50px; ">
-Institute of Human Genetics, Helmholtz Zentrum M&uuml;nchen
-<br>
-<a href="http://www.helmholtz-muenchen.de/en/imprint/index.html">Legal</a>
-<br><br>
+$footer
 </div>
 </div>
 </div>

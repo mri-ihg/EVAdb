@@ -81,6 +81,13 @@ if [[ $IMPORT_UCSC = "1" ]]; then
   # add the mitochondrial genome from hg38
   echo "insert into exomehg19plus.gene (genesymbol) ( select name2 from hg19.wgEncodeGencodeBasicV20 where chrom='chrM' group by name2);" | mysql -h $DB_HOST -u $DB_USER -p"${DB_PASSWD}" exomehg19plus
   echo "insert into exomehg19.gene (genesymbol) ( select name2 from hg19.wgEncodeGencodeBasicV20 where chrom='chrM' group by name2);" | mysql -h $DB_HOST -u $DB_USER -p"${DB_PASSWD}" exomehg19
+
+  # download and import hgnc
+  mysqldump --lock-tables=false --user=genomep --password=password --host=genome-mysql.cse.ucsc.edu proteins140122  hgncXref | mysql -h $DB_HOST -u $DB_USER -p"${DB_PASSWD}" hg19
+  echo "UPDATE exomehg19plus.gene v SET v.hgncId = (SELECT DISTINCT x.hgncId FROM hg19.hgncXref x WHERE  v.genesymbol=x.symbol);" | mysql -h $DB_HOST -u $DB_USER -p"${DB_PASSWD}" exomehg19plus
+  wget ftp://ftp.ebi.ac.uk/pub/databases/genenames/hgnc/tsv/hgnc_complete_set.txt -O hgnc.txt
+  mysqlimport -h $DB_HOST -u $DB_USER -p"${DB_PASSWD}" -L --ignore-lines=1 --fields-terminated-by='\t' --fields-enclosed-by='"' hg19 hgnc.txt
+  echo "UPDATE exomehg19plus.gene v SET v.approved = (SELECT x.symbol FROM hg19.hgnc x WHERE  v.hgncId=x.hgnc_id);" | mysql -h $DB_HOST -u $DB_USER -p"${DB_PASSWD}" exomehg19plus
 fi
 
 if [[ $IMPORT_CDSDB = "1" ]]; then

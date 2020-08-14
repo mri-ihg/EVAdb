@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w
+#!/usr/bin/perl
 
 ########################################################################
 # Tim M Strom   February 2007
@@ -18,13 +18,12 @@ my $solexa        = new Solexa;
 ########################################################################
 
 $solexa->printHeader();
-my $dbh=$solexa->loadSessionId();
+my ($dbh) =$solexa->loadSessionId();
 
 $solexa->showMenu;
 print "<span class=\"big\">Search results</span><br><br>" ;
 
 $solexa->listShopping($dbh,$ref);
 
-$dbh->disconnect;
 
-$solexa->printFooter();
+$solexa->printFooter($dbh);

@@ -31,6 +31,5 @@ print "<span class=\"big\">Search results</span><br><br>" ;
 
 $snv->searchDiffExDoDo($dbh,$ref,$casesref,$controlsref);
 
-$dbh->disconnect;
 
 $snv->printFooter($dbh);

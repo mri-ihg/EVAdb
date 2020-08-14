@@ -26,6 +26,5 @@ print "<span class=\"big\">Search results</span><br><br>" ;
 
 $snv->searchResultsIbs($dbh,$ref);
 
-$dbh->disconnect;
 
 $snv->printFooter($dbh);

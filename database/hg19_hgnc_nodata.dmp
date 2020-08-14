@@ -1,0 +1,91 @@
+-- MySQL dump 10.15  Distrib 10.0.35-MariaDB, for Linux (x86_64)
+--
+-- Host: localhost    Database: hg19
+-- ------------------------------------------------------
+-- Server version	10.0.35-MariaDB
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8 */;
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+/*!40103 SET TIME_ZONE='+00:00' */;
+/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+
+--
+-- Table structure for table `hgnc`
+--
+
+DROP TABLE IF EXISTS `hgnc`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `hgnc` (
+  `hgnc_id` varchar(20) NOT NULL DEFAULT '',
+  `symbol` varchar(150) NOT NULL DEFAULT '',
+  `name` varchar(255) NOT NULL DEFAULT '',
+  `locus_group` varchar(255) NOT NULL DEFAULT '',
+  `locus_type` varchar(255) NOT NULL DEFAULT '',
+  `status` varchar(255) NOT NULL DEFAULT '',
+  `location` varchar(255) NOT NULL DEFAULT '',
+  `location_sortable` varchar(255) NOT NULL DEFAULT '',
+  `alias_symbol` varchar(255) NOT NULL DEFAULT '',
+  `alias_name` varchar(255) NOT NULL DEFAULT '',
+  `prev_symbol` varchar(255) NOT NULL DEFAULT '',
+  `prev_name` varchar(255) NOT NULL DEFAULT '',
+  `gene_family` varchar(255) NOT NULL DEFAULT '',
+  `gene_family_id` varchar(255) NOT NULL DEFAULT '',
+  `date_approved_reserved` varchar(255) NOT NULL DEFAULT '',
+  `date_symbol_changed` varchar(255) NOT NULL DEFAULT '',
+  `date_name_changed` varchar(255) NOT NULL DEFAULT '',
+  `date_modified` varchar(255) NOT NULL DEFAULT '',
+  `entrez_id` varchar(255) NOT NULL DEFAULT '',
+  `ensembl_gene_id` varchar(255) NOT NULL DEFAULT '',
+  `vega_id` varchar(255) NOT NULL DEFAULT '',
+  `ucsc_id` varchar(255) NOT NULL DEFAULT '',
+  `ena` varchar(255) NOT NULL DEFAULT '',
+  `refseq_accession` varchar(255) NOT NULL DEFAULT '',
+  `ccds_id` varchar(255) NOT NULL DEFAULT '',
+  `uniprot_ids` varchar(255) NOT NULL DEFAULT '',
+  `pubmed_id` varchar(255) NOT NULL DEFAULT '',
+  `mgd_id` varchar(255) NOT NULL DEFAULT '',
+  `rgd_id` varchar(255) NOT NULL DEFAULT '',
+  `lsdb` varchar(255) NOT NULL DEFAULT '',
+  `cosmic` varchar(255) NOT NULL DEFAULT '',
+  `omim_id` varchar(255) NOT NULL DEFAULT '',
+  `mirbase` varchar(255) NOT NULL DEFAULT '',
+  `homeodb` varchar(255) NOT NULL DEFAULT '',
+  `snornabase` varchar(255) NOT NULL DEFAULT '',
+  `bioparadigms_slc` varchar(255) NOT NULL DEFAULT '',
+  `orphanet` varchar(255) NOT NULL DEFAULT '',
+  `pseudogene` varchar(255) NOT NULL DEFAULT '',
+  `horde_id` varchar(255) NOT NULL DEFAULT '',
+  `merops` varchar(255) NOT NULL DEFAULT '',
+  `imgt` varchar(255) NOT NULL DEFAULT '',
+  `iuphar` varchar(255) NOT NULL DEFAULT '',
+  `kznf_gene_catalog` varchar(255) NOT NULL DEFAULT '',
+  `mamit_trnadb` varchar(255) NOT NULL DEFAULT '',
+  `cd` varchar(255) NOT NULL DEFAULT '',
+  `lncrnadb` varchar(255) NOT NULL DEFAULT '',
+  `enzyme_id` varchar(255) NOT NULL DEFAULT '',
+  `intermediate_filament_db` varchar(255) NOT NULL DEFAULT '',
+  `rna_central_ids` varchar(255) NOT NULL DEFAULT '',
+  `lncipedia` varchar(255) NOT NULL DEFAULT '',
+  `gtrnadb` varchar(255) NOT NULL DEFAULT '',
+  `agr` varchar(255) NOT NULL DEFAULT '',
+  KEY `hgnc_id` (`hgnc_id`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
+
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+
+-- Dump completed on 2020-08-10 15:13:22

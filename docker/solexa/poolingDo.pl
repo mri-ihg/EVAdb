@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w
+#!/usr/bin/perl
 
 ########################################################################
 # Tim M Strom   Sept 2010
@@ -17,8 +17,8 @@ my $solexa       = new Solexa;
 ########################################################################
 
 $solexa->printHeader();
-my $dbh=$solexa->loadSessionId();
-my$search = $solexa->initPoolingDo();
+my ($dbh) =$solexa->loadSessionId();
+my $search = $solexa->initPoolingDo();
 
 $solexa->showMenu('pooling');
 
@@ -35,6 +35,5 @@ $solexa->searchPooling($dbh,$ref);
 
 print "</form>";
 
-$dbh->disconnect;
 
-$solexa->printFooter();
+$solexa->printFooter($dbh);

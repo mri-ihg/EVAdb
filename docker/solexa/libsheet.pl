@@ -15,7 +15,7 @@ my @check_id    = $cgiquery->param('checkbox');
 my $checkboxref = \@check_id;
 
 $solexa->printHeader();
-my $dbh=$solexa->loadSessionId();
+my ($dbh) =$solexa->loadSessionId();
 
 $solexa->showMenu();
 print "<span class=\"big\">Librarysheet</span><br><br>" ;
@@ -23,4 +23,4 @@ print "<span class=\"big\">Librarysheet</span><br><br>" ;
 $solexa->libsheet($ref,$dbh,$checkboxref);
 
 
-$solexa->printFooter();
+$solexa->printFooter($dbh);

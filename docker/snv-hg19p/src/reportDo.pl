@@ -27,6 +27,5 @@ print "<span class=\"big\">Report</span><br><br>" ;
 
 $report->report($dbh,$ref);
 
-$dbh->disconnect;
 
 $snv->printFooter($dbh);

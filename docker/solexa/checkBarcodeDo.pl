@@ -17,7 +17,7 @@ my $samples      = new Solexa;
 ########################################################################
 
 $samples->printHeader;
-my $dbh=$samples->loadSessionId();
+my ($dbh) =$samples->loadSessionId();
 
 $samples->showMenu("checkBarcode");
 
@@ -32,6 +32,5 @@ $samples->checkBarcode($dbh,$file);
 
 print "</form>";
 
-$dbh->disconnect;
 
-$samples->printFooter();
+$samples->printFooter($dbh);

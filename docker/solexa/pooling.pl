@@ -14,7 +14,7 @@ my $cgiquery    = new CGI;
 my $search      = $snv->initPooling();
 
 $snv->printHeader("","cgisessid");
-my $dbh=$snv->loadSessionId();
+my ($dbh) =$snv->loadSessionId();
 
 	
 $snv->showMenu("pooling");
@@ -26,4 +26,4 @@ $snv->drawMask($search);
 
 print "</form>" ;
 
-$snv->printFooter();
+$snv->printFooter($dbh);

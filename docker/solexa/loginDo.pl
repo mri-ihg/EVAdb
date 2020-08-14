@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl -w
+#!/usr/local/bin/perl
 
 ########################################################################
 # Tim M Strom   February 2007
@@ -11,13 +11,14 @@ BEGIN {require './Solexa.pm';}
 my $cgiquery     = new CGI;
 my $ref          = $cgiquery->Vars;
 my $snv          = new Solexa;
+my $dbh          = "";
 
 if (($ref->{name} eq '' or $ref->{password} eq '')) {
 	$snv->printHeader();
-	my $dbh=$snv->loadSessionId();
+	($dbh) = $snv->loadSessionId();
 }
 else {
-	$snv->createSessionId($ref);
+	($dbh) = $snv->createSessionId($ref);
 }
 
-$snv->printFooter();
+$snv->printFooter($dbh);

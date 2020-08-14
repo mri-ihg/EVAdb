@@ -27,7 +27,7 @@ my $forward  = qq#<meta http-equiv="refresh" content="0;  URL=run.pl?id=$id&mode
 
 $solexa->printHeader();
 print "$forward";
-my $dbh=$solexa->loadSessionId();
+my ($dbh) =$solexa->loadSessionId();
 
 # encoded name
 
@@ -44,6 +44,6 @@ else {
 }
 
 
-$solexa->printFooter();
+$solexa->printFooter($dbh);
 
 

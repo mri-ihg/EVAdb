@@ -14,7 +14,6 @@ my $id        = "";
 my $solexa    = new Solexa;
 my $cgiquery  = new CGI;
 my $project   = "";
-my $dbh       = $solexa->dbh;
 
 $mode         = $cgiquery->param('mode');
 $id           = $cgiquery->param('id');
@@ -24,6 +23,7 @@ my $idpool    = $cgiquery->param('idpool'); # fuer Vorbelegung von Add to Pool i
 $project = $solexa->initLibrary2pool($lid,$idpool);
 
 $solexa->printHeader();
+my ($dbh) = $solexa->loadSessionId();
 
 if ($mode eq 'edit') {
 	$solexa->showMenu("");
@@ -46,4 +46,4 @@ print $cgiquery->hidden(-name=>'mode',-default=>$mode);
 
 print "</form>" ;
 
-$solexa->printFooter();
+$solexa->printFooter($dbh);

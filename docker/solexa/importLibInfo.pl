@@ -15,7 +15,7 @@ my $solexa      = new Solexa;
 ########################################################################
 
 $solexa->printHeader;
-my $dbh=$solexa->loadSessionId();
+my ($dbh) =$solexa->loadSessionId();
 
 $solexa->showMenu("importLibInfo");
 print "<span class=\"big\">Import library information (Bioanalyzer ....)</span><br>" ;
@@ -55,4 +55,4 @@ value='ChIPseq Sheet' >
 </form>
 #;
 
-$solexa->printFooter();
+$solexa->printFooter($dbh);

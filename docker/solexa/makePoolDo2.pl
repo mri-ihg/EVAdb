@@ -18,15 +18,14 @@ my $id           = 0;
 ########################################################################
 
 $samples->printHeader();
-my $dbh=$samples->loadSessionId();
+my ($dbh) =$samples->loadSessionId();
 
 #$samples->showMenu("makePool");
 #print "<span class=\"big\">Make Pool2</span><br><br>" ;
 
 $id=$samples->makePool2($ref,$dbh);
-$dbh->disconnect;
 
 $forward  = qq#<meta http-equiv="refresh" content="0;  URL=pool.pl?id=$id&mode=edit">#;
 print "$forward";
 
-$samples->printFooter();
+$samples->printFooter($dbh);

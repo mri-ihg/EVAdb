@@ -17,7 +17,7 @@ my $samples      = new Solexa;
 ########################################################################
 
 $samples->printHeader;
-my $dbh=$samples->loadSessionId();
+my ($dbh) =$samples->loadSessionId();
 
 $samples->showMenu("makePoolExtern");
 print "<span class=\"big\">Make Pool</span><br><br>" ;
@@ -32,6 +32,5 @@ print qq(
 Pool information is stored in this step.
 );
 
-$dbh->disconnect;
 
-$samples->printFooter();
+$samples->printFooter($dbh);
