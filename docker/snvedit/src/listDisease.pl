@@ -26,6 +26,6 @@ print "<span class=\"big\">Search results</span><br><br>" ;
 
 $snv ->listDisease($dbh,$ref);
 
-$dbh->disconnect;
+# $dbh->disconnect;
 
 $snv ->printFooter($dbh);
