@@ -19,10 +19,11 @@ my $datadir   = $ARGV[0];
 my $scriptdir = $ARGV[1];
 my $user      = $ARGV[2];
 my $password  = $ARGV[3];
-my $database  = $ARGV[4];
+my $host      = $ARGV[4];
+my $database  = $ARGV[5];
 
 
-my $dbh = DBI->connect("DBI:mysql:database=$database", $user, $password) 
+my $dbh = DBI->connect("DBI:mysql:database=$database;host=$host", $user, $password) 
 	|| die print "$DBI::errstr\n";
 
 &correction($dbh);

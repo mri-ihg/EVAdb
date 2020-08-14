@@ -73,6 +73,6 @@ services:
       - DB_USER=${MYSQL_USER}
       - DB_PASSWD=${MYSQL_PASSWORD}
     volumes:
-      - "/home/brand/data:/data"
-      - "/home/brand/Projects/snakemake-pipeline/library:/library"
-      - "/home/brand/Projects/evadb/base/raw_db:/anno_db"
+      - "/gluster/gluster01/share/exome/:/data"
+      - "/gluster/gluster01/share/brand/library:/library"
+      - "/gluster/gluster01/share/brand/annotation_db:/anno_db"
