@@ -748,7 +748,7 @@ $probability0
 elsif ($genotype[$i] eq "homozygous") {
 print qq#
 <ul $justify><b>
-<li>Diagnose: $diagnosis</li>
+<li>$diagnosis</li>
 <li>Nachweis einer $genotype_g[$i]en $vepconseq[$i]-Variante in dem Krankheitsgen <i>$vepgene[$i]</i>. Diese ist aktuell als $pathoforsummary[$i] zu klassifizieren.</li>
 $probability0
 #;
@@ -756,7 +756,7 @@ $probability0
 elsif ($genotype[$i] eq "compound_heterozygous") {
 print qq#
 <ul $justify><b>
-<li>Diagnose: $diagnosis</li>
+<li>$diagnosis</li>
 <li>Nachweis von zwei $genotype_g[$i]en Varianten ($vepconseq[$i]/$vepconseq[$i+1]) in dem Krankheitsgen <i>$vepgene[$i]</i>.</li>
 $probability0
 #;
@@ -764,7 +764,7 @@ $probability0
 elsif ($mode eq "possible_recessive") {
 print qq#
 <ul $justify><b>
-<li>Diagnose: $diagnosis</li>
+<li>$diagnosis</li>
 <li>Nachweis von zwei $genotype_g[$i]en Varianten ($vepconseq[$i]/$vepconseq[$i+1]) in dem Krankheitsgen <i>$vepgene[$i]</i>.</li>
 $probability0
 <li>$recommendation</li>
@@ -773,7 +773,7 @@ $probability0
 elsif (($mode eq "dominant") or ($mode eq "X-chromosomal")) {
 print qq#
 <ul $justify><b>
-<li>Diagnose: $diagnosis</li>
+<li>$diagnosis</li>
 <li>Nachweis einer $genotype_g[$i]en $vepconseq[$i]-Variante in dem Krankheitsgen <i>$vepgene[$i]</i>. Diese ist aktuell als $pathoforsummary[$i] zu klassifizieren.</li>
 $probability0
 <li>$recommendation</li>
