@@ -104,12 +104,6 @@ for every genome position.
 It takes about 10 hours and requires about 20G memory.
 
 #############################################################################
-# ClinVar for hg19
-
-Use the the scripts in 'helperscript/ClinVarImport' to import the the ClinVar data for hg19.
-Modify path, user and password in ClinVarForCron.sh and run this script.
-
-#############################################################################
 # UCSC Genome Browser
 
 # Import UCSC tables for hg19
@@ -143,6 +137,23 @@ echo "UPDATE exomehg19plus.gene v SET v.approved = (SELECT x.symbol FROM hg19.hg
 # add the mitochondrial genome from hg38
 echo "insert into exomehg19plus.gene (genesymbol) ( select name2 from hg19.wgEncodeGencodeBasicV20 where chrom='chrM' group by name2);" | mysql exomehg19plus
 echo "insert into exomehg19.gene (genesymbol) ( select name2 from hg19.wgEncodeGencodeBasicV20 where chrom='chrM' group by name2);" | mysql exomehg19
+
+#############################################################################
+# ClinVar for hg19
+
+Use the the scripts in 'helperscript/ClinVarImport' to import the the ClinVar data for hg19.
+Modify path, user and password in ClinVarForCron.sh and run this script.
+
+#############################################################################
+# OMIM for hg19
+requires the following tables/columns:
+hg19.hgncXref (see above)
+hg19.hgnc (see above)
+update of the hgncID column in exomehg19plus.gene (see above)
+update of the approved column in exomehg19plus.gene (see above)
+
+requires morbidmap.txt and genemap2.txt from OMIM
+import the data with helperscripts/OMIMimport/omim_download.sh
 
 #############################################################################
 # fill coding sequence table (required for annotation)

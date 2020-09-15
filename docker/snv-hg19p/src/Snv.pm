@@ -13177,6 +13177,7 @@ v.idsnv,
 concat(v.chrom,' ',v.start,' ',v.end,' ',v.class,' ',v.refallele,' ',v.allele),
 concat(v.chrom,':',v.start),v.refallele,v.allele,
 group_concat(g.genesymbol separator ' '),
+c.patho,
 group_concat(g.nonsynpergene,' (', g.delpergene,')' separator ', '),
 group_concat(DISTINCT g.omim separator ' '),
 v.class,v.func,
@@ -13197,6 +13198,7 @@ LEFT JOIN snvgene                   y ON v.idsnv = y.idsnv
 LEFT JOIN gene                      g ON g.idgene = y.idgene
 LEFT JOIN $coredb.evs             evs ON (v.chrom=evs.chrom and v.start=evs.start and v.refallele=evs.refallele and v.allele=evs.allele)
 LEFT JOIN $coredb.kaviar            k ON (v.chrom=k.chrom and v.start=k.start and v.refallele=k.refallele and v.allele=k.allele)
+LEFT  JOIN $exomevcfe.comment       c ON (v.chrom=c.chrom and v.start=c.start and v.refallele=c.refallele and v.allele=c.altallele and s.idsample=c.idsample)
 WHERE
 $where
 GROUP BY
@@ -13216,6 +13218,7 @@ $out->execute(@prepare) || die print "$DBI::errstr";
 	'Ref<br>allele',
 	'Alt<br>allele',
 	'Gene<br>symbol',
+	'Pathogenicity',
 	'NonSyn/<br>Gene',
 	'Omim',
 	'Class',
@@ -13257,13 +13260,13 @@ while (@row = $out->fetchrow_array) {
 			$tmp=&ucsclink2($row[$i]);
 			print "<td> $tmp</td>";
 		}
-		elsif ($i == 7) {
+		elsif ($i == 8) {
 			($tmp)=&omim($dbh,$row[$i]);
 			print "<td>$tmp</td>";
 		}
-		elsif ($i == 16) { # cnv exomedetph
+		elsif ($i == 17) { # cnv exomedetph
 			$tmp=$row[$i];
-			if ($row[5] eq "cnv") {
+			if ($row[6] eq "cnv") {
 				$tmp=$tmp/100;
 			}
 			print "<td>$tmp</td>";
