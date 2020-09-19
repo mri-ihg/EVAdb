@@ -19453,7 +19453,7 @@ $i=0;
 $query = qq#
 SELECT
 s.name,
-concat(cl.solved,' ',cl.genesymbol),
+group_concat(cl.solved,' ',co.genesymbol SEPARATOR ' '),
 h.idsample,
 s.pedigree,s.sex,s.foreignid,s.externalseqid,e.sry,c.name,
 group_concat(DISTINCT l.lname),lt.ltlibtype,lp.lplibpair,a.name,
@@ -19499,6 +19499,7 @@ LEFT JOIN  variantstat              vs ON s.idsample = vs.idsample
 LEFT JOIN  $exomevcfe.conclusion    cl ON s.idsample=cl.idsample
 LEFT JOIN  $solexa.assay              a ON e.idassay=a.idassay
 LEFT JOIN  $exomevcfe.hpo            h ON s.idsample=h.idsample
+LEFT  JOIN $exomevcfe.comment       co ON s.idsample=co.idsample
 $where
 AND $allowedprojects
 AND l.lfailed = 0
@@ -21263,7 +21264,7 @@ $i=0;
 $query = qq#
 SELECT
 s.name,
-concat(cl.solved,' ',cl.genesymbol),
+group_concat(cl.solved,' ',co.genesymbol SEPARATOR ' '),
 h.idsample,
 s.foreignid,
 s.externalseqid,
@@ -21281,15 +21282,16 @@ s.entered,
 s.idsample
 FROM
 $sampledb.sample s 
-LEFT JOIN $sampledb.cooperation     c ON s.idcooperation = c.idcooperation
-LEFT JOIN $sampledb.disease2sample ds ON s.idsample = ds.idsample
-LEFT JOIN $sampledb.disease         i ON ds.iddisease = i.iddisease
-LEFT JOIN $sampledb.tissue          t ON s.idtissue = t.idtissue
-LEFT JOIN $solexa.sample2library   sl ON s.idsample = sl.idsample
-LEFT JOIN $solexa.library           l ON sl.lid = l.lid
-INNER JOIN $sampledb.project        p ON s.idproject=p.idproject
-LEFT JOIN  $exomevcfe.conclusion   cl ON s.idsample=cl.idsample
-LEFT JOIN  $exomevcfe.hpo           h ON s.idsample=h.idsample
+LEFT  JOIN $sampledb.cooperation     c ON s.idcooperation = c.idcooperation
+LEFT  JOIN $sampledb.disease2sample ds ON s.idsample = ds.idsample
+LEFT  JOIN $sampledb.disease         i ON ds.iddisease = i.iddisease
+LEFT  JOIN $sampledb.tissue          t ON s.idtissue = t.idtissue
+LEFT  JOIN $solexa.sample2library   sl ON s.idsample = sl.idsample
+LEFT  JOIN $solexa.library           l ON sl.lid = l.lid
+INNER JOIN $sampledb.project         p ON s.idproject=p.idproject
+LEFT  JOIN $exomevcfe.conclusion    cl ON s.idsample=cl.idsample
+LEFT  JOIN $exomevcfe.comment       co ON s.idsample=co.idsample
+LEFT  JOIN $exomevcfe.hpo            h ON s.idsample=h.idsample
 $where
 GROUP BY s.name
 ORDER BY
