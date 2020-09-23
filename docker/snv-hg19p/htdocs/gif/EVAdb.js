@@ -1,6 +1,9 @@
 
 $(document).ready(function() {
-    $('form:first *:input[type=text]:first').focus();
+   $('form:first *:input[type=text]:first').focus();
+   $("input:text, input:password").focus(function () { });//attach the focus event find the autofocus field
+   $('input[autofocus]').trigger('focus');//force fire it on the autofocus element
+
 });
 
 // ##########################################################################################################
@@ -93,7 +96,7 @@ function contextM(counter,idsample,sname,pedigree){
 			            "ar":           {name: "<a href='searchGeneInd.pl?pedigree="+sname+"'>Autosomal recessive</a>"},
 			            "denovo":       {name: "<a href='searchTrio.pl?pedigree="+sname+"'>De novo trio</a>"},
 			            "tumor":        {name: "<a href='searchTumor.pl?pedigree="+sname+"'>Tumor/Control</a>"},
-			            "diseasegene":  {name: "<a href='searchDiseaseGene.pl?sname="+sname+"'>Diseasegene</a>"},
+			            "diseasegene":  {name: "<a href='searchDiseaseGene.pl?sname="+sname+"'>Diseasegenes</a>"},
 			            "hgmd":         {name: "<a href='searchHGMD.pl?sname="+sname+"'>HGMD/ClinVar</a>"},
 			            "diagnostics":  {name: "<a href='searchDiagnostics.pl?sname="+sname+"'>Coverage lists</a>"},
 			            "homozygosity": {name: "<a href='searchHomo.pl?sname="+sname+"'>Homozygosity</a>"},
@@ -102,6 +105,7 @@ function contextM(counter,idsample,sname,pedigree){
 			            "HPO":          {name: "<a href='searchHPO.pl?sname="+sname+"'>HPO</a>"},
 			            "sample":       {name: "<a href='searchSample.pl?pedigree="+pedigree+"'>Sample information</a>"},
 			            "conclusion":   {name: "<a href='conclusion.pl?idsample="+idsample+"'>Sample conclusions</a>"},
+			            "report":       {name: "<a href='report.pl?sname="+sname+"'>Report</a>"},
 				}
 		});
 	});
@@ -128,7 +132,7 @@ function contextMg(counter,idsample,sname,pedigree){
 			            "ar":           {name: "<a href='searchGeneInd.pl?pedigree="+sname+"'>Autosomal recessive</a>"},
 			            "denovo":       {name: "<a href='searchTrio.pl?pedigree="+sname+"'>De novo trio</a>"},
 			            "tumor":        {name: "<a href='searchTumor.pl?pedigree="+sname+"'>Tumor/Control</a>"},
-			            "diseasegene":  {name: "<a href='searchDiseaseGene.pl?sname="+sname+"'>Diseasegene</a>"},
+			            "diseasegene":  {name: "<a href='searchDiseaseGene.pl?sname="+sname+"'>Diseasegenes</a>"},
 			            "hgmd":         {name: "<a href='searchHGMD.pl?sname="+sname+"'>HGMD/ClinVar</a>"},
 			            "diagnostics":  {name: "<a href='searchDiagnostics.pl?sname="+sname+"'>Coverage lists</a>"},
 			            "homozygosity": {name: "<a href='searchHomo.pl?sname="+sname+"'>Homozygosity</a>"},
@@ -138,6 +142,7 @@ function contextMg(counter,idsample,sname,pedigree){
 			            "HPO":          {name: "<a href='searchHPO.pl?sname="+sname+"'>HPO</a>"},
 			            "sample":       {name: "<a href='searchSample.pl?pedigree="+pedigree+"'>Sample information</a>"},
 			            "conclusion":   {name: "<a href='conclusion.pl?idsample="+idsample+"'>Sample conclusions</a>"},
+			            "report":       {name: "<a href='report.pl?sname="+sname+"'>Report</a>"},
 				}
 		});
 	});

@@ -48,6 +48,7 @@ my $igvrnadir      = "/data/isilon/seq/analysis/exomehg19/";
 my $igvgenomedir   = "/data/isilon/seq/analysis/exomehg19plus/";
 my $snvqual        = "";
 my $gtqual         = "";
+my $popmax_af      = "";
 my $solrurl        = "http://localhost:8983/solr/omim";
 my $maxFailedLogin = 6;
 my $vep            = 1; #use Variant Effect Predictor
@@ -290,11 +291,12 @@ elsif ($fhcl) {
 	$coredb     = "hg19";
 	$exomevcfe  = "exomevcfe";
 	$igvserver  = "https://ihgseq13.helmholtz-muenchen.de/cgi-bin/mysql/snv-fhcl/wrapper.pl";
-	$igvdir     = "/data/isilon/seq/analysis/exomehg19/";
+	$igvdir     = "/data/isilon/seq/analysis/exomehg19plus/";
 	$gtqual     = "30";
 	$rnadb      = "rnahg19";
 	$rnagenedb  = "exomevcf";
 	$mtdna_menu = 0;
+	$popmax_af  = 0.1;
 }
 else { ();
 	exit;
@@ -305,8 +307,9 @@ my $dbsnp         = "dbSNP 142";
 my $ucscSite      = "genome-euro";
 my $hg19_coords   = "hgmd_hg19_vcf"; # hgmd table
 my $rssnplink     = qq{"<a href='https://www.ncbi.nlm.nih.gov/SNP/snp_ref.cgi?type=rs&rs=",v.rs,"' title='dbSNP'>",v.rs,"&nbsp;</a>"};
-my $exac_ae_link  = qq{"<a href='https://gnomad.broadinstitute.org/variant/",evs.chrom,"-",evs.start,"-",evs.refallele,"-",evs.allele,"' title='ExAC'>",evs.ea_homref,"--",evs.ea_het,"--",ea_homalt,"</a>"};
-my $exac_aa_link  = qq{"<a href='https://gnomad.broadinstitute.org/variant/",evs.chrom,"-",evs.start,"-",evs.refallele,"-",evs.allele,"' title='ExAC'>",evs.aa_homref,"--",evs.aa_het,"--",aa_homalt,"</a>"};
+my $exac_link  = qq{"<a href='https://gnomad.broadinstitute.org/variant/",evs.chrom,"-",evs.start,"-",evs.refallele,"-",evs.allele,"' title='ExAC'>",evs.homref,"--",evs.het,"--",evs.homalt,"</a>"};
+my $exac_ae_link  = qq{"<a href='https://gnomad.broadinstitute.org/variant/",evs.chrom,"-",evs.start,"-",evs.refallele,"-",evs.allele,"' title='ExAC'>",evs.ea_homref,"--",evs.ea_het,"--",evs.ea_homalt,"</a>"};
+my $exac_aa_link  = qq{"<a href='https://gnomad.broadinstitute.org/variant/",evs.chrom,"-",evs.start,"-",evs.refallele,"-",evs.allele,"' title='ExAC'>",evs.aa_homref,"--",evs.aa_het,"--",evs.aa_homalt,"</a>"};
 my $exac_gene_link= qq{"<a href='http://gnomad.broadinstitute.org/awesome?query=",g.genesymbol,"' title='gnomAD'>",ROUND(exac.pLI,2),"</a>"};
 my $kaviar_link   = qq{"<a href='http://db.systemsbiology.net/kaviar/cgi-pub/Kaviar.pl?chr=",k.chrom,"&frz=$hg&onebased=1&pos=",k.start,"' title='Kaviar'>",k.ac,"&nbsp;&nbsp;(",k.an,")</a>"};
 my $omimlink      = qq{"<a href='https://www.ncbi.nlm.nih.gov/omim/",g.omim,"' title='OMIM'>",g.omim,"</a>"};
@@ -5242,6 +5245,7 @@ my @AoH = (
 		size        => "30",
 		maxlength   => "30",
 	  	bgcolor     => "formbg",
+	  	autofocus   => "autofocus",
 	  },
 	  {
 	  	label       => "Disease",
@@ -5274,25 +5278,7 @@ my @AoH = (
 	  	bgcolor     => "formbg",
 	  },
 	  {
-	  	label       => "avHet HapMap <= (~2 x allele frequency)",
-	  	type        => "text",
-		name        => "avhet",
-	  	value       => "",
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "gnomAD Europen American (heterozygous) <= (n het)",
-	  	type        => "text",
-		name        => "ea_het",
-	  	value       => "",
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "gnomAD African American (heterozygous) <= (n het)",
+	  	label       => "gnomAD African American <= (n heterozygous)",
 	  	type        => "text",
 		name        => "aa_het",
 	  	value       => "",
@@ -5301,10 +5287,19 @@ my @AoH = (
 	  	bgcolor     => "formbg",
 	  },
 	  {
-	  	label       => "Minor allele count Kaviar <=",
+	  	label       => "gnomAD <= (n heterozygous)",
 	  	type        => "text",
-		name        => "kaviar",
+		name        => "het",
 	  	value       => "",
+		size        => "20",
+		maxlength   => "20",
+	  	bgcolor     => "formbg",
+	  },
+	  {
+	  	label       => "Maximum minor allele frequency of all populations <=",
+	  	type        => "text",
+		name        => "popmax_af",
+	  	value       => "$popmax_af",
 		size        => "20",
 		maxlength   => "20",
 	  	bgcolor     => "formbg",
@@ -5379,6 +5374,15 @@ my @AoH = (
 		name        => "function",
 	  	value       => "$gvalue",
 	  	values      => "$gvalues",
+	  	bgcolor     => "formbg",
+	  },
+	  {
+	  	label       => "Filter",
+	  	labels      => "Filtered, All",
+	  	type        => "radio",
+		name        => "filter",
+	  	value       => "all",
+	  	values      => "filtered, all",
 	  	bgcolor     => "formbg",
 	  },
 	  {
@@ -5671,7 +5675,7 @@ my @AoH = (
 	  	label       => "DNA ID",
 	  	type        => "text",
 		name        => "samplename",
-	  	value       => "",
+	  	value       => "$sname",
 		size        => "30",
 		maxlength   => "30",
 	  	bgcolor     => "formbg",
@@ -13062,8 +13066,7 @@ unlink($vep_input_file);
 
 }
 ########################################################################
-# listPosition searchResultsPositionVcf to list all idsnv resultsregion
-# introduced for wholegenomehg19 and vcf files
+# get_vep_vcf
 #######################################################################
 sub get_vep_vcf {
 my $dbh    = shift;
@@ -13185,9 +13188,8 @@ concat($rssnplink),
 concat( '<a href="http://localhost:$igvport/load?file=',$igvserver2,'" title="Open sample in IGV"','>',s.name,'</a>' ),
 s.pedigree,
 i.symbol,s.saffected,x.alleles,x.snvqual,x.gtqual,x.mapqual,x.coverage,x.percentvar,x.filter,
-group_concat(DISTINCT $exac_ae_link separator '<br>'),
-group_concat(DISTINCT $exac_aa_link separator '<br>'),
-group_concat(DISTINCT $kaviar_link separator '<br>')
+group_concat(DISTINCT $exac_link separator '<br>'),
+group_concat(DISTINCT $exac_aa_link separator '<br>')
 FROM
 snv v
 LEFT JOIN snvsample                 x ON v.idsnv = x.idsnv 
@@ -13235,9 +13237,8 @@ $out->execute(@prepare) || die print "$DBI::errstr";
 	'Depth',
 	'%Var',
 	'Filter',
-	'gnomAD ea',
+	'gnomAD',
 	'gnomAD aa',
-	'Kaviar AC'
 	);
 
 $i=0;
@@ -17606,38 +17607,12 @@ my $forcount  = "";
 my @forcount  = ();
 my $ncount    = "";
 my $avhet     = "";
-my $af        = "";
 my $name      = "";
 
 delete($ref->{burdentest});
 
-#my @fields    = sort keys %$ref;
-#my @values    = @{$ref}{@fields};
-
-if ($ref->{'avhet'} ne "") {
-	$avhet = " AND 
-		((v.rs != '' AND FIND_IN_SET('by-hapmap',v.valid) > 0 AND avhet <= ?)
-		OR
-		(v.rs != '' AND NOT FIND_IN_SET('by-hapmap',v.valid))
-		OR 
-		(v.rs = '' )
-		)
-		";
-	push(@prepare,$ref->{'avhet'});
-}
-else {
-	$avhet = " AND 1 = 1 ";
-}
-	
-#$af = " AND v.af <= ? ";
-#push(@prepare,$ref->{'af'});
-#$forcount = "1 = 1 ";
 $forcount = "1 = 1 ";
 
-if ($ref->{'af'} ne "") {
-	$af = " AND v.af <= ? ";
-	push(@prepare,$ref->{'af'});
-}
 if ($ref->{'datebegin'} ne "") {
 	$name = " AND es.date >= ? ";
 	$forcount .= " AND es.date >= ? ";
@@ -17716,17 +17691,20 @@ if ($ref->{'affecteds'} eq "onlyunaffecteds") {
 	$name .= " AND s.saffected = 0 ";
 	$forcount .= " AND s.saffected = 0 ";
 }
-if ($ref->{'kaviar'} ne "") {
-	$name .= " AND (k.ac <= ? or ISNULL(k.ac))";
-	push(@prepare,$ref->{'kaviar'});
+if ($ref->{'popmax_af'} ne "") {
+	$name .= " AND (evs.popmax_af <= ? or ISNULL(evs.popmax_af))";
+	push(@prepare,$ref->{'popmax_af'});
 }
-if ($ref->{'ea_het'} ne "") {
-	$name .= " AND (evs.ea_het <= ? or ISNULL(evs.ea_het))";
-	push(@prepare,$ref->{'kaviar'});
+if ($ref->{'het'} ne "") {
+	$name .= " AND (evs.het <= ? or ISNULL(evs.het))";
+	push(@prepare,$ref->{'het'});
 }
 if ($ref->{'aa_het'} ne "") {
 	$name .= " AND (evs.aa_het <= ? or ISNULL(evs.aa_het))";
-	push(@prepare,$ref->{'kaviar'});
+	push(@prepare,$ref->{'aa_het'});
+}
+if ($ref->{'filter'} eq "filtered") {
+	$name .= " AND FIND_IN_SET('PASS',x.filter)";
 }
 
 # function
@@ -17784,17 +17762,16 @@ group_concat(DISTINCT sift.score separator ' '),
 group_concat(DISTINCT cadd.phred separator ' '),
 f.fsampleall,
 x.alleles,
-concat($rssnplink),avhet,
+concat($rssnplink),
 group_concat(DISTINCT '<a href="http://$hgmdserver/hgmd/pro/mut.php?accession=',h.id,'">',h.id,'</a>'),
 group_concat(DISTINCT $clinvarlink separator '<br>'),
-group_concat(DISTINCT v.af),
-group_concat(DISTINCT $exac_ae_link separator '<br>'),
+group_concat(DISTINCT $exac_link separator '<br>'),
 group_concat(DISTINCT $exac_aa_link separator '<br>'),
-group_concat(DISTINCT $kaviar_link separator '<br>'),
-x.snvqual,x.gtqual,x.mapqual,x.coverage,
+x.filter,x.snvqual,x.gtqual,x.mapqual,x.coverage,
 group_concat(distinct x.percentvar),v.transcript,
 group_concat(DISTINCT dg.class),
-v.idsnv
+v.idsnv,
+x.idsample
 FROM
 snv v 
 INNER JOIN snvsample                 x on (v.idsnv = x.idsnv) 
@@ -17817,8 +17794,6 @@ WHERE
 dg.iddisease = ?
 $function
 $class
-$avhet
-$af
 $name
 AND $allowedprojects
 GROUP BY
@@ -17835,7 +17810,7 @@ $out->execute($ref->{'dg.iddisease'},@prepare) || die print "$DBI::errstr";
 @labels	= (
 	'n',
 	'idsnv',
-	'DNA id',
+	'IGV Comment',
 	'Pedigree',
 	'Chr',
 	'Gene symbol',
@@ -17851,13 +17826,11 @@ $out->execute($ref->{'dg.iddisease'},@prepare) || die print "$DBI::errstr";
 	'Count',
 	'Variant alleles',
 	"$dbsnp",
-	'av Het',
 	'HGMD',
 	'ClinVar',
-	'1000 genomes AF',
-	'gnomAD ea',
+	'gnomAD',
 	'gnomAD aa',
-	'Kaviar AC',
+	'Filter',
 	'SNV qual',
 	'Geno- type qual',
 	'Map qual',
@@ -17881,10 +17854,14 @@ my $program  = "";
 my $damaging = "";
 my $mode     = "";
 my $idsnv    = "";
+my $idsample = "";
+my $contextmenu  = "\n<script type=\"text/javascript\">";
 while (@row = $out->fetchrow_array) {
 	print "<tr>";
 	$i=0;
 	# bekannte Gene in disease2gene color red
+	$idsample     = $row[-1];
+	pop(@row);
 	$idsnv=($row[-1]);
 	pop(@row);
 	if ($row[-1] ne '') {
@@ -17910,6 +17887,16 @@ while (@row = $out->fetchrow_array) {
 				print "<td> $row[$i]</td>";
 			}
 		}
+		elsif ($i == 1) {
+			$contextmenu .= "
+					contextComment(\"$n\", \"$idsnv\", \"$idsample\", \"other\");";
+			print qq#
+			<td><div class="context-menu-one$n" title="Right click for menu." align="center">
+			$row[$i]
+			</div>
+			</td>
+			#;
+		}
 		elsif ($i == 7) {
 			($tmp)=&vcf2mutalyzer($dbh,$idsnv);
 			print "<td align=\"center\">$tmp</td>";
@@ -17919,7 +17906,7 @@ while (@row = $out->fetchrow_array) {
 			print "<td $class>$tmp</td>";
 			print "<td>$mode</td>";
 		}
-		elsif ($i == 26) { # cnv exomedetph
+		elsif ($i == 24) { # cnv exomedetph
 			$tmp=$row[$i];
 			if ($row[7] eq "cnv") {
 				$tmp=$tmp/100;
@@ -17936,6 +17923,7 @@ while (@row = $out->fetchrow_array) {
 }
 print "</tbody></table></div>";
 #&tablescript("","5,10");
+print "$contextmenu</script> ";
 
 $n--;
 print "<br>Variants found $n<br>";
@@ -19465,7 +19453,7 @@ $i=0;
 $query = qq#
 SELECT
 s.name,
-concat(cl.solved,' ',cl.genesymbol),
+group_concat(cl.solved,' ',co.genesymbol SEPARATOR ' '),
 h.idsample,
 s.pedigree,s.sex,s.foreignid,s.externalseqid,e.sry,c.name,
 group_concat(DISTINCT l.lname),lt.ltlibtype,lp.lplibpair,a.name,
@@ -19511,6 +19499,7 @@ LEFT JOIN  variantstat              vs ON s.idsample = vs.idsample
 LEFT JOIN  $exomevcfe.conclusion    cl ON s.idsample=cl.idsample
 LEFT JOIN  $solexa.assay              a ON e.idassay=a.idassay
 LEFT JOIN  $exomevcfe.hpo            h ON s.idsample=h.idsample
+LEFT  JOIN $exomevcfe.comment       co ON s.idsample=co.idsample
 $where
 AND $allowedprojects
 AND l.lfailed = 0
@@ -21275,7 +21264,7 @@ $i=0;
 $query = qq#
 SELECT
 s.name,
-concat(cl.solved,' ',cl.genesymbol),
+group_concat(cl.solved,' ',co.genesymbol SEPARATOR ' '),
 h.idsample,
 s.foreignid,
 s.externalseqid,
@@ -21293,15 +21282,16 @@ s.entered,
 s.idsample
 FROM
 $sampledb.sample s 
-LEFT JOIN $sampledb.cooperation     c ON s.idcooperation = c.idcooperation
-LEFT JOIN $sampledb.disease2sample ds ON s.idsample = ds.idsample
-LEFT JOIN $sampledb.disease         i ON ds.iddisease = i.iddisease
-LEFT JOIN $sampledb.tissue          t ON s.idtissue = t.idtissue
-LEFT JOIN $solexa.sample2library   sl ON s.idsample = sl.idsample
-LEFT JOIN $solexa.library           l ON sl.lid = l.lid
-INNER JOIN $sampledb.project        p ON s.idproject=p.idproject
-LEFT JOIN  $exomevcfe.conclusion   cl ON s.idsample=cl.idsample
-LEFT JOIN  $exomevcfe.hpo           h ON s.idsample=h.idsample
+LEFT  JOIN $sampledb.cooperation     c ON s.idcooperation = c.idcooperation
+LEFT  JOIN $sampledb.disease2sample ds ON s.idsample = ds.idsample
+LEFT  JOIN $sampledb.disease         i ON ds.iddisease = i.iddisease
+LEFT  JOIN $sampledb.tissue          t ON s.idtissue = t.idtissue
+LEFT  JOIN $solexa.sample2library   sl ON s.idsample = sl.idsample
+LEFT  JOIN $solexa.library           l ON sl.lid = l.lid
+INNER JOIN $sampledb.project         p ON s.idproject=p.idproject
+LEFT  JOIN $exomevcfe.conclusion    cl ON s.idsample=cl.idsample
+LEFT  JOIN $exomevcfe.comment       co ON s.idsample=co.idsample
+LEFT  JOIN $exomevcfe.hpo            h ON s.idsample=h.idsample
 $where
 GROUP BY s.name
 ORDER BY
@@ -22550,10 +22540,10 @@ foreach $href (@{$AoH}) {
 		&hidden($href->{label},$href->{name},$href->{value},$href->{size},$href->{maxlength},$href->{bgcolor},'readonly');
 	}
 	elsif ($href->{type} eq 'text') {
-		&text($href->{label},$href->{name},$href->{value},$href->{size},$href->{maxlength},$href->{bgcolor},"");
+		&text($href->{label},$href->{name},$href->{value},$href->{size},$href->{maxlength},$href->{bgcolor},"",$href->{autofocus});
 	}
 	elsif ($href->{type} eq 'password') {
-		&text($href->{label},$href->{name},$href->{value},$href->{size},$href->{maxlength},$href->{bgcolor},"password");
+		&text($href->{label},$href->{name},$href->{value},$href->{size},$href->{maxlength},$href->{bgcolor},"password",$href->{autofocus});
 	}
 	elsif ($href->{type} eq 'textFocus') {
 		&textFocus($href->{label},$href->{name},$href->{value},$href->{size},$href->{maxlength},$href->{bgcolor});
@@ -22660,6 +22650,7 @@ sub text {
 	my $maxlength  = shift;
 	my $bgcolor    = shift;
 	my $readonly   = shift;
+	my $autofocus  = shift;
 
 	print qq(
 	<tr>
@@ -22672,7 +22663,7 @@ sub text {
 		print qq(<td class="$bgcolor"><input type="password" name="$name" value="$value" size="$size" maxlength="$maxlength"></td>);
 	}
 	else {
-		print qq(<td class="$bgcolor"><input type="text" name="$name" value="$value" size="$size" maxlength="$maxlength"></td>);
+		print qq(<td class="$bgcolor"><input type="text" name="$name" value="$value" size="$size" maxlength="$maxlength" $autofocus></td>);
 	}
 	print qq(
 	</tr>
