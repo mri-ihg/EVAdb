@@ -36,9 +36,12 @@ CREATE TABLE `evs` (
   `aa_het` int(11) unsigned DEFAULT NULL,
   `aa_homalt` int(11) unsigned DEFAULT NULL,
   `popmax_af` float DEFAULT NULL,
+  `homref` int(11) unsigned DEFAULT NULL,
+  `het` int(11) unsigned DEFAULT NULL,
+  `homalt` int(11) unsigned DEFAULT NULL,
   PRIMARY KEY (`idexac`),
   UNIQUE KEY `uniqueexac` (`chrom`,`start`,`refallele`,`allele`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM AUTO_INCREMENT=275511410 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -50,4 +53,4 @@ CREATE TABLE `evs` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2020-05-06 15:39:30
+-- Dump completed on 2020-09-24 16:19:19
