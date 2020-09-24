@@ -310,7 +310,7 @@ my $rssnplink     = qq{"<a href='https://www.ncbi.nlm.nih.gov/SNP/snp_ref.cgi?ty
 my $exac_link  = qq{"<a href='https://gnomad.broadinstitute.org/variant/",evs.chrom,"-",evs.start,"-",evs.refallele,"-",evs.allele,"' title='ExAC'>",evs.homref,"--",evs.het,"--",evs.homalt,"</a>"};
 my $exac_ae_link  = qq{"<a href='https://gnomad.broadinstitute.org/variant/",evs.chrom,"-",evs.start,"-",evs.refallele,"-",evs.allele,"' title='ExAC'>",evs.ea_homref,"--",evs.ea_het,"--",evs.ea_homalt,"</a>"};
 my $exac_aa_link  = qq{"<a href='https://gnomad.broadinstitute.org/variant/",evs.chrom,"-",evs.start,"-",evs.refallele,"-",evs.allele,"' title='ExAC'>",evs.aa_homref,"--",evs.aa_het,"--",evs.aa_homalt,"</a>"};
-my $exac_gene_link= qq{"<a href='http://gnomad.broadinstitute.org/awesome?query=",g.genesymbol,"' title='gnomAD'>",ROUND(exac.pLI,2),"</a>"};
+my $exac_gene_link= qq{"<a href='http://gnomad.broadinstitute.org/awesome?query=",exac.transcript,"' title='gnomAD'>",ROUND(exac.pLI,2),"</a>"};
 my $kaviar_link   = qq{"<a href='http://db.systemsbiology.net/kaviar/cgi-pub/Kaviar.pl?chr=",k.chrom,"&frz=$hg&onebased=1&pos=",k.start,"' title='Kaviar'>",k.ac,"&nbsp;&nbsp;(",k.an,")</a>"};
 my $omimlink      = qq{"<a href='https://www.ncbi.nlm.nih.gov/omim/",g.omim,"' title='OMIM'>",g.omim,"</a>"};
 my $ucsclink      = qq{"<a href='https://$ucscSite.ucsc.edu/cgi-bin/hgTracks?db=$hg\&highlight=$hg.",v.chrom,":",v.start-1,"-",v.end,"\&position=",v.chrom,":",v.start-1,"-",v.end,"' title='UCSC Browser'>",v.chrom,":",v.start,"-",v.end-1,"</a>"," "};
