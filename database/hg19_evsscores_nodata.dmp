@@ -23,7 +23,7 @@ DROP TABLE IF EXISTS `evsscores`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `evsscores` (
-  `gene` varchar(255) NOT NULL,
+  `gene` varchar(150) NOT NULL,
   `transcript` varchar(255) NOT NULL,
   `obs_mis` double NOT NULL,
   `exp_mis` double NOT NULL,
@@ -99,7 +99,8 @@ CREATE TABLE `evsscores` (
   `brain_expression` tinyint(1) DEFAULT NULL,
   `chromosome` varchar(31) NOT NULL,
   `start_position` int(10) NOT NULL,
-  `end_position` int(10) NOT NULL
+  `end_position` int(10) NOT NULL,
+  KEY `gene` (`gene`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -112,4 +113,4 @@ CREATE TABLE `evsscores` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2020-09-24 16:31:38
+-- Dump completed on 2020-09-24 17:44:11
