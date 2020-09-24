@@ -4730,75 +4730,17 @@ my @AoH = (
 	  {
 	  	label       => "Allowed in in-house exomes <= (n)",
 	  	type        => "text",
-		name        => "f.samplecontrols",
+		name        => "freq",
 	  	value       =>  10,
 		size        => "20",
 		maxlength   => "20",
 	  	bgcolor     => "formbg",
 	  },
-	  {
-	  	label       => "avHet HapMap <= (~2 x allele frequency)",
-	  	type        => "text",
-		name        => "avhet",
-	  	value       => "",
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Allele frequency 1000 Genomes <=",
-	  	type        => "text",
-		name        => "af",
-	  	value       => "",
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "SNV quality >= (0-255)",
-	  	type        => "text",
-		name        => "snvqual",
-	  	value       => "",
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Genotype quality >= (0-99)",
-	  	type        => "text",
-		name        => "gtqual",
-	  	value       => "",
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Mapping quality >= (0-60)",
-	  	type        => "text",
-		name        => "mapqual",
-	  	value       => "",
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Class",
-	  	labels      => "SNV, indel, Pindel, ExomeDepth",
-	  	type        => "checkbox",
-		name        => "class",
-	  	value       => "snp, indel, deletion",
-	  	values      => "snp, indel, deletion, cnv",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Function",
-	  	labels      => "$glabels",
-	  	type        => "checkbox",
-		name        => "function",
-	  	value       => "$gvalue",
-	  	values      => "$gvalues",
-	  	bgcolor     => "formbg",
-	  },
+);	  
+
+push(@AoH,(&defaultAoH));
+
+push(@AoH,(
 	  {
 	  	label       => "Print query",
 	  	labels      => "no, yes",
@@ -4808,7 +4750,7 @@ my @AoH = (
 	  	values      => "no, yes",
 	  	bgcolor     => "formbg",
 	  },
-);
+));
 
 $ref = \@AoH;
 return($ref);
@@ -7202,7 +7144,7 @@ LEFT  JOIN $coredb.dgvbp               dgv ON (v.chrom = dgv.chrom AND v.start=d
 INNER JOIN $sampledb.sample              s ON (s.idsample = x.idsample)
 LEFT  JOIN snvgene                       y ON (v.idsnv = y.idsnv)
 LEFT  JOIN gene                          g ON (g.idgene = y.idgene)
-LEFT  JOIN $coredb.exacGeneScores     exac ON (g.genesymbol=exac.genesymbol)
+LEFT  JOIN $coredb.evsscores           exac ON (g.genesymbol=exac.gene)
 LEFT  JOIN $sampledb.mouse              mo ON (g.genesymbol = mo.humanSymbol)
 LEFT  JOIN hgmd_pro.$hg19_coords         h ON (v.chrom = h.chrom AND v.start = h.pos  AND v.refallele=h.ref AND v.allele=h.alt)
 LEFT  JOIN $coredb.clinvar              cv ON (v.chrom=cv.chrom and v.start=cv.start and v.refallele=cv.ref and v.allele=cv.alt)
@@ -7723,7 +7665,7 @@ LEFT  JOIN $coredb.dgvbp               dgv ON (v.chrom = dgv.chrom AND v.start=d
 INNER JOIN $sampledb.sample              s ON (s.idsample = x.idsample)
 LEFT  JOIN snvgene                       y ON (v.idsnv = y.idsnv)
 LEFT  JOIN gene                          g ON (g.idgene = y.idgene)
-LEFT  JOIN $coredb.exacGeneScores     exac ON (g.genesymbol=exac.genesymbol)
+LEFT  JOIN $coredb.evsscores          exac ON (g.genesymbol=exac.gene)
 LEFT  JOIN $sampledb.mouse              mo ON (g.genesymbol = mo.humanSymbol)
 LEFT  JOIN hgmd_pro.$hg19_coords         h ON (v.chrom = h.chrom AND v.start = h.pos  AND v.refallele=h.ref AND v.allele=h.alt)
 LEFT  JOIN $coredb.clinvar              cv ON (v.chrom=cv.chrom and v.start=cv.start and v.refallele=cv.ref and v.allele=cv.alt)
@@ -9377,7 +9319,7 @@ LEFT  JOIN $coredb.dgvbp              dgv ON (v.chrom = dgv.chrom AND v.start=dg
 INNER JOIN $sampledb.sample             s ON (s.idsample = x.idsample)
 LEFT  JOIN snvgene                      y ON (v.idsnv = y.idsnv)
 LEFT  JOIN gene                         g ON (g.idgene = y.idgene)
-LEFT  JOIN $coredb.exacGeneScores    exac ON (g.genesymbol=exac.genesymbol)
+LEFT  JOIN $coredb.evsscores         exac ON (g.genesymbol=exac.gene)
 LEFT  JOIN $sampledb.mouse             mo ON (g.genesymbol = mo.humanSymbol)
 LEFT  JOIN hgmd_pro.$hg19_coords        h ON (v.chrom = h.chrom AND v.start = h.pos  AND v.refallele=h.ref AND v.allele=h.alt)
 INNER JOIN $sampledb.disease2sample    ds ON (s.idsample = ds.idsample)
@@ -9679,7 +9621,6 @@ my @row       = ();
 my $query     = "";
 my $i         = 0;
 my $n         = 1;
-my $rssnp     = "";
 my $tmp       = "";
 my $function  = "";
 my $functionprint  = "";
@@ -9703,7 +9644,6 @@ my $diseasegeneprint = "";
 
 my @prepare   = ();
 my @prepare2  = ();
-my $field     = "";
 my $where     = "";
 my $where2    = "";
 my @row2 = ();
@@ -9711,9 +9651,7 @@ my %npedigree = "";
 my %ngenesymbol = "";
 my $aref      = "";
 my $ncases    = $ref->{ncases};
-delete($ref->{ncases});
 my $printquery =$ref->{"printquery"};
-delete($ref->{"printquery"});
 my $explain = "";
 if ($printquery eq "yes") {
 	$explain = " explain extended ";
@@ -9722,35 +9660,15 @@ if ($printquery eq "yes") {
 # function
 ($function,$functionprint)=&function($ref->{function},$dbh);
 ($class,$classprint)=&class($ref->{class},$dbh);
-delete($ref->{class});
-delete($ref->{function});
 ($genotype,$genotypeprint)=&genotype($ref->{genotype},$dbh);
 ($inheritance,$inheritanceprint)=&inheritance($ref->{inheritance},$dbh);
-delete($ref->{genotype});
-delete($ref->{inheritance});
-($patho,$pathoprint)=&patho($ref->{patho},$dbh);
-delete($ref->{patho});
 ($diseasegene,$diseasegeneprint)=&diseasegene($ref->{gene},$dbh);
-delete($ref->{gene});
+($patho,$pathoprint)=&patho($ref->{patho},$dbh);
 
 #label disease genes
-push(@prepare, $ref->{'dg.iddisease'});
-delete($ref->{'dg.iddisease'});
+push(@prepare, $ref->{'dg.iddisease'}); #for join
 
 
-# rs snps 
-if ($ref->{avhet} ne "") {
-	$where .= " AND 
-		((v.rs != '' AND FIND_IN_SET('by-hapmap',v.valid) > 0 AND avhet <= ?)
-		OR
-		(v.rs != '' AND NOT FIND_IN_SET('by-hapmap',v.valid))
-		OR 
-		(v.rs = '' )
-		)
-		";
-	push(@prepare, $ref->{'avhet'});
-}
-delete($ref->{avhet});
 
 if ($ref->{confirmed} eq "correctconfirmed") {
 	$where .= " AND ((c.rating = 'correct') OR (c.confirmed = 'yes'))";
@@ -9761,42 +9679,42 @@ elsif ($ref->{confirmed} eq "confirmed") {
 elsif ($ref->{confirmed} eq "unknown") {
 	$where .= " AND (c.confirmed = 'unknown')";
 }
-delete($ref->{confirmed});
 
 
-my @fields    = sort keys %$ref;
-my @values    = @{$ref}{@fields};
-
-foreach $field (@fields) {
-	unless ($values[$i] eq "") {
-		#if ($where ne "") {
-			$where .= " AND ";
-		#}
-		if ($field eq "freq") {
-			$where .= "($field <= ? )";
-		}
-		elsif ($field eq "af") {
-			$where .= "($field <= ?  )";
-		}
-		elsif ($field eq "snvqual") {
-			$where .= "($field >= ?  )";
-		}
-		elsif ($field eq "gtqual") {
-			$where .= "($field >= ?  )";
-		}
-		elsif ($field eq "mapqual") {
-			$where .= "($field >= ?  )";
-		}
-		elsif ($field eq "f.samplecontrols") {
-			$where .= "($field  <= ?  )";
-		}
-		else {
-			$where .= "($field = ?  )";
-		}
-		push(@prepare,$values[$i]);
-	}
-	$i++;
+if ($ref->{"dg.iddisease"}) {  #label disease genes
+	$where .= "AND ds.iddisease = ? ";
+	push(@prepare,$ref->{'dg.iddisease'});
 }
+if ($ref->{"s.name"}) {
+	$where .= "AND s.name = ? ";
+	push(@prepare,$ref->{'s.name'});
+}
+if ($ref->{"ds.iddisease"}) {
+	$where .= "AND ds.iddisease = ? ";
+	push(@prepare,$ref->{'ds.iddisease'});
+}
+if ($ref->{"s.idcooperation"}) {
+	$where .= "AND s.idcooperation = ? ";
+	push(@prepare,$ref->{'s.idcooperation'});
+}
+if ($ref->{"idproject"}) {
+	$where .= "AND idproject = ? ";
+	push(@prepare,$ref->{'idproject'});
+}
+if ($ref->{"g.genesymbol"}) {
+	$where .= "AND g.genesymbol = ? ";
+	push(@prepare,$ref->{'g.genesymbol'});
+}
+if ($ref->{"checked"}) {  #todo
+	$where .= "AND c.checked = ? ";
+	push(@prepare,$ref->{'checked'});
+}
+if ($ref->{"freq"}) {
+	$where .= "AND freq <= ? ";
+	push(@prepare,$ref->{'freq'});
+}
+
+($where,@prepare) = &defaultwhere($ref,$where,@prepare);
 
 if ($ref->{"s.name"}) {
 	$where2 .= "AND s.name = ? ";
@@ -9814,6 +9732,7 @@ if ($ref->{"idproject"}) {
 	$where2 .= "AND idproject = ? ";
 	push(@prepare2,$ref->{'idproject'});
 }
+
 
 &todaysdate();
 print "Reference $hg<br>\n";
@@ -9898,7 +9817,7 @@ print "</tr></thead><tbody>\n";
 
 $n=1;
 @tmp       = ();
-my $names  = "";
+my $names  = "'dummy',";
 for  $aref (@row2) { 
 	@row=@{$aref};
 	@tmp = ();
@@ -9983,7 +9902,6 @@ my @row       = ();
 my $query     = "";
 my $i         = 0;
 my $n         = 1;
-my $rssnp     = "";
 my $tmp       = "";
 my $function  = "";
 my $functionprint  = "";
@@ -10006,17 +9924,14 @@ my $diseasegene = "";
 my $diseasegeneprint = "";
 
 my @prepare   = ();
-my $field     = "";
 my $where     = "";
 my @row2 = ();
 my %npedigree = "";
 my %ngenesymbol = "";
 my $aref      = "";
 my $ncases    = $ref->{ncases};
-delete($ref->{ncases});
 
 my $printquery =$ref->{"printquery"};
-delete($ref->{"printquery"});
 my $explain = "";
 if ($printquery eq "yes") {
 	$explain = " explain extended ";
@@ -10025,35 +9940,15 @@ if ($printquery eq "yes") {
 # function
 ($function,$functionprint)=&function($ref->{function},$dbh);
 ($class,$classprint)=&class($ref->{class},$dbh);
-delete($ref->{class});
-delete($ref->{function});
 ($genotype,$genotypeprint)=&genotype($ref->{genotype},$dbh);
 ($inheritance,$inheritanceprint)=&inheritance($ref->{inheritance},$dbh);
-delete($ref->{genotype});
-delete($ref->{inheritance});
 ($patho,$pathoprint)=&patho($ref->{patho},$dbh);
-delete($ref->{patho});
 ($diseasegene,$diseasegeneprint)=&diseasegene($ref->{gene},$dbh);
-delete($ref->{gene});
 
 #label disease genes
 push(@prepare, $ref->{'dg.iddisease'});
-delete($ref->{'dg.iddisease'});
 
 
-# rs snps 
-if ($ref->{avhet} ne "") {
-	$where .= " AND 
-		((v.rs != '' AND FIND_IN_SET('by-hapmap',v.valid) > 0 AND avhet <= ?)
-		OR
-		(v.rs != '' AND NOT FIND_IN_SET('by-hapmap',v.valid))
-		OR 
-		(v.rs = '' )
-		)
-		";
-	push(@prepare, $ref->{'avhet'});
-}
-delete($ref->{avhet});
 
 if ($ref->{confirmed} eq "correctconfirmed") {
 	$where .= " AND ((c.rating = 'correct') OR (c.confirmed = 'yes')) ";
@@ -10064,42 +9959,42 @@ elsif ($ref->{confirmed} eq "confirmed") {
 elsif ($ref->{confirmed} eq "unknown") {
 	$where .= " AND c.confirmed = 'unknown' ";
 }
-delete($ref->{confirmed});
 
-
-my @fields    = sort keys %$ref;
-my @values    = @{$ref}{@fields};
-
-foreach $field (@fields) {
-	unless ($values[$i] eq "") {
-		#if ($where ne "") {
-			$where .= " AND ";
-		#}
-		if ($field eq "freq") {
-			$where .= $field . " <= ? ";
-		}
-		elsif ($field eq "af") {
-			$where .= $field . " <= ? ";
-		}
-		elsif ($field eq "snvqual") {
-			$where .= $field . " >= ? ";
-		}
-		elsif ($field eq "gtqual") {
-			$where .= $field . " >= ? ";
-		}
-		elsif ($field eq "mapqual") {
-			$where .= $field . " >= ? ";
-		}
-		elsif ($field eq "f.samplecontrols") {
-			$where .= $field . " <= ? ";
-		}
-		else {
-			$where .= $field . " = ? ";
-		}
-		push(@prepare,$values[$i]);
-	}
-	$i++;
+if ($ref->{"dg.iddisease"}) {  #label disease genes
+	$where .= "AND ds.iddisease = ? ";
+	push(@prepare,$ref->{'dg.iddisease'});
 }
+if ($ref->{"s.name"}) {
+	$where .= "AND s.name = ? ";
+	push(@prepare,$ref->{'s.name'});
+}
+if ($ref->{"ds.iddisease"}) {
+	$where .= "AND ds.iddisease = ? ";
+	push(@prepare,$ref->{'ds.iddisease'});
+}
+if ($ref->{"s.idcooperation"}) {
+	$where .= "AND s.idcooperation = ? ";
+	push(@prepare,$ref->{'s.idcooperation'});
+}
+if ($ref->{"idproject"}) {
+	$where .= "AND idproject = ? ";
+	push(@prepare,$ref->{'idproject'});
+}
+if ($ref->{"g.genesymbol"}) {
+	$where .= "AND g.genesymbol = ? ";
+	push(@prepare,$ref->{'g.genesymbol'});
+}
+if ($ref->{"checked"}) {  #todo
+	$where .= "AND c.checked = ? ";
+	push(@prepare,$ref->{'checked'});
+}
+if ($ref->{"freq"}) {
+	$where .= "AND freq <= ? ";
+	push(@prepare,$ref->{'freq'});
+}
+
+($where,@prepare) = &defaultwhere($ref,$where,@prepare);
+
 
 
 &todaysdate();
@@ -10167,7 +10062,7 @@ INNER JOIN $exomevcfe.comment              c ON (v.chrom=c.chrom and v.start=c.s
 LEFT  JOIN $coredb.dgvbp                 dgv ON (v.chrom = dgv.chrom AND v.start=dgv.start)
 LEFT  JOIN snvgene                         y ON (v.idsnv = y.idsnv)
 LEFT  JOIN gene                            g ON (g.idgene = y.idgene)
-LEFT  JOIN $coredb.exacGeneScores       exac ON (g.genesymbol=exac.genesymbol)
+LEFT  JOIN $coredb.evsscores            exac ON (g.genesymbol=exac.gene)
 LEFT  JOIN $sampledb.mouse                mo ON (g.genesymbol = mo.humanSymbol)
 LEFT  JOIN hgmd_pro.$hg19_coords           h ON (v.chrom = h.chrom AND v.start = h.pos  AND v.refallele=h.ref AND v.allele=h.alt)
 INNER JOIN $sampledb.disease2sample       ds ON (s.idsample = ds.idsample)
@@ -15594,50 +15489,11 @@ else {
 }
 
 $i=0;
-# rs snps 
-if ($ref->{'avhet'} ne "") {
-	$where .= " AND 
-		((v.rs != '' AND FIND_IN_SET('by-hapmap',v.valid) > 0 AND avhet <= ?)
-		OR
-		(v.rs != '' AND NOT FIND_IN_SET('by-hapmap',v.valid))
-		OR 
-		(v.rs = '' )
-		)
-		";
-	push(@prepare,$ref->{'avhet'});
-}
-if ($ref->{'ea_het'} ne "") {
-	$where .= " AND (evs.ea_het <= ? or ISNULL(evs.ea_het))";
-	push(@prepare,$ref->{'ea_het'});
-}
-if ($ref->{'aa_het'} ne "") {
-	$where .= " AND (evs.aa_het <= ? or ISNULL(evs.aa_het))";
-	push(@prepare,$ref->{'aa_het'});
-}
-if ($ref->{'af'} ne "") {
-	$where .= " AND v.af <= ? ";
-	push(@prepare,$ref->{'af'});
-}
-if ($ref->{'snvqual'} ne "") {
-	$where .= " AND x.snvqual >= ? ";
-	push(@prepare,$ref->{'snvqual'});
-}
-if ($ref->{'gtqual'} ne "") {
-	$where .= " AND x.gtqual >= ? ";
-	push(@prepare,$ref->{'gtqual'});
-}
-if ($ref->{'mapqual'} ne "") {
-	$where .= " AND x.mapqual >= ? ";
-	push(@prepare,$ref->{'mapqual'});
-}
+
 if ($ref->{'s.name'} ne "") {
 	$idsample = &getIdsampleByName($dbh,$ref->{'s.name'});
 	$where .= " AND s.idsample = ? ";
 	push(@prepare,$idsample);
-}
-if ($ref->{'filter'} eq "filtered") {
-	$where .= " AND x.filter = ? ";
-	push(@prepare,'PASS');
 }
 if ($ref->{'ds.iddisease'} ne "") {
 	$where .= " AND ds.iddisease = ? ";
@@ -15655,15 +15511,8 @@ if ($ref->{'v.freq'} ne "") {
 	$where .= " AND v.freq <= ? ";
 	push(@prepare,$ref->{'v.freq'});
 }
-if ($ref->{'length'} ne "") {
-	$where .= "AND v.length >= ? ";
-	push(@prepare,$ref->{'length'});
-}
-if ($ref->{'lengthmax'} ne "") {
-	$where .= "AND v.length <= ? ";
-	push(@prepare,$ref->{'lengthmax'});
-}
 
+($where,@prepare) = &defaultwhere($ref,$where,@prepare);
 
 # function
 ($function,$functionprint)=&function($ref->{'function'},$dbh);
@@ -15722,7 +15571,7 @@ LEFT  JOIN $sampledb.disease2sample ds ON (s.idsample=ds.idsample)
 LEFT  JOIN $sampledb.disease         i ON (ds.iddisease = i.iddisease)
 LEFT  JOIN snvgene                   y ON (v.idsnv = y.idsnv)
 LEFT  JOIN gene                      g ON (g.idgene = y.idgene)
-LEFT  JOIN $coredb.exacGeneScores exac ON (g.genesymbol=exac.genesymbol)
+LEFT  JOIN $coredb.evsscores      exac ON (g.genesymbol=exac.gene)
 LEFT  JOIN $sampledb.mouse          mo ON (g.genesymbol = mo.humanSymbol)
 LEFT  JOIN $coredb.cadd           cadd ON (v.chrom=cadd.chrom and v.start=cadd.start and v.refallele=cadd.ref and v.allele=cadd.alt)
 LEFT  JOIN $coredb.clinvar          cv ON (v.chrom=cv.chrom and v.start=cv.start and v.refallele=cv.ref and v.allele=cv.alt)
