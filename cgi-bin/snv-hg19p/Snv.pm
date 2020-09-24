@@ -22202,6 +22202,7 @@ print qq(
 print qq(
 <td align="center" class="header"><a class="$searchHGMD" href="searchHGMD.pl">HGMD ClinVar</a></td>
 <td align="center" class="header"><a class="$searchOmim" href="searchOmim.pl">OMIM</a></td>
+<td align="center" class="header"><a class="$searchHPO"  href="searchHPO.pl">Search HPO</a></td>
 <td align="center" class="header"><a class="$searchIbs"  href="searchIbs.pl">IBS</a></td>
 );
 
@@ -22212,10 +22213,11 @@ print qq(
 }
 
 print qq(
-<td align="center" class="header"><a class="$searchComment" href="searchComment.pl">Comments</a></td>
-<td align="center" class="header"><a class="$searchConclusion" href="searchConclusion.pl">Conclusions</a></td>
 <td align="center" class="header"><a class="$searchstat" href="searchStat.pl">Quality control</a></td>
 <td align="center" class="header"><a class="$searchSample" href="searchSample.pl">Samples</a></td>
+<td align="center" class="header"><a class="$searchComment" href="searchComment.pl">Comments</a></td>
+<td align="center" class="header"><a class="$searchConclusion" href="searchConclusion.pl">Conclusions</a></td>
+<td align="center" class="header"><a class="$report" href="report.pl">Report</a></td>
 <td align="center" class="header"><a class="$searchVcfTrio" href="searchVcfTrio.pl">VCF De novo Trio</a></td>
 <td align="center" class="header"><a class="$searchVcf" href="searchVcf.pl">VCF Tumor Controls</a></td>
 );
@@ -22233,8 +22235,6 @@ print qq(
 <td align="center" class="header"><a class="$help" href="help.pl">Help</a></td>
 <td align="center" class="header"><a class="$login" href="login.pl">Login / Logout</a></td>
 <td align="center" class="header"><a class="$importHPO"  href="importHPO.pl">Import HPO</a></td>
-<td align="center" class="header"><a class="$searchHPO"  href="searchHPO.pl">Search HPO</a></td>
-<td align="center" class="header"><a class="$report" href="report.pl">Report</a></td>
 );
 
 if ($role eq "admin") {
