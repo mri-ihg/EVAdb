@@ -47,19 +47,16 @@ They appear in several places in the file.
 <port>DBPORT</port>
 <user>DBUSER</user>
 <password>DBPWD</password>
+<reference>/PATHTO/hg19_decoy/chromosome/noPAR.hg19_decoy.fa</reference> 
 
 sed -i 's/SERVER13/<host>/g' current.config.xml
 sed -i 's/DBPORT/<port>/g' current.config.xml
 sed -i 's/DBUSER/<myuser>/g' current.config.xml
 sed -i 's/DBPWD/<mypassword>/g' current.config.xml
+sed -i 's/\/PATHTO\/hg19_decoy\/chromosome\/noPAR.hg19_decoy.fa/<myreffasta>/g' current.config.xml
 
-
-entry accordingly:
-<config>
- <settings>
-  <yoursettingsname>
-   <reference>/PATHTO/hg19_decoy/chromosome/noPAR.hg19_decoy.fa</reference> 
-
+You neet the fasta file of the human reference sequence to annotate
+vcf-files before import into EVAdb (see below).
 
 #############################################################################
 # imports
