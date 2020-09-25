@@ -1,6 +1,7 @@
-Use the following script and utilities from 
+Use the following scripts and utilities from 
 https://github.com/mri-ihg/ngs_pipeline
 to fill the database with external data you need at least:
+cdsdb.pl
 fillAnnotationTables.pl
 Utilities.pm
 current.config.xml
@@ -53,7 +54,6 @@ sed -i 's/DBUSER/<myuser>/g' current.config.xml
 sed -i 's/DBPWD/<mypassword>/g' current.config.xml
 
 
-Additionally download the reference genome fasta file, index the file with samtools faidx and modify the following
 entry accordingly:
 <config>
  <settings>
