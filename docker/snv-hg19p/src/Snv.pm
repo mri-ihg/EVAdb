@@ -26,7 +26,7 @@ my $rnahg19            = 0;
 my $perspective        = 0;
 my $fhcl               = 0;
 
-my $rna_menu           = 1;
+my $rna_menu           = 0;
 
 ######################################
 my $translocation_menu = 0;
@@ -106,7 +106,7 @@ elsif ($genomegatk) {
 	$sv_menu    = 1;
 	$translocation_menu = 1;
 	$libtype_default = 1; #genome
-	$contextM   = "contextMg";
+	$contextM   = "contextMg"; #contextmenu for genomes
 	$giabradio  = 1;
 	$giabform   = 1;
 }
@@ -310,7 +310,7 @@ my $rssnplink     = qq{"<a href='https://www.ncbi.nlm.nih.gov/SNP/snp_ref.cgi?ty
 my $exac_link  = qq{"<a href='https://gnomad.broadinstitute.org/variant/",evs.chrom,"-",evs.start,"-",evs.refallele,"-",evs.allele,"' title='ExAC'>",evs.homref,"--",evs.het,"--",evs.homalt,"</a>"};
 my $exac_ae_link  = qq{"<a href='https://gnomad.broadinstitute.org/variant/",evs.chrom,"-",evs.start,"-",evs.refallele,"-",evs.allele,"' title='ExAC'>",evs.ea_homref,"--",evs.ea_het,"--",evs.ea_homalt,"</a>"};
 my $exac_aa_link  = qq{"<a href='https://gnomad.broadinstitute.org/variant/",evs.chrom,"-",evs.start,"-",evs.refallele,"-",evs.allele,"' title='ExAC'>",evs.aa_homref,"--",evs.aa_het,"--",evs.aa_homalt,"</a>"};
-my $exac_gene_link= qq{"<a href='http://gnomad.broadinstitute.org/awesome?query=",g.genesymbol,"' title='gnomAD'>",ROUND(exac.pLI,2),"</a>"};
+my $exac_gene_link= qq{"<a href='http://gnomad.broadinstitute.org/awesome?query=",exac.transcript,"' title='gnomAD'>",ROUND(exac.pLI,2),"</a>"};
 my $kaviar_link   = qq{"<a href='http://db.systemsbiology.net/kaviar/cgi-pub/Kaviar.pl?chr=",k.chrom,"&frz=$hg&onebased=1&pos=",k.start,"' title='Kaviar'>",k.ac,"&nbsp;&nbsp;(",k.an,")</a>"};
 my $omimlink      = qq{"<a href='https://www.ncbi.nlm.nih.gov/omim/",g.omim,"' title='OMIM'>",g.omim,"</a>"};
 my $ucsclink      = qq{"<a href='https://$ucscSite.ucsc.edu/cgi-bin/hgTracks?db=$hg\&highlight=$hg.",v.chrom,":",v.start-1,"-",v.end,"\&position=",v.chrom,":",v.start-1,"-",v.end,"' title='UCSC Browser'>",v.chrom,":",v.start,"-",v.end-1,"</a>"," "};
@@ -1226,7 +1226,221 @@ sub allowedprojects {
 }
 
 ########################################################################
-# init for searchFam dominant initseachdominant
+# defaultAoH
+########################################################################
+sub defaultAoH {
+my $mode = shift;
+my @AoH = ();
+my $filter = 'filtered';
+
+if ($mode eq 'clinvar') {
+	$snvqual = "";
+	$gtqual  = "";
+	$filter  = 'all';
+	$gvalue  = $gvalueall;
+}
+if ($mode eq 'omim') {
+	$snvqual = "";
+	$gtqual  = "";
+	$filter  = 'all';
+}
+if ($mode eq 'hpo') {
+	$snvqual = "";
+	$gtqual  = "";
+}
+
+unless (($mode eq 'recessive') or ($mode eq 'clinvar') or ($mode eq 'omim') or ($mode eq 'hpo') or ($mode eq 'tumor') or ($mode eq 'vcftumor') or ($mode eq 'vcfdenovo')) {
+push(@AoH,({
+	  	label       => "Affecteds",
+	  	labels      => "Only affecteds, Only unaffecteds, All",
+	  	type        => "radio",
+		name        => "affecteds",
+	  	value       => "onlyaffecteds",
+	  	values      => "onlyaffecteds, onlyunaffecteds, ",
+	  	bgcolor     => "formbg",
+	  },
+));
+}
+
+push(@AoH,(
+	  {
+	  	label       => "gnomAD Africans heterozygous <= (n)",
+	  	type        => "text",
+		name        => "aa_het",
+	  	value       => "",
+		size        => "20",
+		maxlength   => "20",
+	  	bgcolor     => "formbg",
+	  },
+	  {
+	  	label       => "gnomAD alternative homozygous <= (n)",
+	  	type        => "text",
+		name        => "homalt",
+	  	value       => "",
+		size        => "20",
+		maxlength   => "20",
+	  	bgcolor     => "formbg",
+	  },
+	  {
+	  	label       => "gnomAD heterozygous <= (n)",
+	  	type        => "text",
+		name        => "het",
+	  	value       => "",
+		size        => "20",
+		maxlength   => "20",
+	  	bgcolor     => "formbg",
+	  },
+	  {
+	  	label       => "gnomAD maximum minor allele frequency of all populations <= (%)",
+	  	type        => "text",
+		name        => "popmax_af",
+	  	value       => "$popmax_af",
+		size        => "20",
+		maxlength   => "20",
+	  	bgcolor     => "formbg",
+	  },
+));
+
+if (($mode eq 'vcftumor') or ($mode eq 'vcfdenovo')) {
+	return(@AoH);
+}
+
+push(@AoH,(
+	  {
+	  	label       => "SNV calling Filter (GATK or SAMtools)",
+	  	labels      => "Filtered, All",
+	  	type        => "radio",
+		name        => "filter",
+	  	value       => "$filter",
+	  	values      => "filtered, all",
+	  	bgcolor     => "formbg",
+	  },
+	  {
+	  	label       => "SNV quality >= (0-255)",
+	  	type        => "text",
+		name        => "snvqual",
+	  	value       =>  $snvqual,
+		size        => "20",
+		maxlength   => "20",
+	  	bgcolor     => "formbg",
+	  },
+	  {
+	  	label       => "Genotype quality >= (0-99)",
+	  	type        => "text",
+		name        => "gtqual",
+	  	value       =>  $gtqual,
+		size        => "20",
+		maxlength   => "20",
+	  	bgcolor     => "formbg",
+	  },
+	  {
+	  	label       => "Mapping quality >= (0-60)",
+	  	type        => "text",
+		name        => "mapqual",
+	  	value       => "",
+		size        => "20",
+		maxlength   => "20",
+	  	bgcolor     => "formbg",
+	  },
+	  {
+	  	label       => "Variant length >= (bp)",
+	  	type        => "text",
+		name        => "minlength",
+	  	value       => "",
+		size        => "20",
+		maxlength   => "20",
+	  	bgcolor     => "formbg",
+	  },
+	  {
+	  	label       => "Variant length <= (bp)",
+	  	type        => "text",
+		name        => "maxlength",
+	  	value       => "",
+		size        => "20",
+		maxlength   => "20",
+	  	bgcolor     => "formbg",
+	  },
+	  {
+	  	label       => "Class",
+	  	labels      => "SNV, indel, Pindel, ExomeDepth",
+	  	type        => "checkbox",
+		name        => "class",
+	  	value       => "snp, indel, deletion",
+	  	values      => "snp, indel, deletion, cnv",
+	  	bgcolor     => "formbg",
+	  },
+	  {
+	  	label       => "Function",
+	  	labels      => "$glabels",
+	  	type        => "checkbox",
+		name        => "function",
+	  	value       => "$gvalue",
+	  	values      => "$gvalues",
+	  	bgcolor     => "formbg",
+	  },
+));
+
+return(@AoH);
+
+}
+########################################################################
+# defaultwhere
+########################################################################
+sub defaultwhere {
+my $ref     = shift;
+my $where   = shift;
+my @prepare = @_;
+
+if ($ref->{'aa_het'} ne "") {
+	$where .= " AND (evs.aa_het <= ? or ISNULL(evs.aa_het))";
+	push(@prepare,$ref->{'aa_het'});
+}
+if ($ref->{'het'} ne "") {
+	$where .= " AND (evs.het <= ? or ISNULL(evs.het))";
+	push(@prepare,$ref->{'het'});
+}
+if ($ref->{'homalt'} ne "") {
+	$where .= " AND (evs.homalt <= ? or ISNULL(evs.homalt))";
+	push(@prepare,$ref->{'homalt'});
+}
+if ($ref->{'popmax_af'} ne "") {
+	$where .= " AND (evs.popmax_af <= ? or ISNULL(evs.popmax_af))";
+	push(@prepare,$ref->{'popmax_af'});
+}
+if ($ref->{'affecteds'} eq "onlyaffecteds") {
+	$where .= " AND s.saffected = 1 ";
+}
+if ($ref->{'affecteds'} eq "onlyunaffecteds") {
+	$where .= " AND s.saffected = 0 ";
+}
+if ($ref->{'snvqual'} ne "") {
+	$where .= " AND x.snvqual >= ? ";
+	push(@prepare,$ref->{'snvqual'});
+}
+if ($ref->{'gtqual'} ne "") {
+	$where .= " AND x.gtqual >= ? ";
+	push(@prepare,$ref->{'gtqual'});
+}
+if ($ref->{'mapqual'} ne "") {
+	$where .= " AND x.mapqual >= ? ";
+	push(@prepare,$ref->{'mapqual'});
+}
+if ($ref->{'minlength'} ne "") {
+	$where .= "AND v.length >= ? ";
+	push(@prepare,$ref->{'minlength'});
+}
+if ($ref->{'maxlength'} ne "") {
+	$where .= "AND v.length <= ? ";
+	push(@prepare,$ref->{'maxlength'});
+}
+if ($ref->{'filter'} eq "filtered") {
+	$where .= " AND FIND_IN_SET('PASS',x.filter)";
+}
+
+return($where,@prepare);
+}
+########################################################################
+# init for searchFam dominant initsearchdominant
 ########################################################################
 sub initSearchFam {
 my $self         = shift;
@@ -1303,114 +1517,11 @@ my @AoH = (
 		maxlength   => "20",
 	  	bgcolor     => "formbg",
 	  },
-	  {
-	  	label       => "avHet HapMap <= (~2 x allele frequency)",
-	  	type        => "text",
-		name        => "avhet",
-	  	value       => "",
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "gnomAD African American (heterozygous) <= (n het)",
-	  	type        => "text",
-		name        => "aa_het",
-	  	value       => "",
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Minor allele count Kaviar <=",
-	  	type        => "text",
-		name        => "kaviar",
-	  	value       => "",
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Affecteds",
-	  	labels      => "Only affecteds, Affecteds and unaffecteds",
-	  	type        => "radio",
-		name        => "affecteds",
-	  	value       => "onlyaffecteds",
-	  	values      => "onlyaffecteds, all",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "SNV quality >= (0-255)",
-	  	type        => "text",
-		name        => "snvqual",
-	  	value       =>  $snvqual,
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Genotype quality >= (0-99)",
-	  	type        => "text",
-		name        => "gtqual",
-	  	value       =>  $gtqual,
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Mapping quality >= (0-60)",
-	  	type        => "text",
-		name        => "mapqual",
-	  	value       => "",
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "nonsynonymous / gene <= (n)",
-	  	type        => "text",
-		name        => "nonsynpergene",
-	  	value       => "",
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Variant length >= (bp)",
-	  	type        => "text",
-		name        => "length",
-	  	value       => "",
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Variant length <= (bp)",
-	  	type        => "text",
-		name        => "lengthmax",
-	  	value       => "",
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Class",
-	  	labels      => "SNV, indel, Pindel, ExomeDepth",
-	  	type        => "checkbox",
-		name        => "class",
-	  	value       => "snp, indel, deletion",
-	  	values      => "snp, indel, deletion, cnv",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Function",
-	  	labels      => "$glabels",
-	  	type        => "checkbox",
-		name        => "function",
-	  	value       => "$gvalue",
-	  	values      => "$gvalues",
-	  	bgcolor     => "formbg",
-	  },
+);
+
+push(@AoH,(&defaultAoH));
+
+push(@AoH,(
 	  {
 	  	label       => "Show",
 	  	labels      => "All genes, Only disease genes",
@@ -1418,15 +1529,6 @@ my @AoH = (
 		name        => "showall",
 	  	value       => "1",
 	  	values      => "1, 0",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Filter",
-	  	labels      => "Filtered, All",
-	  	type        => "radio",
-		name        => "filter",
-	  	value       => "filtered",
-	  	values      => "filtered, all",
 	  	bgcolor     => "formbg",
 	  },
 	  {
@@ -1438,7 +1540,7 @@ my @AoH = (
 	  	values      => "no, yes",
 	  	bgcolor     => "formbg",
 	  },
-);
+));
 
 $ref = \@AoH;
 return($ref);
@@ -1516,115 +1618,12 @@ my @AoH = (
 		maxlength   => "20",
 	  	bgcolor     => "formbg",
 	  },
-	  {
-	  	label       => "gnomAD European American (heterozygous) <= (n het)",
-	  	type        => "text",
-		name        => "ea_het",
-	  	value       => "",
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "gnomAD African American (heterozygous) <= (n het)",
-	  	type        => "text",
-		name        => "aa_het",
-	  	value       => "",
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "avHet HapMap <= (~2 x allele frequency)",
-	  	type        => "text",
-		name        => "avhet",
-	  	value       => "",
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Minor allele count Kaviar <=",
-	  	type        => "text",
-		name        => "kaviar",
-	  	value       => "",
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Allele frequency 1000 Genomes <=",
-	  	type        => "text",
-		name        => "af",
-	  	value       => "",
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "SNV quality >= (0-255)",
-	  	type        => "text",
-		name        => "snvqual",
-	  	value       =>  $snvqual,
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Genotype quality >= (0-99)",
-	  	type        => "text",
-		name        => "gtqual",
-	  	value       =>  $gtqual,
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Mapping quality >= (0-60)",
-	  	type        => "text",
-		name        => "mapqual",
-	  	value       => "",
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "nonsynonymous / gene <= (n)",
-	  	type        => "text",
-		name        => "nonsynpergene",
-	  	value       => "",
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Variant length >= (bp)",
-	  	type        => "text",
-		name        => "length",
-	  	value       => "",
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Class",
-	  	labels      => "SNV, indel, Pindel, ExomeDepth",
-	  	type        => "checkbox",
-		name        => "class",
-	  	value       => "snp, indel, deletion",
-	  	values      => "snp, indel, deletion, cnv",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Function",
-	  	labels      => "$glabels",
-	  	type        => "checkbox",
-		name        => "function",
-	  	value       => "$gvalue",
-	  	values      => "$gvalues",
-	  	bgcolor     => "formbg",
-	  },
-	  {
+);
+
+push(@AoH,(&defaultAoH));
+
+
+push(@AoH,({
 	  	label       => "Genome in a bottle (only for genomes)",
 	  	labels      => "All, callable, not callable",
 	  	type        => "radio",
@@ -1642,13 +1641,13 @@ my @AoH = (
 	  	values      => "no, yes",
 	  	bgcolor     => "formbg",
 	  },
-);
+));
 
 $ref = \@AoH;
 return($ref);
 }
 ########################################################################
-# init for searchVcf
+# init for initSearchVcfTumor
 ########################################################################
 sub initSearchVcf {
 my $self         = shift;
@@ -1727,24 +1726,12 @@ my @AoH = (
 		maxlength   => "20",
 	  	bgcolor     => "formbg",
 	  },
-	  {
-	  	label       => "gnomAD European American (heterozygous) <= (n het)",
-	  	type        => "text",
-		name        => "ea_het",
-	  	value       => "",
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "gnomAD African American (heterozygous) <= (n het)",
-	  	type        => "text",
-		name        => "aa_het",
-	  	value       => "",
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
+);
+
+push(@AoH,(&defaultAoH('vcftumor')));
+
+
+push(@AoH,(
 	  {
 	  	label       => "Mapping quality >= (0-60)",
 	  	type        => "text",
@@ -1781,13 +1768,13 @@ my @AoH = (
 	  	values      => "no, yes",
 	  	bgcolor     => "formbg",
 	  },
-);
+));
 
 $ref = \@AoH;
 return($ref);
 }
 ########################################################################
-# init for searchVcfTrio
+# init for initSearchVcfTrio initSearchVcfDenovo
 ########################################################################
 sub initSearchVcfTrio {
 my $self         = shift;
@@ -1866,24 +1853,11 @@ my @AoH = (
 		maxlength   => "20",
 	  	bgcolor     => "formbg",
 	  },
-	  {
-	  	label       => "gnomAD European American (heterozygous) <= (n het)",
-	  	type        => "text",
-		name        => "ea_het",
-	  	value       => "",
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "gnomAD African American (heterozygous) <= (n het)",
-	  	type        => "text",
-		name        => "aa_het",
-	  	value       => "",
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
+);
+
+push(@AoH,(&defaultAoH('vcfdenovo')));
+
+push(@AoH,(
 	  {
 	  	label       => "Mapping quality >= (0-60)",
 	  	type        => "text",
@@ -1891,15 +1865,6 @@ my @AoH = (
 	  	value       => "",
 		size        => "20",
 		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Class",
-	  	labels      => "SNV, indel",
-	  	type        => "checkbox",
-		name        => "class",
-	  	value       => "snp, indel",
-	  	values      => "snp, indel",
 	  	bgcolor     => "formbg",
 	  },
 	  {
@@ -1921,6 +1886,15 @@ my @AoH = (
 	  	bgcolor     => "formbg",
 	  },
 	  {
+	  	label       => "Class",
+	  	labels      => "SNV, indel",
+	  	type        => "checkbox",
+		name        => "class",
+	  	value       => "snp, indel",
+	  	values      => "snp, indel",
+	  	bgcolor     => "formbg",
+	  },
+	  {
 	  	label       => "Function",
 	  	labels      => "$glabels",
 	  	type        => "checkbox",
@@ -1938,7 +1912,7 @@ my @AoH = (
 	  	values      => "no, yes",
 	  	bgcolor     => "formbg",
 	  },
-);
+));
 
 $ref = \@AoH;
 return($ref);
@@ -2013,33 +1987,6 @@ my @AoH = (
 	  	bgcolor     => "formbg",
 	  },
 	  {
-	  	label       => "gnomAD European American (heterozygous) <= (n het)",
-	  	type        => "text",
-		name        => "ea_het",
-	  	value       => "",
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "gnomAD African American (heterozygous) <= (n het)",
-	  	type        => "text",
-		name        => "aa_het",
-	  	value       => "",
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "avHet HapMap <= (~2 x allele frequency)",
-	  	type        => "text",
-		name        => "avhet",
-	  	value       => "",
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
 	  	label       => "Only confirmed <br>or correct SNVs",
 	  	labels      => "All, Only confirmed or correct SNVs, Only not annotated SNVs",
 	  	type        => "radio",
@@ -2048,88 +1995,11 @@ my @AoH = (
 	  	values      => ", correct, notannotated",
 	  	bgcolor     => "formbg",
 	  },
-	  {
-	  	label       => "Control type",
-	  	labels      => "Individual based, Pedigree based",
-	  	type        => "radio",
-		name        => "controltype",
-	  	value       => "individual",
-	  	values      => "individual, pedigree",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "SNV quality >= (0-255)",
-	  	type        => "text",
-		name        => "snvqual",
-	  	value       =>  $snvqual,
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Genotype quality >= (0-99)",
-	  	type        => "text",
-		name        => "gtqual",
-	  	value       =>  $gtqual,
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Mapping quality >= (0-60)",
-	  	type        => "text",
-		name        => "mapqual",
-	  	value       =>  "",
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Coverage >=",
-	  	type        => "text",
-		name        => "coverage",
-	  	value       =>  "",
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "nonsynonymous / gene <= (n)",
-	  	type        => "text",
-		name        => "nonsynpergene",
-	  	value       => "",
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Class",
-	  	labels      => "SNV, indel, Pindel, ExomeDepth",
-	  	type        => "checkbox",
-		name        => "class",
-	  	value       => "snp, indel, deletion",
-	  	values      => "snp, indel, deletion, cnv",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Function",
-	  	labels      => "$glabels",
-	  	type        => "checkbox",
-		name        => "function",
-	  	value       => "$gvalue",
-	  	values      => "$gvalues",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Filter",
-	  	labels      => "Filtered, All",
-	  	type        => "radio",
-		name        => "filter",
-	  	value       => "filtered",
-	  	values      => "filtered, all",
-	  	bgcolor     => "formbg",
-	  },
-	  {
+);
+
+push(@AoH,(&defaultAoH));
+
+push(@AoH,({
 	  	label       => "Genome in a bottle (only for genomes)",
 	  	labels      => "All, callable, not callable",
 	  	type        => "radio",
@@ -2147,7 +2017,7 @@ my @AoH = (
 	  	values      => "no, yes",
 	  	bgcolor     => "formbg",
 	  },
-);
+));
 
 $ref = \@AoH;
 return($ref);
@@ -2425,33 +2295,6 @@ my @AoH = (
 	  	bgcolor     => "formbg",
 	  },
 	  {
-	  	label       => "gnomAD European American (heterozygous) <= (n het)",
-	  	type        => "text",
-		name        => "ea_het",
-	  	value       => "",
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "gnomAD African American (heterozygous) <= (n het)",
-	  	type        => "text",
-		name        => "aa_het",
-	  	value       => "",
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "avHet HapMap <= (~2 x allele frequency)",
-	  	type        => "text",
-		name        => "avhet",
-	  	value       => "",
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
 	  	label       => "Only confirmed <br>or correct SNVs",
 	  	labels      => "no, yes",
 	  	type        => "radio",
@@ -2460,78 +2303,11 @@ my @AoH = (
 	  	values      => ", correct",
 	  	bgcolor     => "formbg",
 	  },
-	  {
-	  	label       => "Control type",
-	  	labels      => "Individual based, Pedigree based",
-	  	type        => "radio",
-		name        => "controltype",
-	  	value       => "individual",
-	  	values      => "individual, pedigree",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "SNV quality >= (0-255)",
-	  	type        => "text",
-		name        => "snvqual",
-	  	value       =>  $snvqual,
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Genotype quality >= (0-99)",
-	  	type        => "text",
-		name        => "gtqual",
-	  	value       =>  $gtqual,
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Mapping quality >= (0-60)",
-	  	type        => "text",
-		name        => "mapqual",
-	  	value       => "",
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Coverage >=",
-	  	type        => "text",
-		name        => "coverage",
-	  	value       =>  "",
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "nonsynonymous / gene <= (n)",
-	  	type        => "text",
-		name        => "nonsynpergene",
-	  	value       => "",
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Class",
-	  	labels      => "SNV, indel, Pindel, ExomeDepth",
-	  	type        => "checkbox",
-		name        => "class",
-	  	value       => "snp, indel, deletion",
-	  	values      => "snp, indel, deletion, cnv",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Function",
-	  	labels      => "$glabels",
-	  	type        => "checkbox",
-		name        => "function",
-	  	value       => "$gvalue",
-	  	values      => "$gvalues",
-	  	bgcolor     => "formbg",
-	  },
+);
+
+push(@AoH,(&defaultAoH('tumor')));
+
+push(@AoH,(
 	  {
 	  	label       => "Genome in a bottle (only for genomes)",
 	  	labels      => "All, callable, not callable",
@@ -2550,7 +2326,7 @@ my @AoH = (
 	  	values      => "no, yes",
 	  	bgcolor     => "formbg",
 	  },
-);
+));
 
 $ref = \@AoH;
 return($ref);
@@ -2668,51 +2444,6 @@ my @AoH = (
 	  	bgcolor     => "formbg",
 	  },
 	  {
-	  	label       => "avHet HapMap <= (~2 x allele frequency)",
-	  	type        => "text",
-		name        => "avhet",
-	  	value       => "",
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "gnomAD European American (heterozygous) <= (n het)",
-	  	type        => "text",
-		name        => "ea_het",
-	  	value       => "",
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "gnomAD African American (heterozygous) <= (n het)",
-	  	type        => "text",
-		name        => "aa_het",
-	  	value       =>  '',
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Minor allele count Kaviar <=",
-	  	type        => "text",
-		name        => "kaviar",
-	  	value       => "",
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Affecteds",
-	  	labels      => "Only affecteds, Affecteds and unaffecteds",
-	  	type        => "radio",
-		name        => "affecteds",
-	  	value       => "all",
-	  	values      => "onlyaffecteds, all",
-	  	bgcolor     => "formbg",
-	  },
-	  {
 	  	label       => "Homozygous",
 	  	labels      => "compound heterozygous/homozygous, homozygous only",
 	  	type        => "radio",
@@ -2730,88 +2461,12 @@ my @AoH = (
 	  	values      => "0, 1",
 	  	bgcolor     => "formbg",
 	  },
-	  {
-	  	label       => "SNV quality >= (0-255)",
-	  	type        => "text",
-		name        => "snvqual",
-	  	value       =>  $snvqual,
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Genotype quality >= (0-99)",
-	  	type        => "text",
-		name        => "gtqual",
-	  	value       =>  $gtqual,
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Mapping quality >= (0-60)",
-	  	type        => "text",
-		name        => "mapqual",
-	  	value       => "",
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "nonsynonymous / gene <= (n)",
-	  	type        => "text",
-		name        => "nonsynpergene",
-	  	value       => "",
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Variant length >= (bp)",
-	  	type        => "text",
-		name        => "length",
-	  	value       => "",
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Variant length <= (bp)",
-	  	type        => "text",
-		name        => "lengthmax",
-	  	value       => "",
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Class",
-	  	labels      => "SNV, indel, Pindel, ExomeDepth",
-	  	type        => "checkbox",
-		name        => "class",
-	  	value       => "snp, indel, deletion",
-	  	values      => "snp, indel, deletion, cnv",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Function",
-	  	labels      => "$glabels",
-	  	type        => "checkbox",
-		name        => "function",
-	  	value       => "$gvalue",
-	  	values      => "$gvalues",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Filter",
-	  	labels      => "Filtered, All",
-	  	type        => "radio",
-		name        => "filter",
-	  	value       => "filtered",
-	  	values      => "filtered, all",
-	  	bgcolor     => "formbg",
-	  },
-	  {
+);
+
+push(@AoH,(&defaultAoH('recessive')));
+
+
+push(@AoH,({
 	  	label       => "Print query",
 	  	labels      => "no, yes",
 	  	type        => "radio",
@@ -2820,7 +2475,7 @@ my @AoH = (
 	  	values      => "no, yes",
 	  	bgcolor     => "formbg",
 	  },
-);
+));
 
 $ref = \@AoH;
 return($ref);
@@ -4507,15 +4162,6 @@ my @AoH = ();
 	  	bgcolor     => "formbg",
 	  },
 	  {
-	  	label       => "Filter",
-	  	labels      => "Filtered, All",
-	  	type        => "radio",
-		name        => "filter",
-	  	value       => "filtered",
-	  	values      => "filtered, all",
-	  	bgcolor     => "formbg",
-	  },
-	  {
 	  	label       => "Allowed in in-house exomes <= (n)",
 	  	type        => "text",
 		name        => "freq",
@@ -4524,68 +4170,16 @@ my @AoH = ();
 		maxlength   => "30",
 	  	bgcolor     => "formbg",
 	  },
-	  {
-	  	label       => "Frequency (1000Genomes) <=",
-	  	type        => "text",
-		name        => "af",
-	  	value       => "",
-		size        => "30",
-		maxlength   => "30",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "SNV quality >= (0-255)",
-	  	type        => "text",
-		name        => "snvqual",
-	  	value       => "",
-		size        => "30",
-		maxlength   => "30",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Genotyp Quality >=",
-	  	type        => "text",
-		name        => "gtqual",
-	  	value       => "",
-		size        => "30",
-		maxlength   => "30",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Mapping quality >= (0-60)",
-	  	type        => "text",
-		name        => "mapqual",
-	  	value       => "",
-		size        => "30",
-		maxlength   => "30",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Class",
-	  	labels      => "SNV, indel, Pindel, ExomeDepth",
-	  	type        => "checkbox",
-		name        => "class",
-	  	value       => "snp, indel, deletion",
-	  	values      => "snp, indel, deletion, cnv",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Function",
-	  	labels      => "$glabels",
-	  	type        => "checkbox",
-		name        => "function",
-	  	value       => "$gvalueall",
-	  	values      => "$gvalues",
-	  	bgcolor     => "formbg",
-	  },
 );
+
+push(@AoH,(&defaultAoH('clinvar')));
 
 
 $ref = \@AoH;
 return($ref);
 }
 ########################################################################
-# init for search Gene
+# init for search Gene initSearchGenes
 ########################################################################
 sub initSearchGene {
 my $self         = shift;
@@ -4646,33 +4240,6 @@ my @AoH = (
 	  	bgcolor     => "formbg",
 	  },
 	  {
-	  	label       => "gnomAD European American (heterozygous) <= (n het)",
-	  	type        => "text",
-		name        => "ea_het",
-	  	value       => "",
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "gnomAD African American (heterozygous) <= (n het)",
-	  	type        => "text",
-		name        => "aa_het",
-	  	value       => "",
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "avHet HapMap <= (~2 x allele frequency)",
-	  	type        => "text",
-		name        => "avhet",
-	  	value       => "",
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
 	  	label       => "Mode",
 	  	labels      => "Heterozygous/Homozygous, Compound heterozygous/Homozygous",
 	  	type        => "radio",
@@ -4681,88 +4248,10 @@ my @AoH = (
 	  	values      => "all, homozygous",
 	  	bgcolor     => "formbg",
 	  },
-	  {
-	  	label       => "SNV quality >= (0-255)",
-	  	type        => "text",
-		name        => "snvqual",
-	  	value       => "",
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Genotype quality >= (0-99)",
-	  	type        => "text",
-		name        => "gtqual",
-	  	value       => "",
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Depth >= ",
-	  	type        => "text",
-		name        => "coverage",
-	  	value       => "",
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Mapping quality >=",
-	  	type        => "text",
-		name        => "mapqual",
-	  	value       => "",
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Variant length >= (bp)",
-	  	type        => "text",
-		name        => "length",
-	  	value       => "",
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Variant length <= (bp)",
-	  	type        => "text",
-		name        => "lengthmax",
-	  	value       => "",
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Class",
-	  	labels      => "SNV, indel, Pindel, ExomeDepth",
-	  	type        => "checkbox",
-		name        => "class",
-	  	value       => "snp, indel, deletion",
-	  	values      => "snp, indel, deletion, cnv",
-	  	bgcolor     => "formbg",
-	  },
-  	  {
-	  	label       => "Function",
-	  	labels      => "$glabels",
-	  	type        => "checkbox",
-		name        => "function",
-	  	value       => "$gvalue",
-	  	values      => "$gvalues",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Filter",
-	  	labels      => "Filtered, All",
-	  	type        => "radio",
-		name        => "filter",
-	  	value       => "filtered",
-	  	values      => "filtered, all",
-	  	bgcolor     => "formbg",
-	  },
 );
+
+push(@AoH,(&defaultAoH));
+
 
 $ref = \@AoH;
 return($ref);
@@ -4873,106 +4362,9 @@ my @AoH = (
 		maxlength   => "20",
 	  	bgcolor     => "formbg",
 	  },
-	  {
-	  	label       => "gnomAD European American (heterozygous) <= (n het)",
-	  	type        => "text",
-		name        => "ea_het",
-	  	value       => "",
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "gnomAD African American (heterozygous) <= (n het)",
-	  	type        => "text",
-		name        => "aa_het",
-	  	value       => "",
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "avHet HapMap <= (~2 x allele frequency)",
-	  	type        => "text",
-		name        => "avhet",
-	  	value       => "",
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Filter",
-	  	labels      => "Filtered, All",
-	  	type        => "radio",
-		name        => "filter",
-	  	value       => "filtered",
-	  	values      => "filtered, all",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "SNV quality >= (0-255)",
-	  	type        => "text",
-		name        => "snvqual",
-	  	value       => "",
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Genotype quality >= (0-99)",
-	  	type        => "text",
-		name        => "gtqual",
-	  	value       => "",
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Mapping quality >=",
-	  	type        => "text",
-		name        => "mapqual",
-	  	value       =>  "",
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Variant length >= (bp)",
-	  	type        => "text",
-		name        => "length",
-	  	value       => "",
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Variant length <= (bp)",
-	  	type        => "text",
-		name        => "lengthmax",
-	  	value       => "",
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Class",
-	  	labels      => "SNV, indel, Pindel, ExomeDepth",
-	  	type        => "checkbox",
-		name        => "class",
-	  	value       => "snp, indel, deletion",
-	  	values      => "snp, indel, deletion, cnv",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Function",
-	  	labels      => "$glabels",
-	  	type        => "checkbox",
-		name        => "function",
-	  	value       => "$gvalue",
-	  	values      => "$gvalues",
-	  	bgcolor     => "formbg",
-	  },
 );
+
+push(@AoH,(&defaultAoH('omim')));
 
 $ref = \@AoH;
 return($ref);
@@ -5067,106 +4459,10 @@ my @AoH = (
 		maxlength   => "20",
 	  	bgcolor     => "formbg",
 	  },
-	  {
-	  	label       => "gnomAD European American (heterozygous) <= (n het)",
-	  	type        => "text",
-		name        => "ea_het",
-	  	value       => "",
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "gnomAD African American (heterozygous) <= (n het)",
-	  	type        => "text",
-		name        => "aa_het",
-	  	value       => "",
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "avHet HapMap <= (~2 x allele frequency)",
-	  	type        => "text",
-		name        => "avhet",
-	  	value       => "",
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Filter",
-	  	labels      => "Filtered, All",
-	  	type        => "radio",
-		name        => "filter",
-	  	value       => "filtered",
-	  	values      => "filtered, all",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "SNV quality >= (0-255)",
-	  	type        => "text",
-		name        => "snvqual",
-	  	value       => "",
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Genotype quality >= (0-99)",
-	  	type        => "text",
-		name        => "gtqual",
-	  	value       => "",
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Mapping quality >= (0-60)",
-	  	type        => "text",
-		name        => "mapqual",
-	  	value       =>  "",
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Variant length >= (bp)",
-	  	type        => "text",
-		name        => "length",
-	  	value       => "",
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Variant length <= (bp)",
-	  	type        => "text",
-		name        => "lengthmax",
-	  	value       => "",
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Class",
-	  	labels      => "SNV, indel, Pindel, ExomeDepth",
-	  	type        => "checkbox",
-		name        => "class",
-	  	value       => "snp, indel, deletion",
-	  	values      => "snp, indel, deletion, cnv",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Function",
-	  	labels      => "$glabels",
-	  	type        => "checkbox",
-		name        => "function",
-	  	value       => "$gvalue",
-	  	values      => "$gvalues",
-	  	bgcolor     => "formbg",
-	  },
 );
+
+push(@AoH,(&defaultAoH('hpo')));
+
 
 $ref = \@AoH;
 return($ref);
@@ -5277,115 +4573,11 @@ my @AoH = (
 		maxlength   => "20",
 	  	bgcolor     => "formbg",
 	  },
-	  {
-	  	label       => "gnomAD African American <= (n heterozygous)",
-	  	type        => "text",
-		name        => "aa_het",
-	  	value       => "",
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "gnomAD <= (n heterozygous)",
-	  	type        => "text",
-		name        => "het",
-	  	value       => "",
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Maximum minor allele frequency of all populations <=",
-	  	type        => "text",
-		name        => "popmax_af",
-	  	value       => "$popmax_af",
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Affecteds",
-	  	labels      => "Only affecteds, Only unaffecteds, All",
-	  	type        => "radio",
-		name        => "affecteds",
-	  	value       => "onlyaffecteds",
-	  	values      => "onlyaffecteds, onlyunaffecteds, ",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "SNV quality >= (0-255)",
-	  	type        => "text",
-		name        => "snvqual",
-	  	value       =>  $snvqual,
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Genotype quality >= (0-99)",
-	  	type        => "text",
-		name        => "gtqual",
-	  	value       => $gtqual,
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Mapping quality >= (0-60)",
-	  	type        => "text",
-		name        => "mapqual",
-	  	value       =>  50,
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Variant length >= (bp)",
-	  	type        => "text",
-		name        => "minlength",
-	  	value       => "",
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Variant length <= (bp)",
-	  	type        => "text",
-		name        => "maxlength",
-	  	value       => "",
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Class",
-	  	labels      => "SNV, indel, Pindel, ExomeDepth",
-	  	type        => "checkbox",
-		name        => "class",
-	  	value       => "snp, indel, deletion",
-	  	values      => "snp, indel, deletion, cnv",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Function",
-	  	labels      => "$glabels",
-	  	type        => "checkbox",
-		name        => "function",
-	  	value       => "$gvalue",
-	  	values      => "$gvalues",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Filter",
-	  	labels      => "Filtered, All",
-	  	type        => "radio",
-		name        => "filter",
-	  	value       => "all",
-	  	values      => "filtered, all",
-	  	bgcolor     => "formbg",
-	  },
-	  {
+);
+	  
+push(@AoH,(&defaultAoH));
+	  
+push(@AoH,({
 	  	label       => "Genome in a bottle (only for genomes)",
 	  	labels      => "All, callable, not callable",
 	  	type        => "radio",
@@ -5403,7 +4595,7 @@ my @AoH = (
 	  	values      => "0, 1, 2",
 	  	bgcolor     => "formbg",
 	  },
-);
+));
 
 $ref = \@AoH;
 return($ref);
@@ -5538,75 +4730,17 @@ my @AoH = (
 	  {
 	  	label       => "Allowed in in-house exomes <= (n)",
 	  	type        => "text",
-		name        => "f.samplecontrols",
+		name        => "freq",
 	  	value       =>  10,
 		size        => "20",
 		maxlength   => "20",
 	  	bgcolor     => "formbg",
 	  },
-	  {
-	  	label       => "avHet HapMap <= (~2 x allele frequency)",
-	  	type        => "text",
-		name        => "avhet",
-	  	value       => "",
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Allele frequency 1000 Genomes <=",
-	  	type        => "text",
-		name        => "af",
-	  	value       => "",
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "SNV quality >= (0-255)",
-	  	type        => "text",
-		name        => "snvqual",
-	  	value       => "",
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Genotype quality >= (0-99)",
-	  	type        => "text",
-		name        => "gtqual",
-	  	value       => "",
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Mapping quality >= (0-60)",
-	  	type        => "text",
-		name        => "mapqual",
-	  	value       => "",
-		size        => "20",
-		maxlength   => "20",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Class",
-	  	labels      => "SNV, indel, Pindel, ExomeDepth",
-	  	type        => "checkbox",
-		name        => "class",
-	  	value       => "snp, indel, deletion",
-	  	values      => "snp, indel, deletion, cnv",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Function",
-	  	labels      => "$glabels",
-	  	type        => "checkbox",
-		name        => "function",
-	  	value       => "$gvalue",
-	  	values      => "$gvalues",
-	  	bgcolor     => "formbg",
-	  },
+);	  
+
+push(@AoH,(&defaultAoH));
+
+push(@AoH,(
 	  {
 	  	label       => "Print query",
 	  	labels      => "no, yes",
@@ -5616,7 +4750,7 @@ my @AoH = (
 	  	values      => "no, yes",
 	  	bgcolor     => "formbg",
 	  },
-);
+));
 
 $ref = \@AoH;
 return($ref);
@@ -7883,64 +7017,16 @@ else { # suche  pedigrees
 if ($ref->{"showall"} == 0) {
 	$where .= " AND dg.idgene != '' ";
 }
-# rs snps 
-if ($ref->{'avhet'} ne "") {
-	$where .= " AND 
-		((v.rs != '' AND FIND_IN_SET('by-hapmap',v.valid) > 0 AND avhet <= ?)
-		OR
-		(v.rs != '' AND NOT FIND_IN_SET('by-hapmap',v.valid))
-		OR 
-		(v.rs = '' )
-		)
-		";
-	push(@prepare,$ref->{'avhet'});
-}
-if ($ref->{'aa_het'} ne "") {
-	$where .= " AND (evs.aa_het <= ? or ISNULL(evs.aa_het))";
-	push(@prepare,$ref->{'aa_het'});
-}
-if ($ref->{'affecteds'} eq "onlyaffecteds") {
-	$where .= " AND s.saffected = 1 ";
-}
-if ($ref->{'snvqual'} ne "") {
-	$where .= " AND x.snvqual >= ? ";
-	push(@prepare,$ref->{'snvqual'});
-}
-if ($ref->{'gtqual'} ne "") {
-	$where .= " AND x.gtqual >= ? ";
-	push(@prepare,$ref->{'gtqual'});
-}
-if ($ref->{'mapqual'} ne "") {
-	$where .= " AND x.mapqual >= ? ";
-	push(@prepare,$ref->{'mapqual'});
-}
 if ($ref->{'x.alleles'} ne "") {
 	$where .= " AND x.alleles >= ? ";
 	push(@prepare,$ref->{'x.alleles'});
-}
-if ($ref->{'nonsynpergene'} ne "") {
-	$where .= " AND (g.nonsynpergene <= ? or ISNULL(g.nonsynpergene)) ";
-	push(@prepare,$ref->{'nonsynpergene'});
 }
 if ($ref->{'ncontrols'} ne "") {
 	$where .= " AND (f.samplecontrols <= ? or ISNULL(f.samplecontrols) )";
 	push(@prepare,$ref->{'ncontrols'});
 }
-if ($ref->{'length'} ne "") {
-	$where .= "AND v.length >= ? ";
-	push(@prepare,$ref->{'length'});
-}
-if ($ref->{'lengthmax'} ne "") {
-	$where .= "AND v.length <= ? ";
-	push(@prepare,$ref->{'lengthmax'});
-}
-if ($ref->{'kaviar'} ne "") {
-	$where .= " AND (k.ac <= ? or ISNULL(k.ac))";
-	push(@prepare,$ref->{'kaviar'});
-}
-if ($ref->{'filter'} eq "filtered") {
-	$where .= " AND FIND_IN_SET('PASS',x.filter)";
-}
+
+($where,@prepare) = &defaultwhere($ref,$where,@prepare);
 
 my $explain = "";
 if ($ref->{"printquery"} eq "yes") {
@@ -8058,7 +7144,7 @@ LEFT  JOIN $coredb.dgvbp               dgv ON (v.chrom = dgv.chrom AND v.start=d
 INNER JOIN $sampledb.sample              s ON (s.idsample = x.idsample)
 LEFT  JOIN snvgene                       y ON (v.idsnv = y.idsnv)
 LEFT  JOIN gene                          g ON (g.idgene = y.idgene)
-LEFT  JOIN $coredb.exacGeneScores     exac ON (g.genesymbol=exac.genesymbol)
+LEFT  JOIN $coredb.evsscores           exac ON (g.genesymbol=exac.gene)
 LEFT  JOIN $sampledb.mouse              mo ON (g.genesymbol = mo.humanSymbol)
 LEFT  JOIN hgmd_pro.$hg19_coords         h ON (v.chrom = h.chrom AND v.start = h.pos  AND v.refallele=h.ref AND v.allele=h.alt)
 LEFT  JOIN $coredb.clinvar              cv ON (v.chrom=cv.chrom and v.start=cv.start and v.refallele=cv.ref and v.allele=cv.alt)
@@ -8084,6 +7170,9 @@ v.idsnv
 ORDER BY
 v.chrom,v.start
 #;
+#print "<br>where $where<br>";
+#print "prepare @prepare<br>";
+
 if ($ref->{"printquery"} eq "yes") {
 	print "query = $query<br>";
 	print "exluded $excluded[$nforeach] ";
@@ -8097,7 +7186,6 @@ if ($ref->{"printquery"} eq "yes") {
 	print "$ref->{'ncontrols'} ";
 	print "$ref->{'ncases'} <br>";
 }
-
 $out = $dbh->prepare($query) || die print "$DBI::errstr";
 $out->execute(
 $idsample,
@@ -8429,67 +7517,19 @@ else {
 	exit(1);
 }
 
-# rs snps 
-if ($ref->{'avhet'} ne "") {
-	$where .= " AND 
-		((v.rs != '' AND FIND_IN_SET('by-hapmap',v.valid) > 0 AND avhet <= ?)
-		OR
-		(v.rs != '' AND NOT FIND_IN_SET('by-hapmap',v.valid))
-		OR 
-		(v.rs = '' )
-		)
-		";
-	push(@prepare,$ref->{'avhet'});
-}
-if ($ref->{'ea_het'} ne "") {
-	$where .= " AND (evs.ea_het <= ? or ISNULL(evs.ea_het))";
-	push(@prepare,$ref->{'ea_het'});
-}
-if ($ref->{'aa_het'} ne "") {
-	$where .= " AND (evs.aa_het <= ? or ISNULL(evs.aa_het))";
-	push(@prepare,$ref->{'aa_het'});
-}
-if ($ref->{'af'} ne "") {
-	$where .= " AND v.af <= ? ";
-	push(@prepare,$ref->{'af'});
-}
 if ($giabradio == 1) {
 if ($ref->{'giab'} ne "") {
 	$where .= " AND v.giab = ? ";
 	push(@prepare,$ref->{'giab'});
 }
 }
-if ($ref->{'kaviar'} ne "") {
-	$where .= " AND (k.ac <= ? or ISNULL(k.ac))";
-	push(@prepare,$ref->{'kaviar'});
-}
-if ($ref->{'snvqual'} ne "") {
-	$where .= " AND x.snvqual >= ? ";
-	push(@prepare,$ref->{'snvqual'});
-}
-if ($ref->{'gtqual'} ne "") {
-	$where .= " AND x.gtqual >= ? ";
-	push(@prepare,$ref->{'gtqual'});
-}
-if ($ref->{'mapqual'} ne "") {
-	$where .= " AND x.mapqual >= ? ";
-	push(@prepare,$ref->{'mapqual'});
-}
 if ($ref->{'x.alleles'} ne "") {
 	$where .= " AND x.alleles >= ? ";
 	push(@prepare,$ref->{'x.alleles'});
 }
-if ($ref->{'nonsynpergene'} ne "") {
-	$where .= " AND (g.nonsynpergene <= ? or ISNULL(g.nonsynpergene)) ";
-	push(@prepare,$ref->{'nonsynpergene'});
-}
 if ($ref->{'ncontrols'} ne "") {
 	$where .= " AND (f.samplecontrols <= ? or ISNULL(f.samplecontrols) )";
 	push(@prepare,$ref->{'ncontrols'});
-}
-if ($ref->{'length'} ne "") {
-	$where .= "AND v.length >= ? ";
-	push(@prepare,$ref->{'length'});
 }
 if ($ref->{'chrom'} ne "") { 
 	$chrom=$ref->{'chrom'};
@@ -8504,6 +7544,8 @@ if ($ref->{'chrom'} ne "") {
 	push(@prepare,$start);
 	push(@prepare,$end);
 }
+
+($where,@prepare) = &defaultwhere($ref,$where,@prepare);
 
 my $explain = "";
 if ($ref->{"printquery"} eq "yes") {
@@ -8623,7 +7665,7 @@ LEFT  JOIN $coredb.dgvbp               dgv ON (v.chrom = dgv.chrom AND v.start=d
 INNER JOIN $sampledb.sample              s ON (s.idsample = x.idsample)
 LEFT  JOIN snvgene                       y ON (v.idsnv = y.idsnv)
 LEFT  JOIN gene                          g ON (g.idgene = y.idgene)
-LEFT  JOIN $coredb.exacGeneScores     exac ON (g.genesymbol=exac.genesymbol)
+LEFT  JOIN $coredb.evsscores          exac ON (g.genesymbol=exac.gene)
 LEFT  JOIN $sampledb.mouse              mo ON (g.genesymbol = mo.humanSymbol)
 LEFT  JOIN hgmd_pro.$hg19_coords         h ON (v.chrom = h.chrom AND v.start = h.pos  AND v.refallele=h.ref AND v.allele=h.alt)
 LEFT  JOIN $coredb.clinvar              cv ON (v.chrom=cv.chrom and v.start=cv.start and v.refallele=cv.ref and v.allele=cv.alt)
@@ -8644,7 +7686,6 @@ AND (f.fiddiseasegroup = ? or ISNULL(f.fiddiseasegroup) )
 $where
 $function
 $class
-AND FIND_IN_SET('PASS',x.filter)
 GROUP BY
 v.idsnv
 ORDER BY
@@ -8902,7 +7943,7 @@ sub getTumorControl {
 	return($tumorcontrol);
 }
 ########################################################################
-# searchResultsVcf 
+# searchResultsVcfTumor
 ########################################################################
 sub searchResultsVcf {
 my $self            = shift;
@@ -9002,15 +8043,8 @@ else {
 	exit(1);
 }
 
-# rs snps 
-if ($ref->{'ea_het'} ne "") {
-	$where .= " AND (evs.ea_het <= ? or ISNULL(evs.ea_het))";
-	push(@prepare,$ref->{'ea_het'});
-}
-if ($ref->{'aa_het'} ne "") {
-	$where .= " AND (evs.aa_het <= ? or ISNULL(evs.aa_het))";
-	push(@prepare,$ref->{'aa_het'});
-}
+($where,@prepare) = &defaultwhere($ref,$where,@prepare);
+
 if ($ref->{'mapqual'} ne "") {
 	$where .= " AND x.gt_MMQ >= ? ";
 	push(@prepare,$ref->{'mapqual'});
@@ -9100,88 +8134,6 @@ $nforeach++;
 #$cnvfile     = &cnvnator($snames[$nforeach],$dbh,'breakdancer');
 #print " $cnvfile";
 
-$query = qq#
-$explain SELECT 
-concat('<a href="listPosition.pl?idsnv=',v.idsnv,'" title="All carriers of this variant">',v.idsnv,'</a>',' '),
-group_concat(DISTINCT '<a href="http://localhost:$igvport/load?file=',$igvserver2,'" title="Open sample in IGV"','>',s.name,'</a>' SEPARATOR '<br>'),
-group_concat(DISTINCT s.pedigree),
-concat(v.chrom,' ',v.start,' ',v.end,' ',v.class,' ',v.refallele,' ',v.allele),
-group_concat(DISTINCT $genelink separator '<br>'),
-group_concat(DISTINCT g.nonsynpergene,' (', g.delpergene,')' separator '<br>'),
-dgv.depth,
-group_concat(DISTINCT g.omim separator ' '),
-group_concat(DISTINCT $mgiID separator ' '),
-v.class,
-replace(v.func,',',' '),
-group_concat(DISTINCT $exac_gene_link separator '<br>'),
-group_concat(DISTINCT pph.hvar_prediction separator ' '),
-group_concat(DISTINCT pph.hvar_prob separator ' '),
-group_concat(DISTINCT sift.score separator ' '),
-group_concat(DISTINCT cadd.phred separator ' '),
-f.fsample,
-f.samplecontrols,
-group_concat(DISTINCT x.alleles),
-group_concat(DISTINCT x.snvqual SEPARATOR ', '),
-group_concat(DISTINCT x.gtqual SEPARATOR ', '),
-group_concat(DISTINCT x.mapqual SEPARATOR ', '),
-group_concat(DISTINCT x.coverage SEPARATOR ', '),
-group_concat(DISTINCT x.percentvar SEPARATOR ', '),
-concat($rssnplink),
-avhet,
-group_concat(DISTINCT '<a href="http://$hgmdserver/hgmd/pro/mut.php?accession=',h.id,'">',h.id,'</a>'),
-group_concat(DISTINCT $clinvarlink separator '<br>'),
-group_concat(DISTINCT v.af),
-group_concat(DISTINCT $exac_ae_link separator '<br>'),
-group_concat(DISTINCT $exac_aa_link separator '<br>'),
-group_concat(DISTINCT $kaviar_link separator '<br>'),
-valid,
-v.transcript,
-group_concat(DISTINCT $primer SEPARATOR '<br>'),
-c.rating,
-c.checked,
-c.confirmed,
-group_concat(dg.class),
-v.chrom,
-v.start,
-v.idsnv,
-group_concat(DISTINCT g.genesymbol),
-x.idsample
-FROM
-snv v
-INNER JOIN snvsample                     x ON (v.idsnv = x.idsnv) 
-LEFT  JOIN $coredb.dgvbp               dgv ON (v.chrom = dgv.chrom AND v.start=dgv.start)
-INNER JOIN $sampledb.sample              s ON (s.idsample = x.idsample)
-LEFT  JOIN snvgene                       y ON (v.idsnv = y.idsnv)
-LEFT  JOIN gene                          g ON (g.idgene = y.idgene)
-LEFT  JOIN $coredb.exacGeneScores     exac ON (g.genesymbol=exac.genesymbol)
-LEFT  JOIN $sampledb.mouse              mo ON (g.genesymbol = mo.humanSymbol)
-LEFT  JOIN hgmd_pro.$hg19_coords         h ON (v.chrom = h.chrom AND v.start = h.pos  AND v.refallele=h.ref AND v.allele=h.alt)
-LEFT  JOIN $coredb.clinvar              cv ON (v.chrom=cv.chrom and v.start=cv.start and v.refallele=cv.ref and v.allele=cv.alt)
-INNER JOIN $sampledb.disease2sample     ds ON (s.idsample = ds.idsample)
-INNER JOIN $sampledb.disease             d ON (ds.iddisease = d.iddisease)
-LEFT  JOIN snv2diseasegroup              f ON (v.idsnv = f.fidsnv AND d.iddiseasegroup=f.fiddiseasegroup) 
-LEFT  JOIN disease2gene                 dg ON (ds.iddisease=dg.iddisease AND g.idgene=dg.idgene)
-LEFT  JOIN $coredb.pph3                pph ON (v.chrom=pph.chrom and v.start=pph.start and v.refallele=pph.ref and v.allele=pph.alt)
-LEFT  JOIN $coredb.sift               sift ON (v.chrom=sift.chrom and v.start=sift.start and v.refallele=sift.ref and v.allele=sift.alt)
-LEFT  JOIN $coredb.cadd               cadd ON (v.chrom=cadd.chrom and v.start=cadd.start and v.refallele=cadd.ref and v.allele=cadd.alt)
-LEFT  JOIN $coredb.evs                 evs ON (v.chrom=evs.chrom and v.start=evs.start and v.refallele=evs.refallele and v.allele=evs.allele)
-LEFT  JOIN $coredb.kaviar                k ON (v.chrom=k.chrom and v.start=k.start and v.refallele=k.refallele and v.allele=k.allele)
-LEFT  JOIN $exomevcfe.comment            c ON (v.chrom=c.chrom and v.start=c.start and v.refallele=c.refallele and v.allele=c.altallele and s.idsample=c.idsample)
-WHERE
-$allowedprojects
-AND x.idsample = ?
-AND (f.fiddiseasegroup = ? or ISNULL(f.fiddiseasegroup) )
-$where
-$function
-$class
-AND FIND_IN_SET('PASS',x.filter)
-GROUP BY
-v.idsnv
-ORDER BY
-v.chrom,v.start
-#;
-
-#group_concat(DISTINCT '<a href="http://localhost:$igvport/load?file=',$igvserver2vcf,'" title="Open sample in IGV"','>',x.samplename,'</a>' SEPARATOR '<br>'),
 
 $query = qq#
 $explain SELECT 
@@ -9195,7 +8147,7 @@ group_concat(DISTINCT v.vep_Feature_type SEPARATOR ', '),
 group_concat(DISTINCT v.vep_Consequence SEPARATOR ', '),
 group_concat(DISTINCT v.REF SEPARATOR ', '),
 group_concat(DISTINCT v.ALT SEPARATOR ', '),
-group_concat(DISTINCT $exac_ae_link separator '<br>'),
+group_concat(DISTINCT $exac_link separator '<br>'),
 group_concat(DISTINCT $exac_aa_link separator '<br>'),
 group_concat(DISTINCT evs.filter SEPARATOR ', '),
 group_concat(DISTINCT cadd.phred separator ' '),
@@ -9321,7 +8273,7 @@ while (@row = $out->fetchrow_array) {
 	'vep Consequence',
 	'REF',
 	'ALT',
-	'gnomAD ea',
+	'gnomAD all',
 	'gnomAD aa',
 	'Filter',
 	'CADD',
@@ -9566,15 +8518,8 @@ else {
 	exit(1);
 }
 
-# rs snps 
-if ($ref->{'ea_het'} ne "") {
-	$where .= " AND (evs.ea_het <= ? or ISNULL(evs.ea_het))";
-	push(@prepare,$ref->{'ea_het'});
-}
-if ($ref->{'aa_het'} ne "") {
-	$where .= " AND (evs.aa_het <= ? or ISNULL(evs.aa_het))";
-	push(@prepare,$ref->{'aa_het'});
-}
+($where,@prepare) = &defaultwhere($ref,$where,@prepare);
+
 if ($ref->{'mapqual'} ne "") {
 	$where .= " AND x.gt_MMQ >= ? ";
 	push(@prepare,$ref->{'mapqual'});
@@ -10211,14 +9156,8 @@ else {
 # contruct where
 my $controltype = $ref->{controltype};
 if ($ref->{'ncontrols'} ne "") {
-if ($controltype eq  "individual") {
 	$where .= " AND (f.samplecontrols <= ? or ISNULL(f.samplecontrols) )";
 	push(@prepare,$ref->{'ncontrols'});
-}
-elsif ($controltype eq  "pedigree") {
-	$where .= " AND (f.pedigreecontrols <= ? or ISNULL(f.samplecontrols) )";
-	push(@prepare,$ref->{'ncontrols'});
-}
 }
 
 if ($ref->{correct} eq 'correct') {
@@ -10230,27 +9169,6 @@ if ($ref->{correct} eq 'notannotated') {
 	$where .= " AND ISNULL(c.chrom)";
 }
 
-# avhet 
-if ($ref->{'avhet'} ne "") {
-	$where .= " AND 
-		((v.rs != '' AND FIND_IN_SET('by-hapmap',v.valid) > 0 AND avhet <= ?)
-		OR
-		(v.rs != '' AND NOT FIND_IN_SET('by-hapmap',v.valid))
-		OR 
-		(v.rs = '' )
-		)
-		";
-	push(@prepare, $ref->{'avhet'});
-}
-
-if ($ref->{'ea_het'} ne "") {
-	$where .= " AND (evs.ea_het <= ? or ISNULL(evs.ea_het))";
-	push(@prepare,$ref->{'ea_het'});
-}
-if ($ref->{'aa_het'} ne "") {
-	$where .= " AND (evs.aa_het <= ? or ISNULL(evs.aa_het))";
-	push(@prepare,$ref->{'aa_het'});
-}
 if ($giabradio == 1) {
 if ($ref->{'giab'} ne "") {
 	$where .= " AND v.giab = ? ";
@@ -10261,29 +9179,8 @@ if ($ref->{'x.alleles'} ne "") {
 	$where .= " AND x.alleles >= ? ";
 	push(@prepare,$ref->{'x.alleles'});
 }
-if ($ref->{'nonsynpergene'} ne "") {
-	$where .= " AND (g.nonsynpergene <= ? or ISNULL(g.nonsynpergene)) ";
-	push(@prepare,$ref->{'nonsynpergene'});
-}
-if ($ref->{'snvqual'} ne "") {
-	$where .= " AND x.snvqual >= ? ";
-	push(@prepare,$ref->{'snvqual'});
-}
-if ($ref->{'gtqual'} ne "") {
-	$where .= " AND x.gtqual >= ? ";
-	push(@prepare,$ref->{'gtqual'});
-}
-if ($ref->{'mapqual'} ne "") {
-	$where .= " AND x.mapqual >= ? ";
-	push(@prepare,$ref->{'mapqual'});
-}
-if ($ref->{'coverage'} ne "") {
-	$where .= " AND x.coverage >= ? ";
-	push(@prepare,$ref->{'coverage'});
-}
-if ($ref->{'filter'} eq "filtered") {
-	$where .= " AND FIND_IN_SET('PASS',x.filter)";
-}
+
+($where,@prepare) = &defaultwhere($ref,$where,@prepare);
 
 my $explain = "";
 if ($ref->{"printquery"} eq "yes") {
@@ -10422,7 +9319,7 @@ LEFT  JOIN $coredb.dgvbp              dgv ON (v.chrom = dgv.chrom AND v.start=dg
 INNER JOIN $sampledb.sample             s ON (s.idsample = x.idsample)
 LEFT  JOIN snvgene                      y ON (v.idsnv = y.idsnv)
 LEFT  JOIN gene                         g ON (g.idgene = y.idgene)
-LEFT  JOIN $coredb.exacGeneScores    exac ON (g.genesymbol=exac.genesymbol)
+LEFT  JOIN $coredb.evsscores         exac ON (g.genesymbol=exac.gene)
 LEFT  JOIN $sampledb.mouse             mo ON (g.genesymbol = mo.humanSymbol)
 LEFT  JOIN hgmd_pro.$hg19_coords        h ON (v.chrom = h.chrom AND v.start = h.pos  AND v.refallele=h.ref AND v.allele=h.alt)
 INNER JOIN $sampledb.disease2sample    ds ON (s.idsample = ds.idsample)
@@ -10724,7 +9621,6 @@ my @row       = ();
 my $query     = "";
 my $i         = 0;
 my $n         = 1;
-my $rssnp     = "";
 my $tmp       = "";
 my $function  = "";
 my $functionprint  = "";
@@ -10748,7 +9644,6 @@ my $diseasegeneprint = "";
 
 my @prepare   = ();
 my @prepare2  = ();
-my $field     = "";
 my $where     = "";
 my $where2    = "";
 my @row2 = ();
@@ -10756,9 +9651,7 @@ my %npedigree = "";
 my %ngenesymbol = "";
 my $aref      = "";
 my $ncases    = $ref->{ncases};
-delete($ref->{ncases});
 my $printquery =$ref->{"printquery"};
-delete($ref->{"printquery"});
 my $explain = "";
 if ($printquery eq "yes") {
 	$explain = " explain extended ";
@@ -10767,35 +9660,15 @@ if ($printquery eq "yes") {
 # function
 ($function,$functionprint)=&function($ref->{function},$dbh);
 ($class,$classprint)=&class($ref->{class},$dbh);
-delete($ref->{class});
-delete($ref->{function});
 ($genotype,$genotypeprint)=&genotype($ref->{genotype},$dbh);
 ($inheritance,$inheritanceprint)=&inheritance($ref->{inheritance},$dbh);
-delete($ref->{genotype});
-delete($ref->{inheritance});
-($patho,$pathoprint)=&patho($ref->{patho},$dbh);
-delete($ref->{patho});
 ($diseasegene,$diseasegeneprint)=&diseasegene($ref->{gene},$dbh);
-delete($ref->{gene});
+($patho,$pathoprint)=&patho($ref->{patho},$dbh);
 
 #label disease genes
-push(@prepare, $ref->{'dg.iddisease'});
-delete($ref->{'dg.iddisease'});
+push(@prepare, $ref->{'dg.iddisease'}); #for join
 
 
-# rs snps 
-if ($ref->{avhet} ne "") {
-	$where .= " AND 
-		((v.rs != '' AND FIND_IN_SET('by-hapmap',v.valid) > 0 AND avhet <= ?)
-		OR
-		(v.rs != '' AND NOT FIND_IN_SET('by-hapmap',v.valid))
-		OR 
-		(v.rs = '' )
-		)
-		";
-	push(@prepare, $ref->{'avhet'});
-}
-delete($ref->{avhet});
 
 if ($ref->{confirmed} eq "correctconfirmed") {
 	$where .= " AND ((c.rating = 'correct') OR (c.confirmed = 'yes'))";
@@ -10806,42 +9679,42 @@ elsif ($ref->{confirmed} eq "confirmed") {
 elsif ($ref->{confirmed} eq "unknown") {
 	$where .= " AND (c.confirmed = 'unknown')";
 }
-delete($ref->{confirmed});
 
 
-my @fields    = sort keys %$ref;
-my @values    = @{$ref}{@fields};
-
-foreach $field (@fields) {
-	unless ($values[$i] eq "") {
-		#if ($where ne "") {
-			$where .= " AND ";
-		#}
-		if ($field eq "freq") {
-			$where .= "($field <= ? )";
-		}
-		elsif ($field eq "af") {
-			$where .= "($field <= ?  )";
-		}
-		elsif ($field eq "snvqual") {
-			$where .= "($field >= ?  )";
-		}
-		elsif ($field eq "gtqual") {
-			$where .= "($field >= ?  )";
-		}
-		elsif ($field eq "mapqual") {
-			$where .= "($field >= ?  )";
-		}
-		elsif ($field eq "f.samplecontrols") {
-			$where .= "($field  <= ?  )";
-		}
-		else {
-			$where .= "($field = ?  )";
-		}
-		push(@prepare,$values[$i]);
-	}
-	$i++;
+if ($ref->{"dg.iddisease"}) {  #label disease genes
+	$where .= "AND ds.iddisease = ? ";
+	push(@prepare,$ref->{'dg.iddisease'});
 }
+if ($ref->{"s.name"}) {
+	$where .= "AND s.name = ? ";
+	push(@prepare,$ref->{'s.name'});
+}
+if ($ref->{"ds.iddisease"}) {
+	$where .= "AND ds.iddisease = ? ";
+	push(@prepare,$ref->{'ds.iddisease'});
+}
+if ($ref->{"s.idcooperation"}) {
+	$where .= "AND s.idcooperation = ? ";
+	push(@prepare,$ref->{'s.idcooperation'});
+}
+if ($ref->{"idproject"}) {
+	$where .= "AND idproject = ? ";
+	push(@prepare,$ref->{'idproject'});
+}
+if ($ref->{"g.genesymbol"}) {
+	$where .= "AND g.genesymbol = ? ";
+	push(@prepare,$ref->{'g.genesymbol'});
+}
+if ($ref->{"checked"}) {  #todo
+	$where .= "AND c.checked = ? ";
+	push(@prepare,$ref->{'checked'});
+}
+if ($ref->{"freq"}) {
+	$where .= "AND freq <= ? ";
+	push(@prepare,$ref->{'freq'});
+}
+
+($where,@prepare) = &defaultwhere($ref,$where,@prepare);
 
 if ($ref->{"s.name"}) {
 	$where2 .= "AND s.name = ? ";
@@ -10859,6 +9732,7 @@ if ($ref->{"idproject"}) {
 	$where2 .= "AND idproject = ? ";
 	push(@prepare2,$ref->{'idproject'});
 }
+
 
 &todaysdate();
 print "Reference $hg<br>\n";
@@ -10943,7 +9817,7 @@ print "</tr></thead><tbody>\n";
 
 $n=1;
 @tmp       = ();
-my $names  = "";
+my $names  = "'dummy',";
 for  $aref (@row2) { 
 	@row=@{$aref};
 	@tmp = ();
@@ -11028,7 +9902,6 @@ my @row       = ();
 my $query     = "";
 my $i         = 0;
 my $n         = 1;
-my $rssnp     = "";
 my $tmp       = "";
 my $function  = "";
 my $functionprint  = "";
@@ -11051,17 +9924,14 @@ my $diseasegene = "";
 my $diseasegeneprint = "";
 
 my @prepare   = ();
-my $field     = "";
 my $where     = "";
 my @row2 = ();
 my %npedigree = "";
 my %ngenesymbol = "";
 my $aref      = "";
 my $ncases    = $ref->{ncases};
-delete($ref->{ncases});
 
 my $printquery =$ref->{"printquery"};
-delete($ref->{"printquery"});
 my $explain = "";
 if ($printquery eq "yes") {
 	$explain = " explain extended ";
@@ -11070,35 +9940,15 @@ if ($printquery eq "yes") {
 # function
 ($function,$functionprint)=&function($ref->{function},$dbh);
 ($class,$classprint)=&class($ref->{class},$dbh);
-delete($ref->{class});
-delete($ref->{function});
 ($genotype,$genotypeprint)=&genotype($ref->{genotype},$dbh);
 ($inheritance,$inheritanceprint)=&inheritance($ref->{inheritance},$dbh);
-delete($ref->{genotype});
-delete($ref->{inheritance});
 ($patho,$pathoprint)=&patho($ref->{patho},$dbh);
-delete($ref->{patho});
 ($diseasegene,$diseasegeneprint)=&diseasegene($ref->{gene},$dbh);
-delete($ref->{gene});
 
 #label disease genes
 push(@prepare, $ref->{'dg.iddisease'});
-delete($ref->{'dg.iddisease'});
 
 
-# rs snps 
-if ($ref->{avhet} ne "") {
-	$where .= " AND 
-		((v.rs != '' AND FIND_IN_SET('by-hapmap',v.valid) > 0 AND avhet <= ?)
-		OR
-		(v.rs != '' AND NOT FIND_IN_SET('by-hapmap',v.valid))
-		OR 
-		(v.rs = '' )
-		)
-		";
-	push(@prepare, $ref->{'avhet'});
-}
-delete($ref->{avhet});
 
 if ($ref->{confirmed} eq "correctconfirmed") {
 	$where .= " AND ((c.rating = 'correct') OR (c.confirmed = 'yes')) ";
@@ -11109,42 +9959,42 @@ elsif ($ref->{confirmed} eq "confirmed") {
 elsif ($ref->{confirmed} eq "unknown") {
 	$where .= " AND c.confirmed = 'unknown' ";
 }
-delete($ref->{confirmed});
 
-
-my @fields    = sort keys %$ref;
-my @values    = @{$ref}{@fields};
-
-foreach $field (@fields) {
-	unless ($values[$i] eq "") {
-		#if ($where ne "") {
-			$where .= " AND ";
-		#}
-		if ($field eq "freq") {
-			$where .= $field . " <= ? ";
-		}
-		elsif ($field eq "af") {
-			$where .= $field . " <= ? ";
-		}
-		elsif ($field eq "snvqual") {
-			$where .= $field . " >= ? ";
-		}
-		elsif ($field eq "gtqual") {
-			$where .= $field . " >= ? ";
-		}
-		elsif ($field eq "mapqual") {
-			$where .= $field . " >= ? ";
-		}
-		elsif ($field eq "f.samplecontrols") {
-			$where .= $field . " <= ? ";
-		}
-		else {
-			$where .= $field . " = ? ";
-		}
-		push(@prepare,$values[$i]);
-	}
-	$i++;
+if ($ref->{"dg.iddisease"}) {  #label disease genes
+	$where .= "AND ds.iddisease = ? ";
+	push(@prepare,$ref->{'dg.iddisease'});
 }
+if ($ref->{"s.name"}) {
+	$where .= "AND s.name = ? ";
+	push(@prepare,$ref->{'s.name'});
+}
+if ($ref->{"ds.iddisease"}) {
+	$where .= "AND ds.iddisease = ? ";
+	push(@prepare,$ref->{'ds.iddisease'});
+}
+if ($ref->{"s.idcooperation"}) {
+	$where .= "AND s.idcooperation = ? ";
+	push(@prepare,$ref->{'s.idcooperation'});
+}
+if ($ref->{"idproject"}) {
+	$where .= "AND idproject = ? ";
+	push(@prepare,$ref->{'idproject'});
+}
+if ($ref->{"g.genesymbol"}) {
+	$where .= "AND g.genesymbol = ? ";
+	push(@prepare,$ref->{'g.genesymbol'});
+}
+if ($ref->{"checked"}) {  #todo
+	$where .= "AND c.checked = ? ";
+	push(@prepare,$ref->{'checked'});
+}
+if ($ref->{"freq"}) {
+	$where .= "AND freq <= ? ";
+	push(@prepare,$ref->{'freq'});
+}
+
+($where,@prepare) = &defaultwhere($ref,$where,@prepare);
+
 
 
 &todaysdate();
@@ -11212,7 +10062,7 @@ INNER JOIN $exomevcfe.comment              c ON (v.chrom=c.chrom and v.start=c.s
 LEFT  JOIN $coredb.dgvbp                 dgv ON (v.chrom = dgv.chrom AND v.start=dgv.start)
 LEFT  JOIN snvgene                         y ON (v.idsnv = y.idsnv)
 LEFT  JOIN gene                            g ON (g.idgene = y.idgene)
-LEFT  JOIN $coredb.exacGeneScores       exac ON (g.genesymbol=exac.genesymbol)
+LEFT  JOIN $coredb.evsscores            exac ON (g.genesymbol=exac.gene)
 LEFT  JOIN $sampledb.mouse                mo ON (g.genesymbol = mo.humanSymbol)
 LEFT  JOIN hgmd_pro.$hg19_coords           h ON (v.chrom = h.chrom AND v.start = h.pos  AND v.refallele=h.ref AND v.allele=h.alt)
 INNER JOIN $sampledb.disease2sample       ds ON (s.idsample = ds.idsample)
@@ -11528,80 +10378,35 @@ if ($ref->{correct} eq 'correct') {
 	            OR c.rating     = 'correct')
 		    AND c.confirmed != 'no' ";
 }
-delete($ref->{correct});
-
 
 # controls
-if ($ref->{controltype} eq  "individual") {
+if ($ref->{'ncontrols'} ne "") {
 	$where .= " AND (f.samplecontrols <= ? or ISNULL(f.samplecontrols) )";
 	push(@prepare,$ref->{"ncontrols"});
 
 }
-elsif ($ref->{controltype} eq  "pedigree") {
-	$where .= " AND (f.pedigreecontrols <= ? or ISNULL(f.pedigreecontrols) )";
-	push(@prepare,$ref->{"ncontrols"});
-}
-delete($ref->{controltype});
 
-if ($ref->{'ea_het'} ne "") {
-	$where .= " AND (evs.ea_het <= ? or ISNULL(evs.ea_het))";
-	push(@prepare,$ref->{'ea_het'});
-}
-if ($ref->{'aa_het'} ne "") {
-	$where .= " AND (evs.aa_het <= ? or ISNULL(evs.aa_het))";
-	push(@prepare,$ref->{'aa_het'});
-}
 if ($giabradio == 1) {
 if ($ref->{'giab'} ne "") {
 	$where .= " AND v.giab = ? ";
 	push(@prepare,$ref->{'giab'});
 }
 }
-if ($ref->{'snvqual'} ne "") {
-	$where .= " AND x.snvqual >= ? ";
-	push(@prepare,$ref->{'snvqual'});
-}
-if ($ref->{'gtqual'} ne "") {
-	$where .= " AND x.gtqual >= ? ";
-	push(@prepare,$ref->{'gtqual'});
-}
-if ($ref->{'mapqual'} ne "") {
-	$where .= " AND x.mapqual >= ? ";
-	push(@prepare,$ref->{'mapqual'});
-}
-if ($ref->{'coverage'} ne "") {
-	$where .= " AND x.coverage >= ? ";
-	push(@prepare,$ref->{'coverage'});
-}
-if ($ref->{'nonsynpergene'} ne "") {
-	$where .= " AND (g.nonsynpergene <= ? or ISNULL(g.nonsynpergene)) ";
-	push(@prepare,$ref->{'nonsynpergene'});
-}
 
-# rs snps 
-if ($ref->{'avhet'} ne "") {
-	$where .= " AND 
-		((v.rs != '' AND FIND_IN_SET('by-hapmap',v.valid) > 0 AND avhet <= ?)
-		OR
-		(v.rs != '' AND NOT FIND_IN_SET('by-hapmap',v.valid))
-		OR 
-		(v.rs = '' )
-		)
-		";
-		push(@prepare,$ref->{'avhet'});
-}
-else {
-	$where .= " AND 1 = 1 ";
-}
 if ($ref->{'dg.iddisease'} ne "") {
 	$dgiddisease = $ref->{'dg.iddisease'};
 }
 else {
 	$dgiddisease = -9999999;
 }
+
+($where,@prepare) = &defaultwhere($ref,$where,@prepare);
+
 if ($ref->{"printquery"} eq "yes") {
 	$explain = " explain extended ";
 }
+
+
 # function
 ($function,$functionprint)=&function($ref->{'function'},$dbh);
 ($class,$classprint)=&class($ref->{'class'},$dbh);
@@ -11739,7 +10544,6 @@ $class
 $where
 AND s.idsample = ?
 AND x.alleles >= ?
-AND FIND_IN_SET('PASS',x.filter)
 AND (f.fiddiseasegroup = ? or ISNULL(f.fiddiseasegroup) )
 GROUP BY
 v.idsnv,s.name
@@ -12090,71 +10894,17 @@ if ($ref->{"ds.iddisease"} ne "") {
 	}	
 }
 
-# rs snps 
-if ($ref->{'avhet'} ne "") {
-	$rssnp = " AND 
-		((v.rs != '' AND FIND_IN_SET('by-hapmap',v.valid) > 0 AND avhet <= ?)
-		OR
-		(v.rs != '' AND NOT FIND_IN_SET('by-hapmap',v.valid))
-		OR 
-		(v.rs = '' )
-		)
-		";
-		push(@prepare,$ref->{'avhet'});
-}
-else {
-	$rssnp = " AND 1 = 1 ";
-}
 
 if ($ref->{'dg.iddisease'} ne "") {
 	$dg_iddisease .= $ref->{'dg.iddisease'};
-}
-if ($ref->{'ea_het'} ne "") {
-	$where .= " AND (evs.ea_het <= ? or ISNULL(evs.ea_het))";
-	push(@prepare,$ref->{'ea_het'});
-}
-if ($ref->{'aa_het'} ne "") {
-	$where .= " AND (evs.aa_het <= ? or ISNULL(evs.aa_het))";
-	push(@prepare,$ref->{'aa_het'});
-}
-if ($ref->{'kaviar'} ne "") {
-	$where .= " AND (k.ac <= ? or ISNULL(k.ac))";
-	push(@prepare,$ref->{'kaviar'});
 }
 if ($ref->{'idproject'} ne "") {
 	$where .= " AND s.idproject = ? ";
 	push(@prepare,$ref->{'idproject'});
 }
 if ($ref->{'s.idcooperation'} ne "") {
-	$d_where .= " AND s.idcooperation = ? ";
-	push(@d_prepare, $ref->{'s.idcooperation'});
-}
-if ($ref->{'snvqual'} ne "") {
-	$where .= " AND x.snvqual >= ? ";
-	push(@prepare,$ref->{'snvqual'});
-}
-if ($ref->{'gtqual'} ne "") {
-	$where .= " AND x.gtqual >= ? ";
-	push(@prepare,$ref->{'gtqual'});
-}
-if ($ref->{'mapqual'} ne "") {
-	$where .= " AND x.mapqual >= ? ";
-	push(@prepare,$ref->{'mapqual'});
-}
-if ($ref->{'length'} ne "") {
-	$where .= "AND v.length >= ? ";
-	push(@prepare,$ref->{'length'});
-}
-if ($ref->{'lengthmax'} ne "") {
-	$where .= "AND v.length <= ? ";
-	push(@prepare,$ref->{'lengthmax'});
-}
-if ($ref->{'nonsynpergene'} ne "") {
-	$where .= "AND (g.nonsynpergene <= ? or ISNULL(g.nonsynpergene)) ";
-	push(@prepare,$ref->{'nonsynpergene'});
-}
-if ($ref->{'filter'} eq "filtered") {
-	$where .= " AND FIND_IN_SET('PASS',x.filter)";
+	$where .= " AND s.idcooperation = ? ";
+	push(@prepare, $ref->{'s.idcooperation'});
 }
 if ($ref->{'homozygous'} == 1) {
 	$homozygous =" HAVING
@@ -12168,9 +10918,8 @@ else {
 	max(x.alleles) >= ?";
 	push(@homozygous,$ref->{"x.alleles"},$ref->{"x.alleles"});
 }
-if ($ref->{'affecteds'} eq "onlyaffecteds") {
-	$affecteds = " AND s.saffected = 1 ";
-}
+
+($where,@prepare) = &defaultwhere($ref,$where,@prepare);
 
 my $explain = "";
 if ($ref->{"printquery"} eq "yes") {
@@ -14922,7 +13671,7 @@ $out->execute($user) || die print "$DBI::errstr";
 }
 
 ########################################################################
-# searchResultsGene searchGeneResults
+# searchResultsGenes searchGeneResults
 ########################################################################
 sub searchResultsGene {
 my $self         = shift;
@@ -14986,49 +13735,10 @@ else {
 	print "Gene symbol missing.";
 	exit(1);
 }
-# rs snps 
-if ($ref->{'avhet'} ne "") {
-	$where .= " AND 
-		((v.rs != '' AND FIND_IN_SET('by-hapmap',v.valid) > 0 AND avhet <= ?)
-		OR
-		(v.rs != '' AND NOT FIND_IN_SET('by-hapmap',v.valid))
-		OR 
-		(v.rs = '' )
-		)
-		";
-	push(@prepare,$ref->{'avhet'});
-}
-if ($ref->{'ea_het'} ne "") {
-	$where .= " AND (evs.ea_het <= ? or ISNULL(evs.ea_het))";
-	push(@prepare,$ref->{'ea_het'});
-}
-if ($ref->{'aa_het'} ne "") {
-	$where .= " AND (evs.aa_het <= ? or ISNULL(evs.aa_het))";
-	push(@prepare,$ref->{'aa_het'});
-}
-if ($ref->{'snvqual'} ne "") {
-	$where .= " AND x.snvqual >= ? ";
-	push(@prepare,$ref->{'snvqual'});
-}
-if ($ref->{'gtqual'} ne "") {
-	$where .= " AND x.gtqual >= ? ";
-	push(@prepare,$ref->{'gtqual'});
-}
-if ($ref->{'coverage'} ne "") {
-	$where .= " AND x.coverage >= ? ";
-	push(@prepare,$ref->{'coverage'});
-}
-if ($ref->{'mapqual'} ne "") {
-	$where .= " AND x.mapqual >= ? ";
-	push(@prepare,$ref->{'mapqual'});
-}
+
 if ($ref->{'s.name'} ne "") {
 	$where .= " AND s.name = ? ";
 	push(@prepare,$ref->{'s.name'});
-}
-if ($ref->{'filter'} eq "filtered") {
-	$where .= " AND x.filter = ? ";
-	push(@prepare,'PASS');
 }
 if ($ref->{'ds.iddisease'} ne "") {
 	$where .= " AND ds.iddisease = ? ";
@@ -15046,15 +13756,8 @@ if ($ref->{'v.freq'} ne "") {
 	$where .= " AND v.freq <= ? ";
 	push(@prepare,$ref->{'v.freq'});
 }
-if ($ref->{'length'} ne "") {
-	$where .= "AND v.length >= ? ";
-	push(@prepare,$ref->{'length'});
-}
-if ($ref->{'lengthmax'} ne "") {
-	$where .= "AND v.length <= ? ";
-	push(@prepare,$ref->{'lengthmax'});
-}
 
+($where,@prepare) = &defaultwhere($ref,$where,@prepare);
 
 # function
 ($function,$functionprint)=&function($ref->{'function'},$dbh);
@@ -15825,46 +14528,11 @@ else {
 	exit(1);
 }
 $i=0;
-# rs snps 
-if ($ref->{'avhet'} ne "") {
-	$where .= " AND 
-		((v.rs != '' AND FIND_IN_SET('by-hapmap',v.valid) > 0 AND avhet <= ?)
-		OR
-		(v.rs != '' AND NOT FIND_IN_SET('by-hapmap',v.valid))
-		OR 
-		(v.rs = '' )
-		)
-		";
-	push(@prepare,$ref->{'avhet'});
-}
-if ($ref->{'ea_het'} ne "") {
-	$where .= " AND (evs.ea_het <= ? or ISNULL(evs.ea_het))";
-	push(@prepare,$ref->{'ea_het'});
-}
-if ($ref->{'aa_het'} ne "") {
-	$where .= " AND (evs.aa_het <= ? or ISNULL(evs.aa_het))";
-	push(@prepare,$ref->{'aa_het'});
-}
-if ($ref->{'snvqual'} ne "") {
-	$where .= " AND x.snvqual >= ? ";
-	push(@prepare,$ref->{'snvqual'});
-}
-if ($ref->{'gtqual'} ne "") {
-	$where .= " AND x.gtqual >= ? ";
-	push(@prepare,$ref->{'gtqual'});
-}
-if ($ref->{'mapqual'} ne "") {
-	$where .= " AND x.mapqual >= ? ";
-	push(@prepare,$ref->{'mapqual'});
-}
+
 if ($ref->{'s.name'} ne "") {
 	$idsample = &getIdsampleByName($dbh,$ref->{'s.name'});
 	$where .= " AND s.idsample = ? ";
 	push(@prepare,$idsample);
-}
-if ($ref->{'filter'} eq "filtered") {
-	$where .= " AND x.filter = ? ";
-	push(@prepare,'PASS');
 }
 if ($ref->{'ds.iddisease'} ne "") {
 	$where .= " AND ds.iddisease = ? ";
@@ -15882,14 +14550,8 @@ if ($ref->{'v.freq'} ne "") {
 	$where .= " AND v.freq <= ? ";
 	push(@prepare,$ref->{'v.freq'});
 }
-if ($ref->{'length'} ne "") {
-	$where .= "AND v.length >= ? ";
-	push(@prepare,$ref->{'length'});
-}
-if ($ref->{'lengthmax'} ne "") {
-	$where .= "AND v.length <= ? ";
-	push(@prepare,$ref->{'lengthmax'});
-}
+
+($where,@prepare) = &defaultwhere($ref,$where,@prepare);
 
 
 # function
@@ -16246,41 +14908,10 @@ else {
 	exit(1);
 }
 $i=0;
-# rs snps 
-if ($ref->{'avhet'} ne "") {
-	$where .= " AND 
-		((v.rs != '' AND FIND_IN_SET('by-hapmap',v.valid) > 0 AND avhet <= ?)
-		OR
-		(v.rs != '' AND NOT FIND_IN_SET('by-hapmap',v.valid))
-		OR 
-		(v.rs = '' )
-		)
-		";
-	push(@prepare,$ref->{'avhet'});
-}
-if ($ref->{'af'} ne "") {
-	$where .= " AND v.af <= ? ";
-	push(@prepare,$ref->{'af'});
-}
-if ($ref->{'snvqual'} ne "") {
-	$where .= " AND x.snvqual >= ? ";
-	push(@prepare,$ref->{'snvqual'});
-}
-if ($ref->{'gtqual'} ne "") {
-	$where .= " AND x.gtqual >= ? ";
-	push(@prepare,$ref->{'gtqual'});
-}
-if ($ref->{'mapqual'} ne "") {
-	$where .= " AND x.mapqual >= ? ";
-	push(@prepare,$ref->{'mapqual'});
-}
+
 if ($ref->{'s.name'} ne "") {
 	$where .= " AND s.name = ? ";
 	push(@prepare,$ref->{'s.name'});
-}
-if ($ref->{'filter'} eq "filtered") {
-	$where .= " AND x.filter = ? ";
-	push(@prepare,'PASS');
 }
 if ($ref->{'ds.iddisease'} ne "") {
 	$where .= " AND ds.iddisease = ? ";
@@ -16298,14 +14929,8 @@ if ($ref->{'v.freq'} ne "") {
 	$where .= " AND v.freq <= ? ";
 	push(@prepare,$ref->{'v.freq'});
 }
-if ($ref->{'length'} ne "") {
-	$where .= "AND v.length >= ? ";
-	push(@prepare,$ref->{'length'});
-}
-if ($ref->{'lengthmax'} ne "") {
-	$where .= "AND v.length <= ? ";
-	push(@prepare,$ref->{'lengthmax'});
-}
+
+($where,@prepare) = &defaultwhere($ref,$where,@prepare);
 
 
 # function
@@ -16864,50 +15489,11 @@ else {
 }
 
 $i=0;
-# rs snps 
-if ($ref->{'avhet'} ne "") {
-	$where .= " AND 
-		((v.rs != '' AND FIND_IN_SET('by-hapmap',v.valid) > 0 AND avhet <= ?)
-		OR
-		(v.rs != '' AND NOT FIND_IN_SET('by-hapmap',v.valid))
-		OR 
-		(v.rs = '' )
-		)
-		";
-	push(@prepare,$ref->{'avhet'});
-}
-if ($ref->{'ea_het'} ne "") {
-	$where .= " AND (evs.ea_het <= ? or ISNULL(evs.ea_het))";
-	push(@prepare,$ref->{'ea_het'});
-}
-if ($ref->{'aa_het'} ne "") {
-	$where .= " AND (evs.aa_het <= ? or ISNULL(evs.aa_het))";
-	push(@prepare,$ref->{'aa_het'});
-}
-if ($ref->{'af'} ne "") {
-	$where .= " AND v.af <= ? ";
-	push(@prepare,$ref->{'af'});
-}
-if ($ref->{'snvqual'} ne "") {
-	$where .= " AND x.snvqual >= ? ";
-	push(@prepare,$ref->{'snvqual'});
-}
-if ($ref->{'gtqual'} ne "") {
-	$where .= " AND x.gtqual >= ? ";
-	push(@prepare,$ref->{'gtqual'});
-}
-if ($ref->{'mapqual'} ne "") {
-	$where .= " AND x.mapqual >= ? ";
-	push(@prepare,$ref->{'mapqual'});
-}
+
 if ($ref->{'s.name'} ne "") {
 	$idsample = &getIdsampleByName($dbh,$ref->{'s.name'});
 	$where .= " AND s.idsample = ? ";
 	push(@prepare,$idsample);
-}
-if ($ref->{'filter'} eq "filtered") {
-	$where .= " AND x.filter = ? ";
-	push(@prepare,'PASS');
 }
 if ($ref->{'ds.iddisease'} ne "") {
 	$where .= " AND ds.iddisease = ? ";
@@ -16925,15 +15511,8 @@ if ($ref->{'v.freq'} ne "") {
 	$where .= " AND v.freq <= ? ";
 	push(@prepare,$ref->{'v.freq'});
 }
-if ($ref->{'length'} ne "") {
-	$where .= "AND v.length >= ? ";
-	push(@prepare,$ref->{'length'});
-}
-if ($ref->{'lengthmax'} ne "") {
-	$where .= "AND v.length <= ? ";
-	push(@prepare,$ref->{'lengthmax'});
-}
 
+($where,@prepare) = &defaultwhere($ref,$where,@prepare);
 
 # function
 ($function,$functionprint)=&function($ref->{'function'},$dbh);
@@ -16992,7 +15571,7 @@ LEFT  JOIN $sampledb.disease2sample ds ON (s.idsample=ds.idsample)
 LEFT  JOIN $sampledb.disease         i ON (ds.iddisease = i.iddisease)
 LEFT  JOIN snvgene                   y ON (v.idsnv = y.idsnv)
 LEFT  JOIN gene                      g ON (g.idgene = y.idgene)
-LEFT  JOIN $coredb.exacGeneScores exac ON (g.genesymbol=exac.genesymbol)
+LEFT  JOIN $coredb.evsscores      exac ON (g.genesymbol=exac.gene)
 LEFT  JOIN $sampledb.mouse          mo ON (g.genesymbol = mo.humanSymbol)
 LEFT  JOIN $coredb.cadd           cadd ON (v.chrom=cadd.chrom and v.start=cadd.start and v.refallele=cadd.ref and v.allele=cadd.alt)
 LEFT  JOIN $coredb.clinvar          cv ON (v.chrom=cv.chrom and v.start=cv.start and v.refallele=cv.ref and v.allele=cv.alt)
@@ -17280,42 +15859,10 @@ else {
 	exit(1);
 }
 $i=0;
-# rs snps 
-if ($ref->{'avhet'} ne "") {
-	$where .= " AND 
-		((v.rs != '' AND FIND_IN_SET('by-hapmap',v.valid) > 0 AND avhet <= ?)
-		OR
-		(v.rs != '' AND NOT FIND_IN_SET('by-hapmap',v.valid))
-		OR 
-		(v.rs = '' )
-		)
-		";
-	push(@prepare,$ref->{'avhet'});
-}
-if ($ref->{'af'} ne "") {
-	$where .= " AND v.af <= ? ";
-	push(@prepare,$ref->{'af'});
-}
-if ($ref->{'snvqual'} ne "") {
-	$where .= " AND x.snvqual >= ? ";
-	push(@prepare,$ref->{'snvqual'});
-}
-if ($ref->{'gtqual'} ne "") {
-	$where .= " AND x.gtqual >= ? ";
-	push(@prepare,$ref->{'gtqual'});
-}
-if ($ref->{'mapqual'} ne "") {
-	$where .= " AND x.mapqual >= ? ";
-	push(@prepare,$ref->{'mapqual'});
-}
 if ($ref->{'s.name'} ne "") {
 	$idsample = &getIdsampleByName($dbh,$ref->{'s.name'});
 	$where .= " AND s.idsample = ? ";
 	push(@prepare,$idsample);
-}
-if ($ref->{'filter'} eq "filtered") {
-	$where .= " AND x.filter = ? ";
-	push(@prepare,'PASS');
 }
 if ($ref->{'ds.iddisease'} ne "") {
 	$where .= " AND ds.iddisease = ? ";
@@ -17333,6 +15880,8 @@ if ($ref->{'v.freq'} ne "") {
 	$where .= " AND v.freq <= ? ";
 	push(@prepare,$ref->{'v.freq'});
 }
+
+($where,@prepare) = &defaultwhere($ref,$where,@prepare);
 
 
 # function
@@ -17607,105 +16156,67 @@ my $forcount  = "";
 my @forcount  = ();
 my $ncount    = "";
 my $avhet     = "";
-my $name      = "";
+my $where     = "";
 
 delete($ref->{burdentest});
 
 $forcount = "1 = 1 ";
 
 if ($ref->{'datebegin'} ne "") {
-	$name = " AND es.date >= ? ";
+	$where = " AND es.date >= ? ";
 	$forcount .= " AND es.date >= ? ";
 	push(@prepare, $ref->{'datebegin'});
 	push(@forcount, $ref->{'datebegin'});
 }
 if ($ref->{'dateend'} ne "") {
-	$name .= " AND es.date <= ? ";
+	$where .= " AND es.date <= ? ";
 	$forcount .= " AND es.date <= ? ";
 	push(@prepare, $ref->{'dateend'});
 	push(@forcount, $ref->{'dateend'});
 }
 if ($ref->{'s.name'} ne "") {
-	$name = "AND s.name = ? ";
+	$where = "AND s.name = ? ";
 	$forcount .= "AND s.name = ? ";
 	push(@prepare,$ref->{'s.name'});
 	push(@forcount,$ref->{'s.name'});
 }
 if ($ref->{'s.idcooperation'} ne "") {
-	$name .= "AND s.idcooperation = ? ";
+	$where .= "AND s.idcooperation = ? ";
 	$forcount .= "AND s.idcooperation = ? ";
 	push(@prepare,$ref->{'s.idcooperation'});
 	push(@forcount,$ref->{'s.idcooperation'});
 }
 if ($ref->{'ds.iddisease'} ne "") {
-	$name .= "AND ds.iddisease = ? ";
+	$where .= "AND ds.iddisease = ? ";
 	$forcount .= "AND ds.iddisease = ? ";
 	push(@prepare,$ref->{'ds.iddisease'});
 	push(@forcount,$ref->{'ds.iddisease'});
 }
 if ($ref->{'idproject'} ne "") {
-	$name .= "AND s.idproject = ? ";
+	$where .= "AND s.idproject = ? ";
 	$forcount .= "AND s.idproject = ? ";
 	push(@prepare,$ref->{'idproject'});
 	push(@forcount,$ref->{'idproject'});
 }
 if ($ref->{'nall'} ne "") {
-	$name .= "AND (f.fsampleall <= ? OR ISNULL(f.fsampleall))";
+	$where .= "AND (f.fsampleall <= ? OR ISNULL(f.fsampleall))";
 	push(@prepare,$ref->{'nall'});
 }
 if ($ref->{'score'} ne "") {
-	$name .= "AND dg.class = ? ";
+	$where .= "AND dg.class = ? ";
 	push(@prepare,$ref->{'score'});
-}
-if ($ref->{'snvqual'} ne "") {
-	$name .= "AND x.snvqual >= ? ";
-	push(@prepare,$ref->{'snvqual'});
-}
-if ($ref->{'gtqual'} ne "") {
-	$name .= "AND x.gtqual >= ? ";
-	push(@prepare,$ref->{'gtqual'});
-}
-if ($ref->{'mapqual'} ne "") {
-	$name .= "AND x.mapqual >= ? ";
-	push(@prepare,$ref->{'mapqual'});
 }
 if ($giabradio == 1) {
 if ($ref->{'giab'} ne "") {
-	$name .= " AND v.giab = ? ";
+	$where .= " AND v.giab = ? ";
 	push(@prepare,$ref->{'giab'});
 }
 }
-if ($ref->{'minlength'} ne "") {
-	$name .= "AND v.length >= ? ";
-	push(@prepare,$ref->{'minlength'});
-}
-if ($ref->{'maxlength'} ne "") {
-	$name .= "AND v.length <= ? ";
-	push(@prepare,$ref->{'maxlength'});
-}
-if ($ref->{'affecteds'} eq "onlyaffecteds") {
-	$name .= " AND s.saffected = 1 ";
-	$forcount .= " AND s.saffected = 1 ";
-}
 if ($ref->{'affecteds'} eq "onlyunaffecteds") {
-	$name .= " AND s.saffected = 0 ";
 	$forcount .= " AND s.saffected = 0 ";
 }
-if ($ref->{'popmax_af'} ne "") {
-	$name .= " AND (evs.popmax_af <= ? or ISNULL(evs.popmax_af))";
-	push(@prepare,$ref->{'popmax_af'});
-}
-if ($ref->{'het'} ne "") {
-	$name .= " AND (evs.het <= ? or ISNULL(evs.het))";
-	push(@prepare,$ref->{'het'});
-}
-if ($ref->{'aa_het'} ne "") {
-	$name .= " AND (evs.aa_het <= ? or ISNULL(evs.aa_het))";
-	push(@prepare,$ref->{'aa_het'});
-}
-if ($ref->{'filter'} eq "filtered") {
-	$name .= " AND FIND_IN_SET('PASS',x.filter)";
-}
+
+($where,@prepare) = &defaultwhere($ref,$where,@prepare);
 
 # function
 ($function,$functionprint)=&function($ref->{'function'},$dbh);
@@ -17794,7 +16305,7 @@ WHERE
 dg.iddisease = ?
 $function
 $class
-$name
+$where
 AND $allowedprojects
 GROUP BY
 v.idsnv,s.idsample
@@ -19453,7 +17964,7 @@ $i=0;
 $query = qq#
 SELECT
 s.name,
-group_concat(cl.solved,' ',co.genesymbol SEPARATOR ' '),
+concat_ws(' ',cl.solved, group_concat(DISTINCT co.genesymbol SEPARATOR '')),
 h.idsample,
 s.pedigree,s.sex,s.foreignid,s.externalseqid,e.sry,c.name,
 group_concat(DISTINCT l.lname),lt.ltlibtype,lp.lplibpair,a.name,
@@ -19488,18 +17999,18 @@ AND sol.lfailed = 0
 s.idsample
 FROM
 $sampledb.sample s 
-LEFT JOIN  $sampledb.disease2sample ds ON s.idsample = ds.idsample
-LEFT JOIN  $solexa.sample2library   sl ON s.idsample = sl.idsample
-LEFT JOIN  $solexa.library           l ON sl.lid = l.lid
+LEFT  JOIN $sampledb.disease2sample ds ON s.idsample = ds.idsample
+LEFT  JOIN $solexa.sample2library   sl ON s.idsample = sl.idsample
+LEFT  JOIN $solexa.library           l ON sl.lid = l.lid
 INNER JOIN $sampledb.cooperation     c ON s.idcooperation = c.idcooperation
-LEFT JOIN  $solexa.libtype          lt on l.libtype = lt.ltid 
-LEFT JOIN  $solexa.libpair          lp on l.libpair = lp.lpid 
-LEFT JOIN  $sampledb.exomestat       e ON (s.idsample = e.idsample AND e.idlibtype=l.libtype AND e.idlibpair=l.libpair)
-LEFT JOIN  variantstat              vs ON s.idsample = vs.idsample   
-LEFT JOIN  $exomevcfe.conclusion    cl ON s.idsample=cl.idsample
-LEFT JOIN  $solexa.assay              a ON e.idassay=a.idassay
-LEFT JOIN  $exomevcfe.hpo            h ON s.idsample=h.idsample
-LEFT  JOIN $exomevcfe.comment       co ON s.idsample=co.idsample
+LEFT  JOIN $solexa.libtype          lt on l.libtype = lt.ltid 
+LEFT  JOIN $solexa.libpair          lp on l.libpair = lp.lpid 
+LEFT  JOIN $sampledb.exomestat       e ON (s.idsample = e.idsample AND e.idlibtype=l.libtype AND e.idlibpair=l.libpair)
+LEFT  JOIN variantstat              vs ON s.idsample = vs.idsample   
+LEFT  JOIN $exomevcfe.conclusion    cl ON s.idsample = cl.idsample
+LEFT  JOIN $solexa.assay             a ON e.idassay = a.idassay
+LEFT  JOIN $exomevcfe.hpo            h ON s.idsample = h.idsample
+LEFT  JOIN $exomevcfe.comment       co ON s.idsample = co.idsample
 $where
 AND $allowedprojects
 AND l.lfailed = 0
@@ -20870,28 +19381,25 @@ $out->finish;
 
 
 ########################################################################
-# searchHGMD resultHGMD resultsHGMD
+# searchHGMD resultHGMD resultsHGMD resultsClinvar
 ########################################################################
 sub searchHGMD {
-my $self         = shift;
-my $dbh          = shift;
-my $ref          = shift;
+my $self            = shift;
+my $dbh             = shift;
+my $ref             = shift;
 
-my @labels      = ();
-my $out         = "";
-my @row         = ();
-my $query       = "";
-my $i           = 0;
-my $n           = 1;
-my $tmp         = "";
-my @individuals = ();
-my $individuals = "";
-my $where       = "";
-my $where_path  = "";
-my $where_path_hgmd  = "";
-my $field       = "";
-my @values2     = ();
-my $homozygous  = "";
+my @labels          = ();
+my $out             = "";
+my @row             = ();
+my $query           = "";
+my $i               = 0;
+my $n               = 1;
+my $tmp             = "";
+my $where           = "";
+my $where_path      = "";
+my $where_path_hgmd = "";
+my @prepare         = ();
+my $homozygous      = "";
 my $allowedprojects = &allowedprojects("s.");
 my $function        = "";
 my $functionprint   = "";
@@ -20901,11 +19409,6 @@ my $dummy           = "";
 my $diseases        = "";
 my $clinvar         = "";
 
-# class, function
-($class,$classprint)=&class($ref->{'class'},$dbh);
-($function,$functionprint)=&function($ref->{'function'},$dbh);
-delete($ref->{class});
-delete($ref->{function});
 
 my $cgi          = new CGI::Plus;
 $cgi->csrf(1);
@@ -20923,67 +19426,48 @@ delete($ref->{wwwcsrf});
 
 if ($ref->{agmd} ne "") {
 	$where .= "dg.iddisease=448 ";
-	#push(@values2,$ref->{agmd});
 }
-delete($ref->{agmd});
-
-if ($ref->{filter} eq "filtered") {
-	if ($where ne "") {
-		$where .= " AND ";
-	}
-	$where .= " x.filter = ? ";
-	push(@values2,'PASS');
-}
-delete($ref->{filter});
-
-$clinvar = $ref->{clinvar};
-delete($ref->{clinvar});
 
 if ($ref->{mode} eq "homozygous") {
 	$homozygous=" HAVING ( count(DISTINCT v.chrom,v.start) >= 2)
 	OR max(x.alleles) >= 2 ";
 }
-delete($ref->{mode});
-my $selection = $ref->{selection}; # inheritance mode
-delete($ref->{selection});
 
-
-my @fields    = sort keys %$ref;
-my @values    = @{$ref}{@fields};
-
-
-foreach $field (@fields) {
-	unless ($values[$i] eq "") {
-		if ($where ne "") {
-			$where .= " AND ";
-		}
-		if ($field eq "freq") {
-			$where .= $field . " <= ? ";
-		}
-		elsif ($field eq "af") {
-			$where .= $field . " <= ? ";
-		}
-		elsif ($field eq "snvqual") {
-			$where .= $field . " >= ? ";
-		}
-		elsif ($field eq "gtqual") {
-			$where .= $field . " >= ? ";
-		}
-		elsif ($field eq "mapqual") {
-			$where .= $field . " >= ? ";
-		}
-		else {
-			$where .= $field . " = ? ";
-		}
-		push(@values2,$values[$i]);
-	}
-	$i++;
+if ($ref->{'s.name'} ne "") {
+	$where .= " AND s.name = ? ";
+	push(@prepare,$ref->{'s.name'});
 }
+if ($ref->{'pedigree'} ne "") {
+	$where .= " AND s.pedigree = ? ";
+	push(@prepare,$ref->{'pedigree'});
+}
+if ($ref->{'idproject'} ne "") {
+	$where .= " AND s.idproject = ? ";
+	push(@prepare,$ref->{'idproject'});
+}
+if ($ref->{'ds.iddisease'} ne "") {
+	$where .= " AND ds.iddisease = ? ";
+	push(@prepare,$ref->{'ds.iddisease'});
+}
+if ($ref->{'s.idcooperation'} ne "") {
+	$where .= " AND s.idcooperation = ? ";
+	push(@prepare,$ref->{'s.idcooperation'});
+}
+if ($ref->{'freq'} ne "") {
+	$where .= " AND freq <= ? ";
+	push(@prepare,$ref->{'freq'});
+}
+
+($where,@prepare) = &defaultwhere($ref,$where,@prepare);
+
+
+my $selection = $ref->{selection}; # inheritance mode
 if (($selection eq "ad") or ($selection eq "ar") or ($selection eq "x")) {
 	$where .= " AND FIND_IN_SET(?,omim.inheritance) ";
-	push(@values2,$selection);
+	push(@prepare,$selection);
 }
 
+$clinvar = $ref->{clinvar};
 if ($clinvar == 1) {
 	if ($where ne "") {
 		$where_path .= " AND ";
@@ -20998,6 +19482,10 @@ if ($clinvar == 2) {
 	}
 	$where .= " (cv.path like '%uncertain%') ";
 }
+
+# class, function
+($class,$classprint)=&class($ref->{'class'},$dbh);
+($function,$functionprint)=&function($ref->{'function'},$dbh);
 
 &todaysdate;
 &numberofsamples($dbh);
@@ -21057,11 +19545,11 @@ LEFT  JOIN $coredb.evs               evs ON (v.chrom      = evs.chrom and v.star
 LEFT  JOIN $sampledb.omim           omim ON (g.omim       = omim.omimgene)
 LEFT  JOIN $coredb.clinvar            cv ON (v.chrom      = cv.chrom and v.start=cv.start and v.refallele=cv.ref and v.allele=cv.alt)
 WHERE 
+$allowedprojects
 $where
 $where_path_hgmd
 $function
 $class
-AND $allowedprojects
 GROUP BY s.idsample,g.genesymbol
 $homozygous
 UNION
@@ -21104,24 +19592,24 @@ LEFT  JOIN $coredb.evs               evs ON (v.chrom      = evs.chrom and v.star
 LEFT  JOIN $sampledb.omim           omim ON (g.omim       = omim.omimgene)
 LEFT  JOIN hgmd_pro.$hg19_coords       h ON (v.chrom      = h.chrom and v.start=h.pos and v.refallele=h.ref and v.allele=h.alt)
 WHERE 
+$allowedprojects
 $where
 $where_path
 $function
 $class
-AND $allowedprojects
 GROUP BY s.idsample,g.genesymbol
 $homozygous
 ORDER BY 7
 #;
 #print "query = $query<br>";
-#print "values2 = @values2<br>";
+#print "prepare = @prepare<br>";
 #print "where $where<br>";
 #print "function $function<br>";
 #print "class $class<br>";
 
 
 $out = $dbh->prepare($query) || die print "$DBI::errstr";
-$out->execute(@values2,@values2) || die print "$DBI::errstr";
+$out->execute(@prepare,@prepare) || die print "$DBI::errstr";
 
 @labels	= (
 	'n',
@@ -21264,7 +19752,7 @@ $i=0;
 $query = qq#
 SELECT
 s.name,
-group_concat(cl.solved,' ',co.genesymbol SEPARATOR ' '),
+concat_ws(' ',cl.solved, group_concat(DISTINCT co.genesymbol SEPARATOR '')),
 h.idsample,
 s.foreignid,
 s.externalseqid,
@@ -23563,6 +22051,7 @@ print qq(
 print qq(
 <td align="center" class="header"><a class="$searchHGMD" href="searchHGMD.pl">HGMD ClinVar</a></td>
 <td align="center" class="header"><a class="$searchOmim" href="searchOmim.pl">OMIM</a></td>
+<td align="center" class="header"><a class="$searchHPO"  href="searchHPO.pl">Search HPO</a></td>
 <td align="center" class="header"><a class="$searchIbs"  href="searchIbs.pl">IBS</a></td>
 );
 
@@ -23573,10 +22062,11 @@ print qq(
 }
 
 print qq(
-<td align="center" class="header"><a class="$searchComment" href="searchComment.pl">Comments</a></td>
-<td align="center" class="header"><a class="$searchConclusion" href="searchConclusion.pl">Conclusions</a></td>
 <td align="center" class="header"><a class="$searchstat" href="searchStat.pl">Quality control</a></td>
 <td align="center" class="header"><a class="$searchSample" href="searchSample.pl">Samples</a></td>
+<td align="center" class="header"><a class="$searchComment" href="searchComment.pl">Comments</a></td>
+<td align="center" class="header"><a class="$searchConclusion" href="searchConclusion.pl">Conclusions</a></td>
+<td align="center" class="header"><a class="$report" href="report.pl">Report</a></td>
 <td align="center" class="header"><a class="$searchVcfTrio" href="searchVcfTrio.pl">VCF De novo Trio</a></td>
 <td align="center" class="header"><a class="$searchVcf" href="searchVcf.pl">VCF Tumor Controls</a></td>
 );
@@ -23594,8 +22084,6 @@ print qq(
 <td align="center" class="header"><a class="$help" href="help.pl">Help</a></td>
 <td align="center" class="header"><a class="$login" href="login.pl">Login / Logout</a></td>
 <td align="center" class="header"><a class="$importHPO"  href="importHPO.pl">Import HPO</a></td>
-<td align="center" class="header"><a class="$searchHPO"  href="searchHPO.pl">Search HPO</a></td>
-<td align="center" class="header"><a class="$report" href="report.pl">Report</a></td>
 );
 
 if ($role eq "admin") {

@@ -32,7 +32,7 @@ mysql -L hg19 < hg19_pph3_nodata.dmp -u root -p
 mysql -L hg19 < hg19_sift_nodata.dmp -u root -p
 mysql -L hg19 < hg19_cadd_nodata.dmp -u root -p
 mysql -L hg19 < hg19_evs_nodata.dmp -u root -p
-mysql -L hg19 < hg19_exacGeneScores_nodata.dmp -u root -p
+mysql -L hg19 < hg19_evsscores_nodata.dmp -u root -p
 mysql -L hg19 < hg19_kaviar_nodata.dmp -u root -p
 mysql -L hg19 < hg19_dgvbp_nodata.dmp -u root -p
 mysql -L hg19 < hg19_hgnc_nodata.dmp -u root -p
