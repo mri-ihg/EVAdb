@@ -41,7 +41,7 @@ CREATE TABLE `evs` (
   `homalt` int(11) unsigned DEFAULT NULL,
   PRIMARY KEY (`idexac`),
   UNIQUE KEY `uniqueexac` (`chrom`,`start`,`refallele`,`allele`)
-) ENGINE=MyISAM AUTO_INCREMENT=275511410 DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
