@@ -182,8 +182,10 @@ of hg38. We also added the decoy regions and removed the pseudoautosomal regions
 Y-chromosome. This sequence can be downloaded from
 https://ihg4.helmholtz-muenchen.de/hg19p/noPAR.hg19_decoy.fa.gz
 
+The path to the fasta-file of the human reference sequence has to
+be set in current.config.xml (see above).
 
-How to run cdsdb.pl (this step takes some hours)
+Then you can run cdsdb.pl (this step takes some hours).
 ./cdsdb.pl -se hg19_plus
 
 
