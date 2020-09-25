@@ -51,7 +51,16 @@ sed -i 's/SERVER13/<host>/g' current.config.xml
 sed -i 's/DBPORT/<port>/g' current.config.xml
 sed -i 's/DBUSER/<myuser>/g' current.config.xml
 sed -i 's/DBPWD/<mypassword>/g' current.config.xml
-	
+
+
+Additionally download the reference genome fasta file, index the file with samtools faidx and modify the following
+entry accordingly:
+<config>
+ <settings>
+  <yoursettingsname>
+   <reference>/PATHTO/hg19_decoy/chromosome/noPAR.hg19_decoy.fa</reference> 
+
+
 #############################################################################
 # imports
 #############################################################################
