@@ -73,6 +73,6 @@ services:
       - DB_USER=${MYSQL_USER}
       - DB_PASSWD=${MYSQL_PASSWORD}
     volumes:
-      - "/gluster/gluster01/share/exome/:/data"
-      - "/gluster/gluster01/share/brand/library:/library"
-      - "/gluster/gluster01/share/brand/annotation_db:/anno_db"
+      - "${DATA_DIR}:/data"
+      - "${LIBRARY}:/library"
+      - "${ANNO_DB_DIR}:/anno_db"
