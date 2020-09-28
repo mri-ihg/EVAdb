@@ -1,6 +1,7 @@
-Use the following script and utilities from 
+Use the following scripts and utilities from 
 https://github.com/mri-ihg/ngs_pipeline
 to fill the database with external data you need at least:
+cdsdb.pl
 fillAnnotationTables.pl
 Utilities.pm
 current.config.xml
@@ -46,12 +47,17 @@ They appear in several places in the file.
 <port>DBPORT</port>
 <user>DBUSER</user>
 <password>DBPWD</password>
+<reference>/PATHTO/hg19_decoy/chromosome/noPAR.hg19_decoy.fa</reference> 
 
 sed -i 's/SERVER13/<host>/g' current.config.xml
 sed -i 's/DBPORT/<port>/g' current.config.xml
 sed -i 's/DBUSER/<myuser>/g' current.config.xml
 sed -i 's/DBPWD/<mypassword>/g' current.config.xml
-	
+sed -i 's/\/PATHTO\/hg19_decoy\/chromosome\/noPAR.hg19_decoy.fa/<myreffasta>/g' current.config.xml
+
+You neet the fasta file of the human reference sequence to annotate
+vcf-files before import into EVAdb (see below).
+
 #############################################################################
 # imports
 #############################################################################
@@ -156,7 +162,31 @@ requires morbidmap.txt and genemap2.txt from OMIM
 import the data with helperscripts/OMIMimport/omim_download.sh
 
 #############################################################################
-# fill coding sequence table (required for annotation)
-# NOTE: in this configuration runs only for the default knownGene table
-# This step takes some hours
+# fill coding sequence table, knownGene_cds (required for annotation)
+
+You can import your own vcf-files for short variants if you don't want 
+to use the entire analysis pipeline which is provided in combination with EVAdb.
+
+Before you import your own vcf-files, you have to annotate them with 
+provided scripts. That works currently only for hg19. It is planned
+to move to hg38 and variant effect predicior.
+
+To run the annotation scripts, you need to create an additional table,
+knownGene_cds, by the script cdsdb.pl. The script requires the following prerequistes:
+- knownGenes table from UCSC (you have already downloaded it in a previous step)
+- the fasta file of hg19
+
+hg19 don't allow correct annotation for the mitochondrial genome. We therefore
+provide a modifed version of hg19 which combines hg19 with the mitochondrial sequence
+of hg38. We also added the decoy regions and removed the pseudoautosomal regions of the
+Y-chromosome. This sequence can be downloaded from
+https://ihg4.helmholtz-muenchen.de/hg19p/noPAR.hg19_decoy.fa.gz
+
+The path to the fasta-file of the human reference sequence has to
+be set in current.config.xml (see above).
+
+Then you can run cdsdb.pl (this step takes some hours).
 ./cdsdb.pl -se hg19_plus
+
+
+

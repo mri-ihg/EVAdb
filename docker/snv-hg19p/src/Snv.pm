@@ -1,7 +1,8 @@
 ########################################################################
-# Tim M Strom June 2010-2015
+# Tim M Strom June 2010-2020
 # Institute of Human Genetics
 # Helmholtz Zentrum Muenchen
+# Klinikum rechts der Isar, Technische Universitaet Muenchen
 ########################################################################
 
 use strict;
@@ -325,6 +326,7 @@ my $text2         = "/srv/tools/textreadonly2.txt"; #yubikey id and api
 #my $usersxml      = "/srv/tools/users.xml";
 my $user          = "";
 my $role          = "";
+my $burdentests   = "";
 my $csrfsalt      = "";
 my %options = ('MaxAge' => 10800); #for WWW::CSRF 3 hours, same as session cookie
 
@@ -966,10 +968,10 @@ my $nonce     = "";
 my $dbh = DBI->connect("DBI:mysql:$maindb", "$logins{dblogin}", "$logins{dbpasswd}") || die print "$DBI::errstr";
 #$dbh->{Profile} = 4;
 #$dbh->{LongTruncOk} = 1;
-my $query = "SELECT password,yubikey,igvport,role FROM $logindb.user WHERE name=?";
+my $query = "SELECT password,yubikey,igvport,role,burdentests FROM $logindb.user WHERE name=?";
 my $out = $dbh->prepare($query) || die print "$DBI::errstr";
 $out->execute($user) || die print "$DBI::errstr";
-($password_stored,$yubikey_stored,$igvport_stored,$role) = $out->fetchrow_array;
+($password_stored,$yubikey_stored,$igvport_stored,$role,$burdentests) = $out->fetchrow_array;
 
 # user darf nicht leer sein, passiert wenn man loginDo.pl direkt aufruft
 # password_stored is empty when no entry in database
@@ -1127,10 +1129,10 @@ my $session     = CGI::Session->load($sess_id) or die CGI::Session->errstr;
 	my $out = $dbh->prepare($query) || die print "$DBI::errstr";
 	$out->execute() || die print "$DBI::errstr";
 	
-	$query = "SELECT cooperations,projects,role FROM $logindb.user WHERE name=?";
+	$query = "SELECT cooperations,projects,role,burdentests FROM $logindb.user WHERE name=?";
 	$out = $dbh->prepare($query) || die print "$DBI::errstr";
 	$out->execute($user) || die print "$DBI::errstr";
-	($cooperations,$projects,$role) = $out->fetchrow_array;
+	($cooperations,$projects,$role,$burdentests) = $out->fetchrow_array;
 	
 	# search for allowed projects with cooperation
 	(@tmp)=split(/::/,$cooperations);
@@ -5882,6 +5884,15 @@ my @AoH = (
 	  	value       => "",
 		size        => "45",
 		maxlength   => "45",
+	  	bgcolor     => "formbg",
+	  },
+	  {
+	  	label       => "Burdentests (0 or 1)",
+	  	type        => "text",
+		name        => "burdentests",
+	  	value       => "",
+		size        => "45",
+		maxlength   => "1",
 	  	bgcolor     => "formbg",
 	  },
 	  {
@@ -14173,10 +14184,10 @@ print "</tbody></table>";
 
 }
 ########################################################################
-#statistics
+#burden statistics
 #determine number exomes
 
-if (($test == 1) or ($user eq "weishaupt")) {
+if ($burdentests == 1) {
 
 print "<br><br>All samples";
 $query=qq#
@@ -16989,25 +17000,14 @@ $out->execute($iddisease) || die print "$DBI::errstr";
 my $diseasegroup = $out->fetchrow_array;
 $buf .= "Disease: $disease, $diseasegroup<br><br>";
 
-# rs snps 
-if ($ref->{'avhet'} ne "") {
-	$where .= " AND 
-		((v.rs != '' AND FIND_IN_SET('by-hapmap',v.valid) > 0 AND avhet <= ?)
-		OR
-		(v.rs != '' AND NOT FIND_IN_SET('by-hapmap',v.valid))
-		OR 
-		(v.rs = '' )
-		)
-		";
-	push(@prepare,$ref->{'avhet'});
-}
-else {
-	$where .= " AND 1 = 1 ";
-}
 	
-if ($ref->{'af'} ne "") {
-	$where .= " AND v.af <= ? ";
-	push(@prepare,$ref->{'af'});
+if ($ref->{'datebegin'} ne "") {
+	$where = " AND es.date >= ? ";
+	push(@prepare, $ref->{'datebegin'});
+}
+if ($ref->{'dateend'} ne "") {
+	$where .= " AND es.date <= ? ";
+	push(@prepare, $ref->{'dateend'});
 }
 if ($ref->{'score'} ne "") {
 	$where .= "AND dg.class = ? ";
@@ -17017,18 +17017,8 @@ if ($ref->{'nall'} ne "") {
 	$where .= "AND f.fsampleall <= ? ";
 	push(@prepare,$ref->{'nall'});
 }
-if ($ref->{'snvqual'} ne "") {
-	$where .= "AND x.snvqual >= ? ";
-	push(@prepare,$ref->{'snvqual'});
-}
-if ($ref->{'gtqual'} ne "") {
-	$where .= "AND x.gtqual >= ? ";
-	push(@prepare,$ref->{'gtqual'});
-}
-if ($ref->{'mapqual'} ne "") {
-	$where .= "AND x.mapqual >= ? ";
-	push(@prepare,$ref->{'mapqual'});
-}
+
+($where,@prepare) = &defaultwhere($ref,$where,@prepare);
 
 #determine number of cases and controls per disease group
 $query=qq#
