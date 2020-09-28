@@ -11,8 +11,9 @@ sed -ie "s/DBPWD/${ESC_PWD}/g" /src/annotation/current.config.xml
 
 DBNSFP="/library/dbNSFP${DBNSFP_VERSION}.zip"
 CADD="/library/whole_genome_SNVs.tsv.gz"
-GNOMAD_WES="/library/gnomad.exomes.${GNOMAD_RELEASE}.sites.vcf.bgz"
-GNOMAD_WGS="/library/gnomad.genomes.${GNOMAD_RELEASE}.sites.vcf.bgz"
+GNOMAD_WES="/library/gnomad.exomes.r${GNOMAD_RELEASE}.sites.vcf.bgz"
+GNOMAD_WGS="/library/gnomad.genomes.r${GNOMAD_RELEASE}.sites.vcf.bgz"
+GNOMAD_LOF="/library/gnomad.v${GNOMAD_RELEASE}.lof_metrics.by_gene.txt.bgz"
 UCSC_HG19="/library/ucsc_hg19.sql"
 UCSC_HG38="/library/ucsc_hg38.sql"
 
@@ -22,7 +23,7 @@ if [[ $IMPORT_DBNSFP = "1" && -e "$DBNSFP" ]]; then
 
   EXTRACT_DIR=$(mktemp -d)
   unzip "$DBNSFP" -d $EXTRACT_DIR
-  time perl /src/annotation/fillAnnotationTables.pl -se hg19_test -chrprefix -db $EXTRACT_DIR -p -s
+  time perl /src/annotation/fillAnnotationTables.pl -se hg19_plus -chrprefix -db $EXTRACT_DIR -p -s
   rm -rf $EXTRACT_DIR
 else
   echo -e "Could not find dbnsfp at $DBNSFP"
@@ -32,7 +33,7 @@ if [[ $IMPORT_CADD = "1" && -e "$CADD" ]]; then
   echo -e "Found $CADD"
   echo -e "Importing $CADD"
 
-  time perl /src/annotation/fillAnnotationTables.pl -se hg19_test -chrprefix -c "$CADD"
+  time perl /src/annotation/fillAnnotationTables.pl -se hg19_plus -chrprefix -c "$CADD"
 else
   echo -e "Could not find cadd at $CADD"
 fi
@@ -41,9 +42,20 @@ if [[ $IMPORT_GNOMAD = "1" && -e "$GNOMAD_WES" && -e "$GNOMAD_WGS" ]]; then
   echo -e "Found gnomad files ($GNOMAD_WES, $GNOMAD_WGS)"
   echo -e "Importing gnomad"
 
-  time perl /src/annotation/fillAnnotationTables.pl -se hg19_test -chrprefix -g "$(dirname $GNOMAD_WES)"
+  time perl /src/annotation/fillAnnotationTables.pl -se hg19_plus -chrprefix -g "$(dirname $GNOMAD_WES)"
 else
   echo -e "Could not find gnomad data"
+fi
+
+if [[ $IMPORT_LOF_METRICS = "1" && -e "$GNOMAD_LOF" ]]; then
+  echo -e "Found gnomad lof_metrics ($GNOMAD_LOF)"
+  echo -e "Importing gnomad lof_metrics"
+
+  time perl /src/annotation/fillAnnotationTables.pl -se hg19_plus -gc "$GNOMAD_LOF"
+elif [[ $IMPORT_LOF_METRICS = "1" ]]; then
+  echo -e "Could not find gnomad lof_metrics data"
+else
+  echo -e "Skipping gnomad lof_metrics import"
 fi
 
 if [[ $IMPORT_DGV = "1" ]]; then
