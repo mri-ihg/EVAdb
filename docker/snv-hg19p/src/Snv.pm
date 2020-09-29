@@ -5014,7 +5014,6 @@ if ($table eq "svsample") {
 	$refallele = "";
 }
 
-if ($user eq "tim") {
 @AoH = (
 	  {
 	  	label       => "ID SNV",
@@ -5234,6 +5233,10 @@ if ($user eq "tim") {
 		maxlength   => "255",
 	  	bgcolor     => "formbg",
 	  },
+);
+
+if ($user eq "tim") {
+push(@AoH,(
 	  {
 	  	label       => "ClinVar SCV",
 	  	type        => "text",
@@ -5279,231 +5282,8 @@ if ($user eq "tim") {
 		maxlength   => "12",
 	  	bgcolor     => "formbg",
 	  },
-);
+));
 }
-else {
-
-@AoH = (
-	  {
-	  	label       => "ID SNV",
-	  	type        => "readonly2",
-		name        => "idsnv",
-	  	value       => "$idsnv",
-		size        => "30",
-		maxlength   => "30",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "ID Sample",
-	  	type        => "readonly2",
-		name        => "idsample",
-	  	value       => "$idsample",
-		size        => "30",
-		maxlength   => "30",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "User",
-	  	type        => "readonly2",
-		name        => "user",
-	  	value       => "",
-		size        => "30",
-		maxlength   => "30",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Context",
-	  	type        => "readonly2",
-		name        => "reason",
-	  	value       => "$reason",
-		size        => "30",
-		maxlength   => "30",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Chromosome",
-	  	type        => "readonly2",
-		name        => "chrom",
-	  	value       => "$chrom",
-		size        => "30",
-		maxlength   => "45",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Start",
-	  	type        => "readonly2",
-		name        => "start",
-	  	value       => "$start",
-		size        => "30",
-		maxlength   => "30",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "End",
-	  	type        => "readonly2",
-		name        => "end",
-	  	value       => "$end",
-		size        => "30",
-		maxlength   => "30",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Refallele",
-	  	type        => "readonly2",
-		name        => "refallele",
-	  	value       => "$refallele",
-		size        => "30",
-		maxlength   => "255",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Altallele",
-	  	type        => "readonly2",
-		name        => "altallele",
-	  	value       => "$altallele",
-		size        => "30",
-		maxlength   => "255",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "SNV rating",
-	  	labels      => "unknown, wrong, in mother, in father, in matched control, possible, low coverage, complex, repeat, low mapping quality, correct minortranscript, correct",
-	  	type        => "radio",
-		name        => "rating",
-	  	value       => "unknown",
-	  	values      => "unknown, wrong, in_mother, in_father, in_matched_control, possible, low_coverage, complex, repeat, map_low, correct_minortranscript, correct",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "To check",
-	  	labels      => "unknown, no, yes",
-	  	type        => "radio",
-		name        => "checked",
-	  	value       => "unknown",
-	  	values      => "unknown, no, yes",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Confirmed",
-	  	labels      => "unknown, no (variant not confirmed), yes (variant confirmed)",
-	  	type        => "radio",
-		name        => "confirmed",
-	  	value       => "unknown",
-	  	values      => "unknown, no, yes",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Genotype",
-	  	labels      => "unknown, heterozygous, compound heterozygous, homozygous, hemizygous",
-	  	type        => "radio",
-		name        => "genotype",
-	  	value       => "unknown",
-	  	values      => "unknown, heterozygous, compound_heterozygous, homozygous, hemizygous",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Inheritance",
-	  	labels      => "unknown, mother, father, mother and father, matched control, de novo, somatic",
-	  	type        => "radio",
-		name        => "inheritance",
-	  	value       => "unknown",
-	  	values      => "unknown, mother, father, mo_fa, matched_control, de_novo, somatic",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Confirmed comment",
-	  	type        => "text",
-		name        => "confirmedcomment",
-	  	value       => "",
-		size        => "100",
-		maxlength   => "255",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Disease gene",
-	  	labels      => "unknown, not to decide, no candidate, candidate, known_gene, known_mutation",
-	  	type        => "radio",
-		name        => "gene",
-	  	value       => "unknown",
-	  	values      => "unknown, not_to_decide, no_candidate, candidate, known_gene, known_mutation",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Functional prediction",
-	  	labels      => "unknown, not to decide, benign, possibly damaging, damaging, deleterious",
-	  	type        => "radio",
-		name        => "disease",
-	  	value       => "unknown",
-	  	values      => "unknown, not_to_decide, benign, poss_damaging, damaging, deleterious",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Disease comment (max 1500 char)",
-	  	type        => "textArea",
-		name        => "diseasecomment",
-	  	value       => "",
-		cols        => "80",
-		rows        => "10",
-		maxlength   => "1500",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Pathogenicity",
-	  	labels      => "Unknown, Pathogenic, Likely pathogenic, Unknown significance, Likely benign, Benign",
-	  	type        => "radio",
-		name        => "patho",
-	  	value       => "unknown",
-		values      => "unknown, pathogenic, likely pathogenic, unknown significance, likely benign, benign",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Cause for ...<br>Required for Report<br>and ClinVar submission",
-	  	labels      => "Unknown, Primary disease, Incidental finding",
-	  	type        => "radio",
-		name        => "causefor",
-	  	value       => "unknown",
-		values      => "unknown, primary, incidental",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "MIM Phenotype (phenotype number, not gene number)<br>Required for Report<br>and ClinVar submission",
-	  	type        => "text",
-		name        => "omimphenotype",
-	  	value       => "",
-		size        => "20",
-		maxlength   => "10",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "PubMedID if the variant is published<br>Required for ClinVar submission",
-	  	type        => "text",
-		name        => "pmid",
-	  	value       => "",
-		size        => "20",
-		maxlength   => "10",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Affected gene symbol",
-	  	type        => "text",
-		name        => "genesymbol",
-	  	value       => "",
-		size        => "80",
-		maxlength   => "150",
-	  	bgcolor     => "formbg",
-	  },
-	  {
-	  	label       => "Pathogenicity comment (max 255 char)",
-	  	type        => "textArea",
-		name        => "pathocomment",
-	  	value       => "",
-		cols        => "80",
-		rows        => "5",
-		maxlength   => "255",
-	  	bgcolor     => "formbg",
-	  },
-);
-} #else
 
 $ref = \@AoH;
 return($ref);
@@ -13645,7 +13425,7 @@ print qq(
 $out->finish;
 }
 ########################################################################
-# check searchResultsGene authorization
+# check searchResultsGenes authorization
 ########################################################################
 sub check_gene_authorization {
 my $dbh          = shift;
@@ -13705,11 +13485,13 @@ my $filter       = "";
 my @individuals  = ();
 my $individuals  = "";
 my $genesymbol   = "";
-my @prepare      = ();
 my $snvqual      = "";
 my $mapqual      = "";
 my $af           = "";
 my $where        = "";
+my $where1       = ""; # not for burdentests
+my @prepare      = ();
+my @prepare1     = (); # not for burdentests
 my $confirmed    = "";
 my $rating       = "";
 my $genotype     = "";
@@ -13748,20 +13530,20 @@ else {
 }
 
 if ($ref->{'s.name'} ne "") {
-	$where .= " AND s.name = ? ";
-	push(@prepare,$ref->{'s.name'});
+	$where1 .= " AND s.name = ? ";
+	push(@prepare1,$ref->{'s.name'});
 }
 if ($ref->{'ds.iddisease'} ne "") {
-	$where .= " AND ds.iddisease = ? ";
-	push(@prepare, $ref->{'ds.iddisease'});
+	$where1 .= " AND ds.iddisease = ? ";
+	push(@prepare1, $ref->{'ds.iddisease'});
 }
 if ($ref->{'s.idcooperation'} ne "") {
-	$where .= " AND s.idcooperation = ? ";
-	push(@prepare, $ref->{'s.idcooperation'});
+	$where1 .= " AND s.idcooperation = ? ";
+	push(@prepare1, $ref->{'s.idcooperation'});
 }
 if ($ref->{'idproject'} ne "") {
-	$where .= " AND s.idproject = ? ";
-	push(@prepare,$ref->{'idproject'});
+	$where1 .= " AND s.idproject = ? ";
+	push(@prepare1,$ref->{'idproject'});
 }
 if ($ref->{'v.freq'} ne "") {
 	$where .= " AND v.freq <= ? ";
@@ -13845,6 +13627,7 @@ LEFT  JOIN $coredb.kaviar            k ON (v.chrom=k.chrom and v.start=k.start a
 LEFT  JOIN $exomevcfe.comment        c ON (v.chrom=c.chrom and v.start=c.start and v.refallele=c.refallele and v.allele=c.altallele and s.idsample=c.idsample)
 WHERE
 $where
+$where1
 $function
 $class
 GROUP BY
@@ -13858,7 +13641,7 @@ LIMIT 5000
 #print "query = @prepare<br>";
 
 $out = $dbh->prepare($query) || die print "$DBI::errstr";
-$out->execute(@prepare) || die print "$DBI::errstr";
+$out->execute(@prepare,@prepare1) || die print "$DBI::errstr";
 
 @labels	= (
 	'n',
@@ -14044,6 +13827,7 @@ LEFT  JOIN $coredb.evs             evs ON (v.chrom=evs.chrom and v.start=evs.sta
 LEFT  JOIN $coredb.kaviar            k ON (v.chrom=k.chrom and v.start=k.start and v.refallele=k.refallele and v.allele=k.allele)
 WHERE
 $where
+$where1
 $function
 $class
 GROUP BY s.idsample,g.genesymbol
@@ -14056,7 +13840,7 @@ LIMIT 5000
 #print "query = $query<br>";
 
 $out = $dbh->prepare($query) || die print "$DBI::errstr";
-$out->execute(@prepare) || die print "$DBI::errstr";
+$out->execute(@prepare,@prepare1) || die print "$DBI::errstr";
 
 @labels	= (
 	'n',
@@ -14228,7 +14012,7 @@ INNER JOIN snvsample                   x ON s.idsample       = x.idsample
 INNER JOIN snv                         v ON v.idsnv          = x.idsnv
 INNER JOIN snvgene                     y ON v.idsnv          = y.idsnv
 INNER JOIN gene                        g ON g.idgene         = y.idgene
-LEFT  JOIN $coredb.evs             evs ON (v.chrom=evs.chrom and v.start=evs.start and v.refallele=evs.refallele and v.allele=evs.allele)
+LEFT  JOIN $coredb.evs               evs ON (v.chrom=evs.chrom and v.start=evs.start and v.refallele=evs.refallele and v.allele=evs.allele)
 WHERE 
 $where
 $function
