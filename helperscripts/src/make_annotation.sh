@@ -51,6 +51,9 @@ if [[ $IMPORT_LOF_METRICS = "1" && -e "$GNOMAD_LOF" ]]; then
   echo -e "Found gnomad lof_metrics ($GNOMAD_LOF)"
   echo -e "Importing gnomad lof_metrics"
 
+  REFERENCE=$(ls /library/*.fasta)
+  sed -ie "s:<reference>.*</reference>:<reference>$REFERENCE</reference>:g" /src/annotation/current.config.xml
+
   time perl /src/annotation/fillAnnotationTables.pl -se hg19_plus -gc "$GNOMAD_LOF"
 elif [[ $IMPORT_LOF_METRICS = "1" ]]; then
   echo -e "Could not find gnomad lof_metrics data"
@@ -108,5 +111,5 @@ if [[ $IMPORT_CDSDB = "1" ]]; then
   REFERENCE=$(ls /library/*.fasta)
   sed -ie "s:<reference>.*</reference>:<reference>$REFERENCE</reference>:g" /src/annotation/current.config.xml
 
-  time perl /src/annotation/cdsdb.pl -se hg19_plus
+  time perl /src/annotation/cdsdb.pl -e -se hg19_plus
 fi
