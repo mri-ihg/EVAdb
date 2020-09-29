@@ -189,4 +189,16 @@ Then you can run cdsdb.pl (this step takes some hours).
 ./cdsdb.pl -se hg19_plus
 
 
+#############################################################################
+externalPipelineImport.pl
+with its dependencies:
+annotatedbSNP.pl    
+annotateVCF.pl      
+filterSNPqual.pl    
+snvdbExomeDelete.pl
+snvdbExomeInsert.pl
+runsnpEff.pl        
+insertsnpEff.pl    
+updateVariants_vcf.pl
 
+./externalPipelineImport.pl -se SETTINGS_NAME -sample SAMPLE_NAME -vcf /PATH/TO/FILE.vcf 
