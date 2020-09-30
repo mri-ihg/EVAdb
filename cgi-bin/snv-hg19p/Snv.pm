@@ -14027,7 +14027,6 @@ while (@row = $out->fetchrow_array) {
 		$variants{$row[0]}{$row[1]}{$row[2]}=$row[3];
 		$samples{$row[0]}{$row[1]}{$row[2]}=$row[4];
 }
-print "<table>";
 @labels	= (
 	'Disease group',
 	'Disease',
@@ -14035,8 +14034,11 @@ print "<table>";
 	'Exomes',
 	'n variants',
 	'n samples',
+	'% variants',
+	'% samples',
 	);
 
+&tableheaderDefault_new("table02","650px");
 print "<thead><tr>";
 foreach (@labels) {
 	print "<th align=\"center\">$_</th>";
@@ -14055,11 +14057,21 @@ foreach $diseasegroup (sort keys %exomes) {
 			print "<td>$exomes{$diseasegroup}{$disease}{$affected}</td>";
 			print "<td>$variants{$diseasegroup}{$disease}{$affected}</td>";
 			print "<td>$samples{$diseasegroup}{$disease}{$affected}</td>";
+			$tmp=sprintf("%.3f",$variants{$diseasegroup}{$disease}{$affected}/$exomes{$diseasegroup}{$disease}{$affected});
+			if ($tmp == 0) {
+				$tmp="";
+			}
+			print "<td>$tmp</td>";
+			$tmp=sprintf("%.3f",$samples{$diseasegroup}{$disease}{$affected}/$exomes{$diseasegroup}{$disease}{$affected});
+			if ($tmp == 0) {
+				$tmp="";
+			}
+			print "<td>$tmp</td>";
 			print "</tr>";
 		}
 	}
 }
-print "</table>";
+print "</tbody></table></div>";
 
 #determine number exomes
 print "<br><br>Without child of trios";
@@ -14119,7 +14131,6 @@ while (@row = $out->fetchrow_array) {
 		$variants{$row[0]}{$row[1]}{$row[2]}=$row[3];
 		$samples{$row[0]}{$row[1]}{$row[2]}=$row[4];
 }
-print "<table>";
 @labels	= (
 	'Disease group',
 	'Disease',
@@ -14127,8 +14138,11 @@ print "<table>";
 	'Exomes',
 	'n variants',
 	'n samples',
+	'% variants',
+	'% samples',
 	);
 
+&tableheaderDefault_new("table03","650px");
 print "<thead><tr>";
 foreach (@labels) {
 	print "<th align=\"center\">$_</th>";
@@ -14147,11 +14161,21 @@ foreach $diseasegroup (sort keys %exomes) {
 			print "<td>$exomes{$diseasegroup}{$disease}{$affected}</td>";
 			print "<td>$variants{$diseasegroup}{$disease}{$affected}</td>";
 			print "<td>$samples{$diseasegroup}{$disease}{$affected}</td>";
+			$tmp=sprintf("%.3f",$variants{$diseasegroup}{$disease}{$affected}/$exomes{$diseasegroup}{$disease}{$affected});
+			if ($tmp == 0) {
+				$tmp="";
+			}
+			print "<td>$tmp</td>";
+			$tmp=sprintf("%.3f",$samples{$diseasegroup}{$disease}{$affected}/$exomes{$diseasegroup}{$disease}{$affected});
+			if ($tmp == 0) {
+				$tmp="";
+			}
+			print "<td>$tmp</td>";
 			print "</tr>";
 		}
 	}
 }
-print "</table>";
+print "</tbody></table></div>";
 }
 ########################################################################
 $out->finish;
@@ -20562,24 +20586,72 @@ my $buf     = "";
 if (!defined($width)) {$width = "";}
 $buf = "<br><br>";
 if ($width eq "650px") {
-	$width = "class='width650'";
+	$width = "style='width:650px'";
 }
 elsif ($width eq "1000px") {
-	$width = "class='width1000'";
+	$width = "style='width:1000px'";
 }
 elsif ($width eq "1500px") {
-	$width = "class='width1500'";
+	$width = "style='width:1500px'";
 }
 elsif ($width eq "1750px") {
-	$width = "class='width1750'";
+	$width = "style='width:1750px'";
 }
 elsif ($width eq "2000px") {
-	$width = "class='width2000'";
+	$width = "style='width:2000px'";
 }
 
 $buf .= qq(
 <div id="container" $width>
 <table id="default" numeric="$numeric" string="$string" html="$html" cellspacing="0" class="display compact" width="100%"> 
+);
+
+if ($mode eq "") {
+	print $buf;
+}
+else {
+	return $buf;
+}
+
+}
+
+########################################################################
+# tableheaderDefault_new
+########################################################################
+sub tableheaderDefault_new {
+my $tableid = shift;
+my $width   = shift;
+my $numeric = shift;
+my $string  = shift;
+my $html    = shift;
+my $mode    = shift;  # for burden test
+my $buf     = "";
+if ($tableid eq "") {
+	$tableid = "table01";
+}
+
+if (!defined($width)) {$width = "";}
+$buf = "<br><br>";
+if ($width eq "650px") {
+	$width = "style='width:650px;'";
+}
+elsif ($width eq "1000px") {
+	$width = "style='width:1000px'";
+}
+elsif ($width eq "1500px") {
+	$width = "style='width:1500px'";
+}
+elsif ($width eq "1750px") {
+	$width = "style='width:1750px'";
+}
+elsif ($width eq "2000px") {
+	$width = "style='width:2000px'";
+}
+
+
+$buf .= qq(
+<div id="container1" $width>
+<table id="$tableid" numeric="$numeric" string="$string" html="$html" cellspacing="0" class="compact display" width="100%">
 );
 
 if ($mode eq "") {

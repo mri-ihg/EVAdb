@@ -233,6 +233,99 @@ $(document).ready( function () {
 
 
 // ##########################################################################################################
+// dataTables default new
+
+
+$(document).ready( function () {
+ var secondTable = $('#table02').DataTable({
+ 	"dom":           "Bfrtip",
+ 	"paginate":      true,
+  	"lengthChange":  true,
+	"filter":        true,
+ 	"sort":          true,
+	"info":          true,
+	"autoWidth":     false,
+	"orderClasses":  false,
+	"displayLength": 10000,
+	"lengthMenu": [[-1, 10000, 1000, 500, 100], ["All", 10000, 1000, 500, 100]],
+	"select":         'multi',
+ 	"buttons":        ['pageLength','csv'],
+	"fixedHeader":    true,
+	"aoColumnDefs": [
+		{ "sType": "num",
+		  //"aTargets": [$('#default').attr('numeric')]
+		  "aTargets": []
+		},
+		{ "sType": "string",
+		  //"aTargets": [$('#default').attr('string')]
+		  "aTargets": []
+		},
+		{ "sType": "html",
+		  //"aTargets": [$('#default').attr('html')]
+		  "aTargets": []
+		}
+	]
+});
+
+
+    secondTable.on( 'order.dt search.dt', function () {
+        secondTable.column(0, {search:'applied', order:'applied'}).nodes().each( function (cell, i) {
+            cell.innerHTML = i+1;
+        } );
+    } ).draw();
+	//test
+	//document.write($('#table02').attr('string'))
+
+});
+
+
+// ##########################################################################################################
+// dataTables default new
+
+
+$(document).ready( function () {
+ var thirdTable = $('#table03').DataTable({
+ 	"dom":           "Bfrtip",
+ 	"paginate":      true,
+  	"lengthChange":  true,
+	"filter":        true,
+ 	"sort":          true,
+	"info":          true,
+	"autoWidth":     false,
+	"orderClasses":  false,
+	"displayLength": 10000,
+	"lengthMenu": [[-1, 10000, 1000, 500, 100], ["All", 10000, 1000, 500, 100]],
+	"select":         'multi',
+ 	"buttons":        ['pageLength','csv'],
+	"fixedHeader":    true,
+	"aoColumnDefs": [
+		{ "sType": "num",
+		  //"aTargets": [$('#default').attr('numeric')]
+		  "aTargets": []
+		},
+		{ "sType": "string",
+		  //"aTargets": [$('#default').attr('string')]
+		  "aTargets": []
+		},
+		{ "sType": "html",
+		  //"aTargets": [$('#default').attr('html')]
+		  "aTargets": []
+		}
+	]
+});
+
+
+    thirdTable.on( 'order.dt search.dt', function () {
+        thirdTable.column(0, {search:'applied', order:'applied'}).nodes().each( function (cell, i) {
+            cell.innerHTML = i+1;
+        } );
+    } ).draw();
+	//test
+	//document.write($('#table03').attr('string'))
+
+});
+
+// ##########################################################################################################
 
 
 
