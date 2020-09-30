@@ -14028,6 +14028,7 @@ while (@row = $out->fetchrow_array) {
 		$samples{$row[0]}{$row[1]}{$row[2]}=$row[4];
 }
 @labels	= (
+	'n',
 	'Disease group',
 	'Disease',
 	'Affected',
@@ -14037,8 +14038,9 @@ while (@row = $out->fetchrow_array) {
 	'% variants',
 	'% samples',
 	);
+$n = 1;
 
-&tableheaderDefault_new("table02","650px");
+&tableheaderDefault_new("table02","1000px");
 print "<thead><tr>";
 foreach (@labels) {
 	print "<th align=\"center\">$_</th>";
@@ -14051,6 +14053,7 @@ foreach $diseasegroup (sort keys %exomes) {
 	foreach $disease (sort keys %{$exomes{$diseasegroup}}) {
 		foreach $affected (sort keys %{$exomes{$diseasegroup}{$disease}}) {
 			print "<tr>";
+			print "<td>$n</td>";
 			print "<td>$diseasegroup</td>";
 			print "<td>$disease</td>";
 			print "<td>$affected</td>";
@@ -14132,6 +14135,7 @@ while (@row = $out->fetchrow_array) {
 		$samples{$row[0]}{$row[1]}{$row[2]}=$row[4];
 }
 @labels	= (
+	'n',
 	'Disease group',
 	'Disease',
 	'Affected',
@@ -14141,8 +14145,8 @@ while (@row = $out->fetchrow_array) {
 	'% variants',
 	'% samples',
 	);
-
-&tableheaderDefault_new("table03","650px");
+$n = 1;
+&tableheaderDefault_new("table03","1000px");
 print "<thead><tr>";
 foreach (@labels) {
 	print "<th align=\"center\">$_</th>";
@@ -14155,6 +14159,7 @@ foreach $diseasegroup (sort keys %exomes) {
 	foreach $disease (sort keys %{$exomes{$diseasegroup}}) {
 		foreach $affected (sort keys %{$exomes{$diseasegroup}{$disease}}) {
 			print "<tr>";
+			print "<td>$n</td>";
 			print "<td>$diseasegroup</td>";
 			print "<td>$disease</td>";
 			print "<td>$affected</td>";
