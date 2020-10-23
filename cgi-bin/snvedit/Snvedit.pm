@@ -15,6 +15,7 @@ use Crypt::Eksblowfish::Bcrypt;
 use Date::Calc qw/check_date/;
 use Data::Dumper;
 use Text::ParseWords;
+use File::Basename;
 
 my $demo = 0;
 
@@ -1542,11 +1543,11 @@ my @AoH = (
 	  },
 	  {
 	  	label       => "Analysis type",
-	  	labels      => "Exome, Other",
+	  	labels      => "Exome, Other, Automatic from library type",
 	  	type        => "radio",
 		name        => "analysis",
-	  	value       => "",
-	  	values      => "exome, other",
+	  	value       => "auto",
+	  	values      => "exome, other, auto",
 	  	bgcolor     => "formbg",
 	  },
 	  {
@@ -1582,14 +1583,23 @@ my @AoH = (
 	  	bgcolor     => "formbg",
           },
 	  {
-	  	label       => "Project and cooperation in samplesheet<br>samplesheet version 06.2020",
+	  	label       => "Project, and cooperation<br>in samplesheet version 09.2020",
 	  	labels      => "True, False",
 	  	type        => "radio",
 	  	name        => "projcoopinsamplesheet",
 	  	value       => "F",
 	  	values      => "T, F",
 	  	bgcolor     => "formbg",
-          }	  
+          },
+	  {
+	  	label       => "External sequencing center ID in:",
+	  	labels      => "Samplesheet, Filename, Not applicable",
+	  	type        => "radio",
+	  	name        => "externalseqidlocation",
+	  	value       => "none",
+	  	values      => "samplesheet, filename, none",
+	  	bgcolor     => "formbg",
+          }
 );
 
 $ref = \@AoH;
@@ -4977,42 +4987,18 @@ my $allowexisting = ( $ref->{'allowexisting'} eq "T" ) ? 1 : 0;
 
 my $projcoopinsamplesheet = ( $ref->{'projcoopinsamplesheet'} eq "T" ) ? 1 : 0;
 
+my $externalseqidlocation = ( $ref->{'externalseqidlocation'} );
+
+
+print "Allow existing samples: $allowexisting<br>File extension: $fileextension<br>Project and Cooperation in Samplesheet: $projcoopinsamplesheet<br>External Sequencing Center ID: $externalseqidlocation<br>";
+
 # Library creation auxiliaries
 my $libextens="LIB1";
 
-# Project can be in SampleSheet version 2020
-if ( $projcoopinsamplesheet )
-{
-	%assignment=
-	(
-	"Sample ID"                 => "name",
-	"Foreign ID"                => "foreignid",
-	"Pedigree"                  => "pedigree",
-	"Comment"                   => "scomment",
-	"Sex"                       => "sex",
-	"Affected"                  => "saffected",
-	"Organism"                  => "idorganism",
-	"Tissue"                    => "idtissue",
-	"Disease"                   => "iddisease",
-	"Library Type"              => "libtype",
-	"Read Type"                 => "readtype",
-	"Exome Assay"               => "exomeassay",
-	#"Concentration (ng/ul)"     => "snanodrop",
-	#"Volume (ul)"               => "volume",
-	#"A260/280"                  => "a260280",
-	#"Barcode"                   => "sbarcode",
-	#"Plate"                     => "splate",
-	#"Row"                       => "srow",
-	#"Column"                    => "scolumn",
-	#"Analysis"                  => "analysis",
-	"Cooperation"               => "idcooperation",
-	"Project"                   => "idproject"
-	);
-}
-else
-{
-	%assignment=
-	(
+
+# Standard fields:
+%assignment=
+(
 	"Sample ID"                 => "name",
 	"Foreign ID"                => "foreignid",
 	"Pedigree"                  => "pedigree",
@@ -5035,8 +5021,29 @@ else
 	#"Analysis"                  => "analysis",
 	#"Cooperation"               => "idcooperation",
 	#"Project"                   => "idproject",
-	);
+);
+
+
+# Append extra values to samplesheet hash according to version:
+
+if ( $projcoopinsamplesheet )
+{
+	$assignment{"Cooperation"} = "idcooperation";
+	$assignment{"Project"}	   = "idproject";
 }
+
+if ( $externalseqidlocation eq "samplesheet" )
+{
+	$assignment{"External ID"} = "externalseqid";
+}
+elsif ( $externalseqidlocation eq "filename" )
+{
+	if ( $fileextension eq "" )
+	{
+		print "<td>External sequencing center ID cannot be inferred from filenames if you allow for samples to be created without files being imported</td>"; exit(1);
+	} 
+}
+
 
 
 # Load all samples in a transaction, if something fail, fail.
@@ -5052,7 +5059,6 @@ if ($file ne "") {
 		#s/\"//g;
 		$line = $_;
 		print "<tr>";
-		print "$line<br>";
 		if ($i == 0) {
 			(@labels)=quotewords(',', 1, $line);
 			for $j (0..$#labels) {
@@ -5067,6 +5073,7 @@ if ($file ne "") {
 			&check_labels_external;
 		}
 		else {	
+			print "<br>$line<br>";
 			(@values) = quotewords(',', 1, $line);
 			for $j (0..$#values) {
 				$values[$j] =~ s/\"//g;
@@ -5081,6 +5088,7 @@ if ($file ne "") {
 
 # If no exit event : commit transaction
 my $sql="commit;";
+
 $dbh->do($sql) || die print "$DBI::errstr";
 
 # If no error and library insertion is selected, give command
@@ -5131,18 +5139,32 @@ $dbh->do($sql) || die print "$DBI::errstr";
 			exit(1);
 		}
 
+
+		# Analysis type (legacy value) - automatic recognition if selected:
+		if ($analysis eq "auto")
+		{
+			if ( $values{'libtype'} eq "exomic" )
+			{
+				$analysis="exome";
+			}
+			else
+			{
+				$analysis="other";
+			}
+		}
 		$values{'analysis'}=$analysis;
+
 		
 		if ($values{'name'} eq "") {
 			print "Sample ID missing.<br>";
 			exit(1);
 		}
 
-		if (($values{'idcooperation'} eq "") && (! $projcoopinsamplesheet)) {
+		if (($values{'idcooperation'} eq "") && ( $projcoopinsamplesheet)) {
 			print "Cooperation missing.<br>";
 		#	exit(1);
 		}
-		if (($values{'idproject'} eq "") && (! $projcoopinsamplesheet)) {
+		if (($values{'idproject'} eq "") && ( $projcoopinsamplesheet)) {
 			print "Project missing.<br>";
 		#	exit(1);
 		}
@@ -5231,6 +5253,11 @@ $dbh->do($sql) || die print "$DBI::errstr";
 			}
 			$values{idcooperation}=$tmp;
 			
+		}
+
+		if ( $externalseqidlocation eq "none" )
+		{
+			$values{externalseqid}="";
 		}
 			
 		
@@ -5384,7 +5411,9 @@ $dbh->do($sql) || die print "$DBI::errstr";
 		
 		#TW 30.03.2016: changed "glob" to find because fastq files can be in sub folders
 		
-		my $bams = "";	
+		my $bams = "";			#File list
+		my $nameinfiles = "";		#Sample name ( foreign id or sample name ) found in files
+		my $externalseqidinfiles = "";	#External seqcenter ID if found in files
 
 		if($fileextension && $fileextension ne "" && $demo == 0) {
 			
@@ -5396,6 +5425,7 @@ $dbh->do($sql) || die print "$DBI::errstr";
 				$bams .= $_.",";
 			}
 			$bams =~ s/,$//;
+			$nameinfiles="$foreignidsearch";
 
 			if ( $bams eq "" ) 
 				{
@@ -5406,12 +5436,63 @@ $dbh->do($sql) || die print "$DBI::errstr";
 					$bams .= $_.",";
 				}
 				$bams =~ s/,$//;
+				# 
+				$nameinfiles="$tmp";
 				
 				if ( $bams eq "" ) {
 					print "$foreignid files expected in path $externalSamplesDir\n";
 					exit(1);
 				}
 			}
+
+			# Extract external sequencing center ID from filenames: expected SAMPLEID_EXTERNALSEQID[._]* or FOREIGNID_EXTERNALSEQID[._]*
+			if ( $externalseqidlocation eq "filename" )
+			{
+				my @tmp_bams = split (",", $bams);
+				my $tmpname="";
+				foreach my $tmp_bam ( @tmp_bams )
+				{
+					print "$tmp_bam || ";
+					$tmp_bam=basename($tmp_bam);
+
+					my @tmp_items = split("[_\.]", $tmp_bam);
+					if ( defined $tmp_items[1] )
+					{
+						$values{externalseqid}=$tmp_items[1];
+
+						#Check that it's consistent
+						if ( $tmpname ne "" && ( $tmpname ne $values{externalseqid} ) )
+						{
+							print "<td>External Seq ID inconsistent across same sample $samplename</td>"; 
+							exit(1);
+						}
+
+						$tmpname=$values{externalseqid};
+
+						print "&nbsp;&nbsp;$tmpname<br>";
+
+					}
+					else
+					{
+						print "<td>Filename format unexpected, should contain SAMPLEID_EXTERNALSEQCENTERID_*</td>";
+						exit(1);
+					}
+				}
+			}
+		}
+
+
+		# Update external sequencing ID if applicable
+		if ( $externalseqidlocation ne "none" )
+		{
+			if ( $values{externalseqid} ne "" )
+			{
+				$sql = "UPDATE sample SET externalseqid=\"".$values{externalseqid}."\" where name=\"".$samplename."\"";
+				$sth = $dbh->prepare($sql) || die print "$DBI::errstr";
+	        	        print "$sql<br>";
+				$sth->execute() || die print "$DBI::errstr";
+			}
+		
 		}
 
 		# Create library:
@@ -5436,7 +5517,7 @@ $dbh->do($sql) || die print "$DBI::errstr";
                 $sth = $dbh->prepare($sql) || die print "$DBI::errstr";
                 $sth->execute() || die print "$DBI::errstr";
                 my @vals = $sth->fetchrow_array;
-		print "LIB: "; foreach my $val (@vals){ print $val." | "; };print "\n";
+		print "LIB: "; foreach my $val (@vals){ print $val." | "; };print "<br>";
 
 
 
@@ -5776,6 +5857,7 @@ sub radio {
 	my $bgcolor  = shift;
 
 	my $i        = 0;
+
 	my @labels   = split(/\,\s+/,$labels);
 	my @values   = split(/\,\s+/,$values);
 
@@ -6205,21 +6287,20 @@ print qq(
 
 print qq(
 
-<script type="text/javascript" src="/DataTables/datatables.min.js"></script>
-<link rel="stylesheet" type="text/css" href="/DataTables/datatables.min.css">
+<link rel="stylesheet" type="text/css" href="/DataTables-1.10.22/datatables.min.css">
+<script type="text/javascript" src="/DataTables-1.10.22/datatables.min.js"></script>
 
-<script type="text/javascript" src="/medialize-jQuery-contextMenu-09dffab/src/jquery.contextMenu.js"></script>
-<script type="text/javascript" src="/medialize-jQuery-contextMenu-09dffab/src/jquery.ui.position.js"></script>
-<link rel="stylesheet" type="text/css" href="/medialize-jQuery-contextMenu-09dffab/src/jquery.contextMenu.css">
+<link rel="stylesheet" href="/DataTables-1.10.22/jquery.contextMenu.min.css">
+<script src="/DataTables-1.10.22/jquery.contextMenu.min.js"></script>
+<script src="/DataTables-1.10.22/jquery.ui.position.js"></script>
 
-<script language="JavaScript" src="/cal/calendar_db.js"></script>
-<link rel="stylesheet" href="/cal/calendar.css">
+<link rel="stylesheet" href="/EVAdb/cal/calendar.css">
+<script language="JavaScript" src="/EVAdb/cal/calendar_db.js"></script>
 
 <meta name="viewport" content="width=device-width, height=device-height,  initial-scale=1, minimum-scale=1">
 
-<script type="text/javascript" src="/gif/EVAdb.js"></script>
-<link rel="stylesheet" type="text/css" href="/gif/EVAdb.css">
-
+<link rel="stylesheet" type="text/css" href="/EVAdb/evadb/EVAdb.css">
+<script type="text/javascript" src="/EVAdb/evadb/EVAdb.js"></script>
 </head>
 ) ;
 

@@ -38,7 +38,7 @@ print "<hr align=\"left\">";
 print "The <b>Exome Variant and Annotation Database (EVAdb)</b> combines variant calls with external data.
 The web application is focused on the analysis of rare disease-causing variants
 in single individuals or families.";
-print "<p style=\"text-align:center;\"><img src=\"/gif/exome-database-help-figure.png\" width=\"600px\" style=\"border-radius:20px\"></p>";
+print "<p style=\"text-align:center;\"><img src=\"/EVAdb/evadb_images/exome-database-help-figure.png\" width=\"600px\" style=\"border-radius:20px\"></p>";
 print "</td></tr>";
 
 print "<tr ><td class=\"outer\">";
@@ -47,7 +47,7 @@ print "<h1>Analysis start</h1>";
 print "<hr align=\"left\">";
 print "<p>Start your analysis with the menu item 'Quality control' to display quality measures.
 Check whether the values are plausible (sex, contamination, sequencing amout, coverage, and number of variants).</p>";
-print "<img src=\"/gif/ExomeStat.png\" width=\"200\" style=\"border-radius:10px\"><br>";
+print "<img src=\"/EVAdb/evadb_images/ExomeStat.png\" width=\"200\" style=\"border-radius:10px\"><br>";
 print "</td></tr>";
 
 print "<tr><td class=\"outer\">";
@@ -57,7 +57,7 @@ print "<hr align=\"left\">";
 print "<p>Start your searches with a right click on the sample ID.
 The context menu provides links to the most frequently used queries
 and fills the search form with default values. The same context menu is available in the menu item 'Samples'.</p>";
-print "<img src=\"/gif/PopUpMenu.png\" width=\"200\" style=\"border-radius:10px\"><br>";
+print "<img src=\"/EVAdb/evadb_images/PopUpMenu.png\" width=\"200\" style=\"border-radius:10px\"><br>";
 print "</td></tr>";
 
 print "<tr><td class=\"outer\">";
@@ -70,7 +70,7 @@ by a 'left click' on the sample ID.
 IGV has to be installed on the local computer and to be started before sequencing reads can be displayed.
 A wrapper is used around IGV so that the same credential can be used as for EVAdb.
 </p>";
-print "<img src=\"/gif/igv.png\" width=\"200\" style=\"border-radius:10px\"><br>";
+print "<img src=\"/EVAdb/evadb_images/igv.png\" width=\"200\" style=\"border-radius:10px\"><br>";
 print "<p><b>Variant Effect Predictor (VEP)</b> as provided by Ensembl can be display by invoking the
 variant detail page by a click on 'idsnv' in every search result table.<br><br>
 The OMIM search utilizes the same full-text seach engine <b>SOLR</b> as used by OMIM.
@@ -84,7 +84,7 @@ print "<hr align=\"left\">";
 print "<p>A 'right click' on the sample ID displays a link to a 'Comment' page.
 One can annotate the variant according to inheritance, and pathogenicity.
 All annotated variants can be listed with the menu item 'Comments'.</p>";
-print "<img src=\"/gif/comment.png\" width=\"200\" style=\"border-radius:10px\"><br>";
+print "<img src=\"/EVAdb/evadb_images/comment.png\" width=\"200\" style=\"border-radius:10px\"><br>";
 print "</td></tr>";
 
 print "<tr><td class=\"outer\">";
@@ -93,7 +93,7 @@ print "<h1>Conclusions</h1>";
 print "<hr align=\"left\">";
 print "<p>Users can store conclusions for each sample. This feature can also be used to organize the analysis workflow.
 All conclusions can be listed with the menu item 'Conclusions'.</p>";
-print "<img src=\"/gif/PopUpMenu.png\" width=\"200\" style=\"border-radius:10px\"><br>";
+print "<img src=\"/EVAdb/evadb_images/PopUpMenu.png\" width=\"200\" style=\"border-radius:10px\"><br>";
 print "</td></tr>";
 ######################## Disease gene color ##############################################
 
@@ -609,7 +609,7 @@ print qq(
 <h1>Database scheme</h1>
 <hr align="left">
 <p>The scheme shows the core tables of EVAdb.</p>
-<p style="text-align:center;"><img src="/gif/EVAdb.png" width="600px" style="border-radius:20px"></p>
+<p style="text-align:center;"><img src="/EVAdb/evadb_images/EVAdb.png" width="600px" style="border-radius:20px"></p>
 </td></tr>
 );
 
