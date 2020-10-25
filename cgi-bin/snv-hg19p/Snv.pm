@@ -1039,6 +1039,10 @@ if ( ($password_stored eq $password) and ($yubikeyOK eq "OK") ) {
 	print "<font size = 6>YubiKey $yubikeyOK<br>";
 	my $mylocaltime = &mylocaltime;
 	print "$mylocaltime<br>";
+	print qq#
+	<br><br><br>
+	<a href='searchStat.pl'>Search for samples and quality checks</a>
+	#;
 }
 else {
 	# login failed
@@ -21472,7 +21476,7 @@ if ($sessionid eq "fork") {
 	<html>
 	<head>
 	<title>EVAdb</title>
-	) ;
+	);
 }
 else {
 	print qq(
@@ -21482,6 +21486,11 @@ else {
 	<head>
 	<title>EVAdb</title>
 	) ;
+}
+if ($sessionid eq "sessionid_created") { # redirect to Quality control
+	print qq(
+	<meta http-equiv="refresh" content="4; url='searchStat.pl'" />
+	);
 }
 
 # Tell Perl not to buffer our output
