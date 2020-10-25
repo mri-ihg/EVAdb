@@ -7060,7 +7060,6 @@ my $checked      = "";
 my $confirmed    = "";
 my $idsamplesvcf = "";
 my $idsnvsvcf    = "";
-my $contextmenu  = "\n<script type=\"text/javascript\">";
 #for  $aref (@row2) { 
 #	@row=@{$aref};
 for  $aref (sort keys %row2) { 
@@ -7100,14 +7099,16 @@ for  $aref (sort keys %row2) {
 				$n++;
 			}
 			if ($i == 1) {
-				$contextmenu .= "
-						contextComment(\"$n\", \"$cidsnv\", \"$cidsample\", \"ad\");";
 				print qq#
-				<td><div class="context-menu-one$n" title="Right click for menu." align="center">
-				$row[$i]
+				<td style='white-space:nowrap;'>
+				<div class="dropdown">
+				$row[$i]&nbsp;&nbsp;
+				<a href="comment.pl?idsnv=$cidsnv&idsample=$cidsample&reason=ad">
+				<img style='width:12pt;height:12pt;' src="/EVAdb/evadb_images/browser-window.png" title="Variant annotation" />
+				</a>
 				</div>
 				</td>
-				#;
+			#;
 			}
 			elsif ($i == 5) {
 				$tmp=&ucsclink2($row[$i]);
@@ -7155,11 +7156,9 @@ for  $aref (sort keys %row2) {
 	}
 }
 print "</tbody></table></div>";
-#&tablescript("10","14","11,12,13");
 
 &callvcf($idsamplesvcf,$idsnvsvcf);
 
-print "$contextmenu</script> ";
 
 $out->finish;
 }
@@ -7522,7 +7521,6 @@ my $checked      = "";
 my $confirmed    = "";
 my $idsamplesvcf = "";
 my $idsnvsvcf    = "";
-my $contextmenu  = "\n<script type=\"text/javascript\">";
 #for  $aref (@row2) { 
 #	@row=@{$aref};
 for  $aref (sort keys %row2) { 
@@ -7567,22 +7565,16 @@ for  $aref (sort keys %row2) {
 				$n++;
 			}
 			if ($i == 1) {
-			$contextmenu .= "
-			\$(function(){
-			   \$.contextMenu({
-			       	selector: '.context-menu-one$n',
-			        items: {
-			        \"comment\":    {name: \"<a href='comment.pl?idsnv=$cidsnv&idsample=$cidsample&reason=ad' title='Comment page'>Comment</a>\"},
-			        }
-			    });
-			});
-			";
-			print qq#
-			<td ><div class="context-menu-one$n" title="Right click for menu." align="center">
-			$row[$i]
-			</div>
-			</td>
-			#;
+				print qq#
+				<td style='white-space:nowrap;'>
+				<div class="dropdown">
+				$row[$i]&nbsp;&nbsp;
+				<a href="comment.pl?idsnv=$cidsnv&idsample=$cidsample&reason=ad">
+				<img style='width:12pt;height:12pt;' src="/EVAdb/evadb_images/browser-window.png" title="Variant annotation" />
+				</a>
+				</div>
+				</td>
+				#;
 			}
 			elsif ($i == 5) {
 				$tmp=&ucsclink2($row[$i]);
@@ -7630,11 +7622,9 @@ for  $aref (sort keys %row2) {
 	}
 }
 print "</tbody></table></div>";
-#&tablescript("10","14","11,12,13");
 
 &callvcf($idsamplesvcf,$idsnvsvcf);
 
-print "$contextmenu</script> ";
 
 $out->finish;
 }
@@ -8024,7 +8014,6 @@ my $checked      = "";
 my $confirmed    = "";
 my $idsamplesvcf = "";
 my $idsnvsvcf    = "";
-my $contextmenu  = "\n<script type=\"text/javascript\">";
 #for  $aref (@row2) { 
 #	@row=@{$aref};
 for  $aref (sort keys %row2) { # sorted by chromosome position
@@ -8083,22 +8072,16 @@ for  $aref (sort keys %row2) { # sorted by chromosome position
 				print "<td $class>$confirmed</td>";
 			}
 			elsif ($i == 1) {
-			$contextmenu .= "
-			\$(function(){
-			   \$.contextMenu({
-			       	selector: '.context-menu-one$n',
-			        items: {
-			        \"comment\":    {name: \"<a href='comment.pl?idsnv=$cidsnv&idsample=$cidsample&reason=vcf_tumor&table=wholegenomehg19.variant' title='Comment page'>Comment</a>\"},
-			        }
-			    });
-			});
-			";
-			print qq#
-			<td $class><div class="context-menu-one$n" title="Right click for menu." align="center">
-			$row[$i]
-			</div>
-			</td>
-			#;
+				print qq#
+				<td style='white-space:nowrap;'>
+				<div class="dropdown">
+				$row[$i]&nbsp;&nbsp;
+				<a href="comment.pl?idsnv=$cidsnv&idsample=$cidsample&reason=vcf_tumor&table=wholegenomehg19.variant">
+				<img style='width:12pt;height:12pt;' src="/EVAdb/evadb_images/browser-window.png" title="Variant annotation" />
+				</a>
+				</div>
+				</td>
+				#;
 			}
 			elsif (($i == 8) or ($i == 9)) {
 				print "<td $class style='max-width:50px;overflow:hidden;word-wrap:break-word;'> $row[$i]</td>";
@@ -8120,11 +8103,9 @@ for  $aref (sort keys %row2) { # sorted by chromosome position
 	}
 }
 print "</tbody></table></div>";
-#&tablescript("10","14","11,12,13");
 
 #&callvcf($idsamplesvcf,$idsnvsvcf);
 
-print "$contextmenu</script> ";
 
 $out->finish;
 }
@@ -8535,7 +8516,6 @@ my $checked      = "";
 my $confirmed    = "";
 my $idsamplesvcf = "";
 my $idsnvsvcf    = "";
-my $contextmenu  = "\n<script type=\"text/javascript\">";
 #for  $aref (@row2) { 
 #	@row=@{$aref};
 for  $aref (sort keys %row2) { # sorted by chromosome position
@@ -8594,22 +8574,16 @@ for  $aref (sort keys %row2) { # sorted by chromosome position
 				print "<td $class>$confirmed</td>";
 			}
 			elsif ($i == 1) {
-			$contextmenu .= "
-			\$(function(){
-			   \$.contextMenu({
-			       	selector: '.context-menu-one$n',
-			        items: {
-			        \"comment\":    {name: \"<a href='comment.pl?idsnv=$cidsnv&idsample=$cidsample&reason=vcf_trio&table=wholegenomehg19.variant' title='Comment page'>Comment</a>\"},
-			        }
-			    });
-			});
-			";
-			print qq#
-			<td $class><div class="context-menu-one$n" title="Right click for menu." align="center">
-			$row[$i]
-			</div>
-			</td>
-			#;
+				print qq#
+				<td style='white-space:nowrap;'>
+				<div class="dropdown">
+				$row[$i]&nbsp;&nbsp;
+				<a href="comment.pl?idsnv=$cidsnv&idsample=$cidsample&reason=vcf_trio&table=wholegenomehg19.variant">
+				<img style='width:12pt;height:12pt;' src="/EVAdb/evadb_images/browser-window.png" title="Variant annotation" />
+				</a>
+				</div>
+				</td>
+				#;
 			}
 			elsif (($i == 8) or ($i == 9)) {
 				print "<td $class style='max-width:50px;overflow:hidden;word-wrap:break-word;'> $row[$i]</td>";
@@ -8631,11 +8605,9 @@ for  $aref (sort keys %row2) { # sorted by chromosome position
 	}
 }
 print "</tbody></table></div>";
-#&tablescript("10","14","11,12,13");
 
 #&callvcf($idsamplesvcf,$idsnvsvcf);
 
-print "$contextmenu</script> ";
 
 $out->finish;
 }
@@ -9132,7 +9104,6 @@ my $checked      = "";
 my $confirmed    = "";
 my $idsamplesvcf = "";
 my $idsnvsvcf    = "";
-my $contextmenu  = "\n<script type=\"text/javascript\">";
 my $omimmode     = "";
 my $omimdiseases = "";
 
@@ -9172,25 +9143,16 @@ for  $aref (@row2) {
 				print "<td>$tmp</td>";
 			}
 			elsif ($i == 1) {
-				$contextmenu .= "
-				contextComment(\"$n\", \"$idsnvtmp\", \"$idchild\", \"denovo\");";
-				#print qq#
-				#<td><div class="context-menu-one$n" title="Right click for menu." align="center">
-				#$row[$i]
-				#</div>
-				#</td>
-				#;
 				print qq#
 				<td style='white-space:nowrap;'>
 				<div class="dropdown">
 				$row[$i]&nbsp;&nbsp;
-				<a href="comment.pl?idsnv=$idsnvtmp&idsample=$idchild&reason='denovo'">
+				<a href="comment.pl?idsnv=$idsnvtmp&idsample=$idchild&reason=denovo">
 				<img style='width:12pt;height:12pt;' src="/EVAdb/evadb_images/browser-window.png" title="Variant annotation" />
 				</a>
 				</div>
 				</td>
 				#;
-
 			}
 			elsif ($i == 9) { #omim
 				($tmp,$omimmode,$omimdiseases)=&omim($dbh,$row[$i]);
@@ -9235,8 +9197,6 @@ for  $aref (@row2) {
 print "</tbody></table></div>";
 
 &callvcf($idsamplesvcf,$idsnvsvcf);
-
-print "$contextmenu</script>";
 
 $out->finish;
 }
@@ -10339,7 +10299,6 @@ my $idtumor   = "";
 # for vcf
 my $idsamplesvcf = "";
 my $idsnvsvcf    = "";
-my $contextmenu  = "\n<script type=\"text/javascript\">";
 for  $aref (@row2) { 
 	@row=@{$aref};
 	$i=0;
@@ -10370,11 +10329,13 @@ for  $aref (@row2) {
 			$n++;
 		}
 		if ($i == 1) {
-			$contextmenu .= "
-			contextComment(\"$n\", \"$idsnvtmp\", \"$idtumor\", \"tumor\");";
 			print qq#
-			<td><div class="context-menu-one$n" title="Right click for menu." align="center">
-			$row[$i]
+			<td style='white-space:nowrap;'>
+			<div class="dropdown">
+			$row[$i]&nbsp;&nbsp;
+			<a href="comment.pl?idsnv=$idsnvtmp&idsample=$idtumor&reason=tumor">
+			<img style='width:12pt;height:12pt;' src="/EVAdb/evadb_images/browser-window.png" title="Variant annotation" />
+			</a>
 			</div>
 			</td>
 			#;
@@ -10426,7 +10387,6 @@ print "</tbody></table></div>";
 
 &callvcf($idsamplesvcf,$idsnvsvcf);
 
-print "$contextmenu</script>";
 
 $out->finish;
 }
@@ -10810,7 +10770,6 @@ my $confirmed  = "";
 my $affected   = "";
 my $idsamplesvcf = "";
 my $idsnvsvcf    = "";
-my $contextmenu  = "\n<script type=\"text/javascript\">";
 my $diseaseflag=0;
 #for  $aref (@row2) { 
 	#@row1=@{$aref};
@@ -10825,14 +10784,14 @@ for  $aref (sort keys %row2) {
 	#sometimes mother is NULL, sometimes 0
 	if ( (!defined($mother)) or ($mother == 0) ) {$mother = "";}
 	if ($mother ne "") { # for igv
-		$mother = &getigv($dbh,$mother,'Mother');
-		$mother = qq("mother":     {name: "$mother"},);
+		$mother = &getigv($dbh,$mother,'Mother');      # obsolet for contextMenus
+		$mother = qq("mother":     {name: "$mother"},); # obsolet for contextMenus
 	}
 	$father=$row1[7];
 	if ( (!defined($father)) or ($father == 0) ) {$father = "";}
 	if ($father ne "") {
-		$father = &getigv($dbh,$father,'Father');
-		$father = qq("father":     {name: "$father"},);
+		$father = &getigv($dbh,$father,'Father'); # obsolet for contextMenus
+		$father = qq("father":     {name: "$father"},); # obsolet for contextMenus
 	}
 	#print "idsnv $row1[0]<br>";
 	if ($ngenesymbol{$row1[2]} >= $ref->{"v.idsnv"} ) {
@@ -10908,25 +10867,16 @@ for  $aref (sort keys %row2) {
 				if ($i == 1) {
 					if (!defined($mother)) {$mother="";}
 					if (!defined($father)) {$father="";}
-					$contextmenu .="
-					\$(function(){
-			   		 \$.contextMenu({
-			       	 		selector: '.context-menu-one$nidsnv',
-			        		items: {
-						$mother
-						$father
-			            		\"comment\":    {name: \"<a href='comment.pl?idsnv=$idsnvtmp&idsample=$idsample&reason=ar' title='Comment page'>Comment</a>\"},
-			        		}
-			    		});
-					});
-					";				
-					#contextCommentParents(\"$nidsnv\", \"$idsnvtmp\", \"$idsample\", \"ar\", \"$mother\", \"$father\");";
-					print qq#
-					<td><div class="context-menu-one$nidsnv" title="Right click for menu." align="center">
-					$row[$i]
-					</div>
-					</td>
-					#;
+						print qq#
+						<td style='white-space:nowrap;'>
+						<div class="dropdown">
+						$row[$i]&nbsp;&nbsp;
+						<a href="comment.pl?idsnv=$idsnvtmp&idsample=$idsample&reason=ar">
+						<img style='width:12pt;height:12pt;' src="/EVAdb/evadb_images/browser-window.png" title="Variant annotation" />
+						</a>
+						</div>
+						</td>
+						#;
 				}
 				elsif ($i == 5) {
 					$idsamplesvcf .= "$idsample,";
@@ -10981,7 +10931,6 @@ print "</tbody></table>";
 
 &callvcf($idsamplesvcf,$idsnvsvcf);
 
-print "$contextmenu</script>";
 
 $out->finish;
 }
@@ -12431,7 +12380,6 @@ foreach (@labels) {
 print "</tr></thead><tbody>\n";
 
 $n=1;
-my $contextmenu  = "\n<script type=\"text/javascript\">";
 my $cidsample    = "";
 my $cidsvsample    = "";
 while (@row = $out->fetchrow_array) {
@@ -12465,22 +12413,16 @@ while (@row = $out->fetchrow_array) {
 			print "<td>$tmp</td>";
 		}
 		elsif ($i == 1) {
-		$contextmenu .= "
-		\$(function(){
-		   \$.contextMenu({
-		       selector: '.context-menu-one$n',
-		       items: {
-		       \"comment\":    {name: \"<a href='comment.pl?idsnv=$cidsvsample&idsample=$cidsample&reason=sv&table=svsample' title='Comment page'>Comment</a>\"},
-		        }
-		    });
-		});
-			";
-		print qq#
-		<td><div class="context-menu-one$n" title="Right click for menu." align="center">
-		$row[$i]
-		</div>
-		</td>
-		#;
+			print qq#
+			<td style='white-space:nowrap;'>
+			<div class="dropdown">
+			$row[$i]&nbsp;&nbsp;
+			<a href="comment.pl?idsnv=$cidsvsample&idsample=$cidsample&reason=sv&table=svsample">
+			<img style='width:12pt;height:12pt;' src="/EVAdb/evadb_images/browser-window.png" title="Variant annotation" />
+			</a>
+			</div>
+			</td>
+			#;
 		}
 		else {
 			print "<td align=\"center\"> $row[$i]</td>";
@@ -12491,7 +12433,6 @@ while (@row = $out->fetchrow_array) {
 	$n++;
 }
 print "</tbody></table></div>";
-print "$contextmenu</script> ";
 
 }
 ########################################################################
@@ -14223,7 +14164,6 @@ my $omimdiseases = "";
 my $aref     = "";
 my $score    = "";
 my $idsnv    = "";
-my $contextmenu  = "\n<script type=\"text/javascript\">";
 for  $aref (@row2) { 
 	@row=@{$aref};
 	$score    = $row[-1];
@@ -14242,11 +14182,13 @@ for  $aref (@row2) {
 		}
 		if ($i == 1) {
 			$tmp=&igvlink($dbh,$row[$i],$row[3]);
-			$contextmenu .= "
-					contextComment(\"$n\", \"$idsnv\", \"$idsample\", \"omim\");";
 			print qq#
-			<td $class><div class="context-menu-one$n" title="Right click for menu." align="center">
-			$tmp
+			<td style='white-space:nowrap;'>
+			<div class="dropdown">
+			$tmp&nbsp;&nbsp;
+			<a href="comment.pl?idsnv=$idsnv&idsample=$idsample&reason=omim">
+			<img style='width:12pt;height:12pt;' src="/EVAdb/evadb_images/browser-window.png" title="Variant annotation" />
+			</a>
 			</div>
 			</td>
 			#;
@@ -14294,7 +14236,6 @@ for  $aref (@row2) {
 	} #if ar
 }
 print "</tbody></table></div>";
-print "$contextmenu</script> ";
 
 
 print "<br>";
@@ -15846,7 +15787,6 @@ my $omimmode     = "";
 my $omimdiseases = "";
 my $idsnv        = "";
 my $idsample     = "";
-my $contextmenu  = "\n<script type=\"text/javascript\">";
 while (@row = $out->fetchrow_array) {
 	print "<tr>";
 	$i=0;
@@ -15868,11 +15808,13 @@ while (@row = $out->fetchrow_array) {
 			print "<td align=\"center\">$n</td>";
 		}
 		if ($i == 1) {
-			$contextmenu .= "
-			contextComment(\"$n\", \"$idsnv\", \"$idsample\", \"other\");";
 			print qq#
-			<td><div class="context-menu-one$n" title="Right click for menu." align="center">
-			$row[$i]
+			<td style='white-space:nowrap;'>
+			<div class="dropdown">
+			$row[$i]&nbsp;&nbsp;
+			<a href="comment.pl?idsnv=$idsnv&idsample=$idsample&reason=other">
+			<img style='width:12pt;height:12pt;' src="/EVAdb/evadb_images/browser-window.png" title="Variant annotation" />
+			</a>
 			</div>
 			</td>
 			#;
@@ -15915,8 +15857,6 @@ while (@row = $out->fetchrow_array) {
 	$n++;
 }
 print "</tbody></table></div>";
-#&tablescript("","5,10");
-print "$contextmenu</script> ";
 
 $n--;
 print "<br>Variants found $n<br>";
@@ -17089,7 +17029,6 @@ $n           = 1;
 $tmp         = "";
 my $sname    = "";
 my $pedigree = "";
-#my $contextmenu  = "\n<script type=\"text/javascript\">";
 while (@row = $out->fetchrow_array) {
 	$idsample = $row[-1];
 	$sname    = $row[0];
@@ -17103,14 +17042,6 @@ while (@row = $out->fetchrow_array) {
 			print "<td align=\"center\">$n</td>";
 		}
 		if ($i == 0) { 
-			#$contextmenu .= "
-			#contextM(\"$n\", \"$idsample\", \"$row[$i]\", \"$row[1]\");";
-			#print qq#
-			#<td><div class="context-menu-one$n" title="Right click for menu." align="center">
-			#$row[$i]
-			#</div>
-			#</td>
-			##;
 			print qq#
 			<td style='white-space:nowrap;'>
 			<div class="dropdown">
@@ -17181,8 +17112,6 @@ while (@row = $out->fetchrow_array) {
 	$n++;
 }
 print "</tbody></table></div>";
-
-#print "$contextmenu\n</script>";
 
 
 $out->finish;
@@ -17583,7 +17512,6 @@ $n=1;
 my $pedigree = "";
 # http://swisnl.github.io/jQuery-contextMenu/demo.html
 # https://api.jquery.com/contextmenu/
-#my $contextmenu  = "\n<script type=\"text/javascript\">";
 
 while (@row = $out->fetchrow_array) {
 	$idsample = $row[-1];
@@ -17598,10 +17526,6 @@ while (@row = $out->fetchrow_array) {
 			print "<td align=\"center\">$n</td>";
 		}
 		if ($i == 0) { 
-			#$contextmenu .= 
-			#"
-			#$contextM(\"$n\", \"$idsample\", \"$row[$i]\", \"$row[3]\");
-			#";
 			$tmp = &getigv($dbh,$idsample,"");
 			print qq#
 			<td style='white-space:nowrap;'>
@@ -17634,12 +17558,7 @@ while (@row = $out->fetchrow_array) {
 			</div>
 			</td>
 			#;
-			#print qq#
-			#<td><div class="context-menu-one$n" idsample="$idsample" title="Right click for menu." align="center">
-			#$tmp
-			#</div>
-			#</td>
-			#;
+
 		}
 		elsif ($i == 2) { # HPO
 			if ($row[$i] ne "") {
@@ -17695,7 +17614,6 @@ while (@row = $out->fetchrow_array) {
 }
 print "</tbody></table></div>";
 
-#print "$contextmenu</script>";
 
 $out->finish;
 }
@@ -19387,7 +19305,6 @@ foreach (@labels) {
 print "</tr></thead><tbody>";
 
 $n=1;
-#my $contextmenu  = "\n<script type=\"text/javascript\">";
 while (@row = $out->fetchrow_array) {
 	print "<tr>";
 	$i=0;
@@ -19397,15 +19314,6 @@ while (@row = $out->fetchrow_array) {
 	foreach (@row) {
 		if ($i == 0) { #edit project
 			print "<td align=\"center\">$n</td>";
-			#$contextmenu .= "
-			#contextMg(\"$n\", \"$idsample\", \"$row[$i]\", \"$pedigree\");
-			#";
-			#print qq#
-			#<td><div class="context-menu-one$n" title="Right click for menu." align="center">
-			#$row[$i]
-			#</div>
-			#</td>
-			#;
 			print qq#
 			<td style='white-space:nowrap;'>
 			<div class="dropdown">
@@ -19456,7 +19364,6 @@ while (@row = $out->fetchrow_array) {
 }
 print "</tbody></table></div>";
 
-#print "$contextmenu</script>";
 
 $out->finish;
 }
