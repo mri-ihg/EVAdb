@@ -100,3 +100,44 @@ table.dataTable th                   { background-color: #efefef; }
 }
 .footertext  { position:relative; left:50px; }
 
+div.dataTables_length {
+  margin-right: 5em;
+}
+
+// dropdown menu with icon
+.dropbtn {
+  width:14pt;
+  height:14pt;
+}
+
+.dropbtn:hover, .dropbtn:focus {
+}
+
+.dropdown {
+  position: relative;
+  display:flex;
+  align-items:center;
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  top:14pt;
+  right:-160px;
+  background-color: #f1f1f1;
+  min-width: 160px;
+  overflow: auto;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  z-index: 1;
+}
+
+.dropdown-content a {
+  color: black;
+  padding: 2px 16px;
+  text-decoration: none;
+  display: block;
+}
+
+.dropdown a:hover {background-color: #ddd;}
+
+.show {display: block;}
