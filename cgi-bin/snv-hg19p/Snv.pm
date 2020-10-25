@@ -9168,14 +9168,25 @@ for  $aref (@row2) {
 				print "<td>$tmp</td>";
 			}
 			elsif ($i == 1) {
-			$contextmenu .= "
-			contextComment(\"$n\", \"$idsnvtmp\", \"$idchild\", \"denovo\");";
-			print qq#
-			<td><div class="context-menu-one$n" title="Right click for menu." align="center">
-			$row[$i]
-			</div>
-			</td>
-			#;
+				$contextmenu .= "
+				contextComment(\"$n\", \"$idsnvtmp\", \"$idchild\", \"denovo\");";
+				#print qq#
+				#<td><div class="context-menu-one$n" title="Right click for menu." align="center">
+				#$row[$i]
+				#</div>
+				#</td>
+				#;
+				print qq#
+				<td style='white-space:nowrap;'>
+				<div class="dropdown">
+				$row[$i]&nbsp;&nbsp;
+				<a href="comment.pl?idsnv=$idsnvtmp&idsample=$idchild&reason='denovo'">
+				<img style='width:12pt;height:12pt;' src="/EVAdb/evadb_images/browser-window.png" title="Variant annotation" />
+				</a>
+				</div>
+				</td>
+				#;
+
 			}
 			elsif ($i == 9) { #omim
 				($tmp,$omimmode,$omimdiseases)=&omim($dbh,$row[$i]);
@@ -17069,12 +17080,16 @@ foreach (@labels) {
 }
 print "</tr></thead><tbody>";
 
-$i=0;
-$n=1;
-$tmp = "";
-my $contextmenu  = "\n<script type=\"text/javascript\">";
+$i           = 0;
+$n           = 1;
+$tmp         = "";
+my $sname    = "";
+my $pedigree = "";
+#my $contextmenu  = "\n<script type=\"text/javascript\">";
 while (@row = $out->fetchrow_array) {
 	$idsample = $row[-1];
+	$sname    = $row[0];
+	$pedigree = $row[1];
 	pop(@row);
 	print "<tr>";
 	$i=0;
@@ -17084,11 +17099,42 @@ while (@row = $out->fetchrow_array) {
 			print "<td align=\"center\">$n</td>";
 		}
 		if ($i == 0) { 
-			$contextmenu .= "
-			contextM(\"$n\", \"$idsample\", \"$row[$i]\", \"$row[1]\");";
+			#$contextmenu .= "
+			#contextM(\"$n\", \"$idsample\", \"$row[$i]\", \"$row[1]\");";
+			#print qq#
+			#<td><div class="context-menu-one$n" title="Right click for menu." align="center">
+			#$row[$i]
+			#</div>
+			#</td>
+			##;
 			print qq#
-			<td><div class="context-menu-one$n" title="Right click for menu." align="center">
-			$row[$i]
+			<td style='white-space:nowrap;'>
+			<div class="dropdown">
+			$row[$i]&nbsp;&nbsp;
+			<img style='width:14pt;height:14pt;' src="/EVAdb/evadb_images/down-squared.png" title="Links to analysis functions" onclick="myFunction($n)" class="dropbtn" />
+			<div id="myDropdown$n" class="dropdown-content">
+			        <a href='search.pl?pedigree=$pedigree'>Autosomal dominant</a>
+				<a href='searchGeneInd.pl?pedigree=$sname'>Autosomal recessive</a>
+				<a href='searchTrio.pl?pedigree=$sname'>De novo trio</a>
+				<a href='searchTumor.pl?pedigree=$sname'>Tumor/Control</a>
+				<a href='searchDiseaseGene.pl?sname=$sname'>Diseasegenes</a>
+				<a href='searchHGMD.pl?sname=$sname'>HGMD/ClinVar</a>
+				<a href='searchOmim.pl?sname=$sname'>OMIM</a>
+				<a href='searchDiagnostics.pl?sname=$sname'>Coverage lists</a>
+				<a href='searchHomo.pl?sname=$sname'>Homozygosity</a>
+				<a href='searchCnv.pl?sname=$sname'>CNV</a>
+				#;
+				if ($contextM eq "contextMg") { # is genome
+					print qq#
+					<a href='searchSv.pl?sname=$sname'>Structural variants</a>
+					#;
+				}
+				print qq#
+				<a href='searchHPO.pl?sname=$sname'>HPO</a>
+				<a href='searchSample.pl?pedigree=$pedigree'>Sample information</a>
+				<a href='conclusion.pl?idsample=$idsample'>Sample conclusions</a>
+				<a href='report.pl?sname=$sname'>Report</a>
+			</div>
 			</div>
 			</td>
 			#;
@@ -17131,9 +17177,8 @@ while (@row = $out->fetchrow_array) {
 	$n++;
 }
 print "</tbody></table></div>";
-#&tablescript(14,15);
 
-print "$contextmenu\n</script>";
+#print "$contextmenu\n</script>";
 
 
 $out->finish;
@@ -17531,13 +17576,15 @@ print "</tr></thead><tbody>";
 
 $i=0;
 $n=1;
+my $pedigree = "";
 # http://swisnl.github.io/jQuery-contextMenu/demo.html
 # https://api.jquery.com/contextmenu/
-my $contextmenu  = "\n<script type=\"text/javascript\">";
+#my $contextmenu  = "\n<script type=\"text/javascript\">";
 
 while (@row = $out->fetchrow_array) {
 	$idsample = $row[-1];
 	$sname    = $row[0];
+	$pedigree = $row[3];
 	pop(@row);
 	print "<tr>";
 	$i=0;
@@ -17547,16 +17594,47 @@ while (@row = $out->fetchrow_array) {
 			print "<td align=\"center\">$n</td>";
 		}
 		if ($i == 0) { 
-			$contextmenu .= 
-			"
-			$contextM(\"$n\", \"$idsample\", \"$row[$i]\", \"$row[3]\");
-			";
+			#$contextmenu .= 
+			#"
+			#$contextM(\"$n\", \"$idsample\", \"$row[$i]\", \"$row[3]\");
+			#";
 			$tmp = &getigv($dbh,$idsample,"");
 			print qq#
-			<td><div class="context-menu-one$n" idsample="$idsample" title="Right click for menu." align="center">
-			$tmp
+			<td style='white-space:nowrap;'>
+			<div class="dropdown">
+			$tmp&nbsp;&nbsp;
+			<img style='width:14pt;height:14pt;' src="/EVAdb/evadb_images/down-squared.png" title="Links to analysis functions" onclick="myFunction($n)" class="dropbtn" />
+			<div id="myDropdown$n" class="dropdown-content">
+			        <a href='search.pl?pedigree=$pedigree'>Autosomal dominant</a>
+				<a href='searchGeneInd.pl?pedigree=$sname'>Autosomal recessive</a>
+				<a href='searchTrio.pl?pedigree=$sname'>De novo trio</a>
+				<a href='searchTumor.pl?pedigree=$sname'>Tumor/Control</a>
+				<a href='searchDiseaseGene.pl?sname=$sname'>Diseasegenes</a>
+				<a href='searchHGMD.pl?sname=$sname'>HGMD/ClinVar</a>
+				<a href='searchOmim.pl?sname=$sname'>OMIM</a>
+				<a href='searchDiagnostics.pl?sname=$sname'>Coverage lists</a>
+				<a href='searchHomo.pl?sname=$sname'>Homozygosity</a>
+				<a href='searchCnv.pl?sname=$sname'>CNV</a>
+				#;
+				if ($contextM eq "contextMg") { # is genome
+					print qq#
+					<a href='searchSv.pl?sname=$sname'>Structural variants</a>
+					#;
+				}
+				print qq#
+				<a href='searchHPO.pl?sname=$sname'>HPO</a>
+				<a href='searchSample.pl?pedigree=$pedigree'>Sample information</a>
+				<a href='conclusion.pl?idsample=$idsample'>Sample conclusions</a>
+				<a href='report.pl?sname=$sname'>Report</a>
+			</div>
 			</div>
 			</td>
+			#;
+			#print qq#
+			#<td><div class="context-menu-one$n" idsample="$idsample" title="Right click for menu." align="center">
+			#$tmp
+			#</div>
+			#</td>
 			#;
 		}
 		elsif ($i == 2) { # HPO
@@ -17612,9 +17690,8 @@ while (@row = $out->fetchrow_array) {
 	$n++;
 }
 print "</tbody></table></div>";
-#&tablescript("6,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,29","1");
 
-print "$contextmenu</script>";
+#print "$contextmenu</script>";
 
 $out->finish;
 }
@@ -19306,22 +19383,53 @@ foreach (@labels) {
 print "</tr></thead><tbody>";
 
 $n=1;
-my $contextmenu  = "\n<script type=\"text/javascript\">";
+#my $contextmenu  = "\n<script type=\"text/javascript\">";
 while (@row = $out->fetchrow_array) {
 	print "<tr>";
 	$i=0;
-	$idsample = $row[15];
-	$pedigree = $row[4];
+	$idsample = $row[16];
+	$pedigree = $row[5];
 	$sname    = $row[0];
 	foreach (@row) {
 		if ($i == 0) { #edit project
 			print "<td align=\"center\">$n</td>";
-			$contextmenu .= "
-			contextMg(\"$n\", \"$idsample\", \"$row[$i]\", \"$pedigree\");
-			";
+			#$contextmenu .= "
+			#contextMg(\"$n\", \"$idsample\", \"$row[$i]\", \"$pedigree\");
+			#";
+			#print qq#
+			#<td><div class="context-menu-one$n" title="Right click for menu." align="center">
+			#$row[$i]
+			#</div>
+			#</td>
+			#;
 			print qq#
-			<td><div class="context-menu-one$n" title="Right click for menu." align="center">
-			$row[$i]
+			<td style='white-space:nowrap;'>
+			<div class="dropdown">
+			$row[$i]&nbsp;&nbsp;
+			<img style='width:14pt;height:14pt;' src="/EVAdb/evadb_images/down-squared.png" title="Links to analysis functions" onclick="myFunction($n)" class="dropbtn" />
+			<div id="myDropdown$n" class="dropdown-content">
+			        <a href='search.pl?pedigree=$pedigree'>Autosomal dominant</a>
+				<a href='searchGeneInd.pl?pedigree=$sname'>Autosomal recessive</a>
+				<a href='searchTrio.pl?pedigree=$sname'>De novo trio</a>
+				<a href='searchTumor.pl?pedigree=$sname'>Tumor/Control</a>
+				<a href='searchDiseaseGene.pl?sname=$sname'>Diseasegenes</a>
+				<a href='searchHGMD.pl?sname=$sname'>HGMD/ClinVar</a>
+				<a href='searchOmim.pl?sname=$sname'>OMIM</a>
+				<a href='searchDiagnostics.pl?sname=$sname'>Coverage lists</a>
+				<a href='searchHomo.pl?sname=$sname'>Homozygosity</a>
+				<a href='searchCnv.pl?sname=$sname'>CNV</a>
+				#;
+				if ($contextM eq "contextM") { # is genome
+					print qq#
+					<a href='searchSv.pl?sname=$sname'>Structural variants</a>
+					#;
+				}
+				print qq#
+				<a href='searchHPO.pl?sname=$sname'>HPO</a>
+				<a href='searchSample.pl?pedigree=$pedigree'>Sample information</a>
+				<a href='conclusion.pl?idsample=$idsample'>Sample conclusions</a>
+				<a href='report.pl?sname=$sname'>Report</a>
+			</div>
 			</div>
 			</td>
 			#;
@@ -19344,7 +19452,7 @@ while (@row = $out->fetchrow_array) {
 }
 print "</tbody></table></div>";
 
-print "$contextmenu</script>";
+#print "$contextmenu</script>";
 
 $out->finish;
 }
