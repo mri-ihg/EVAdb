@@ -108,6 +108,7 @@ div.dataTables_length {
 .dropbtn {
   width:14pt;
   height:14pt;
+  align:right;
 }
 
 .dropbtn:hover, .dropbtn:focus {
@@ -117,6 +118,7 @@ div.dataTables_length {
   position: relative;
   display:flex;
   align-items:center;
+  justify-content:right;
 }
 
 .dropdown-content {
