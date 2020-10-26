@@ -817,15 +817,15 @@ if (($omim ne "") and ($omim ne "0")) {
 		$out->execute() || die print "$DBI::ersessionrstr";
 		@res = $out->fetchrow_array;
 		$omim .= "<a href='http://www.ncbi.nlm.nih.gov/omim/$tmp' title='$res[0]'>$tmp</a><br>";
-		$diseases .= "$res[2]<br>";
 		$mode .= "$res[1]<br>";
+		$diseases .= "$res[2]<br>";
 		}
 	}
 }
 else {
 	$omim     = "";
-	$diseases = "";
 	$mode     = "";
+	$diseases = "";
 }
 
 return($omim,$mode,$diseases);
@@ -14133,8 +14133,9 @@ foreach $idomim (sort {$solrresh{$b} <=> $solrresh{$a} } keys %solrresh) { #sort
 		# if mode eq ar
 		($tmp,$mode)=&omim($dbh,$row[9]); # g.omim=$row[9]
 		$mode =~ s/\s+//g;	
-		#print "$row[9] $row[13] '$mode'<br>";
-		if ($mode eq "ar") {
+		$mode =~ s/<br>//g;	
+		#print "$row[9] $row[13] '$mode'<br>"; # omim alleles mode
+		if ($mode eq "ar") { # check if autosomal recessive, i.e. if omim number occurs twice !!!! not prepared for multiple samples
 			#print "$row[9] $row[13] $mode<br>";
 			$ar{$idomim} += $row[13]; #variant allele=row[13]
 			#print "asdf $ar{$idomim}<br>";
@@ -15070,6 +15071,7 @@ foreach $genesymbol (sort {$genesymbol{$b}<=>$genesymbol{$a}} sort keys %genesym
 		# if mode eq ar
 		($tmp,$mode)=&omim($dbh,$row[9]); # g.omim=$row[9]
 		$mode =~ s/\s+//g;	
+		$mode =~ s/<br>//g;	
 		#print "$row[9] $row[13] '$mode'<br>";
 		if ($mode eq "ar") {
 			#print "$row[9] $row[13] $mode<br>";

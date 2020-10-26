@@ -243,6 +243,7 @@ $(document).ready( function () {
  var Table = $('#results').DataTable({
  	"dom":           "Bfrtip",
 	"stateSave":     true,
+	"stateDuration": 604800,
 	"paginate":      true,
   	"lengthChange":  true,
 	"filter":        true,
