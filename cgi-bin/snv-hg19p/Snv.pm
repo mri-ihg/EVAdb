@@ -13321,29 +13321,39 @@ concat('<a href="listPosition.pl?idsnv=',v.idsnv,'" title="All carriers of this 
 group_concat(s.name separator '<br>'),
 group_concat(s.pedigree separator '<br>'),
 group_concat(s.sex separator ' <br>'),
-group_concat(d.symbol separator ' <br>'),
+group_concat(d.symbol separator '<br>'),
 concat(v.chrom,' ',v.start,' ',v.end,' ',v.class,' ',v.refallele,' ',v.allele),
-group_concat(c.rating separator ' <br>'),
-group_concat(c.patho separator ' <br>'),
+group_concat(c.rating separator '<br>'),
+group_concat(c.patho separator '<br>'),
 g.genesymbol,
-group_concat(distinct g.omim separator " "),
-group_concat(distinct $mgiID separator ' '),
+group_concat(DISTINCT g.omim separator ' '),
+group_concat(DISTINCT $mgiID separator ' '),
 v.class,
 replace(v.func,',',' '),
-group_concat(x.alleles separator ' <br>'),
-group_concat(f.fsample separator ' <br>'),
+group_concat(x.alleles separator '<br>'),
+group_concat(f.fsample separator '<br>'),
 v.freq,
 group_concat(DISTINCT $exac_gene_link separator '<br>'),
 group_concat(DISTINCT exac.mis_z separator '<br>'),
-group_concat(DISTINCT '<a href="http://$hgmdserver/hgmd/pro/mut.php?accession=',h.id,'">',h.id,'</a>'),
-group_concat(DISTINCT $clinvarlink separator '<br>'),
+(SELECT group_concat('<a href="http://$hgmdserver/hgmd/pro/mut.php?accession=',h.id,'">',h.id,'</a>' separator ' <br>')
+FROM hgmd_pro.$hg19_coords h WHERE v.chrom = h.chrom AND v.start = h.pos AND v.refallele=h.ref AND v.allele=h.alt),
+(SELECT group_concat( DISTINCT $clinvarlink separator ' <br>')
+FROM $coredb.clinvar cv WHERE (v.chrom=cv.chrom and v.start=cv.start AND v.refallele=cv.ref AND v.allele=cv.alt)),
 group_concat(DISTINCT $exac_link separator '<br>'),
 concat(g.nonsynpergene,' (', g.delpergene,')'),
-group_concat(distinct dgv.depth),
-group_concat(DISTINCT pph.hvar_prediction separator ' '),
-group_concat(DISTINCT pph.hvar_prob separator ' '),
-group_concat(DISTINCT sift.score separator ' '),
-group_concat(DISTINCT cadd.phred separator ' '),
+group_concat(DISTINCT dgv.depth),
+(SELECT group_concat(DISTINCT pph.hvar_prediction separator ' <br>')
+FROM $coredb.pph3 pph WHERE (v.chrom=pph.chrom and v.start=pph.start and v.refallele=pph.ref and v.allele=pph.alt)
+),
+(SELECT group_concat(DISTINCT pph.hvar_prob separator ' <br>')
+FROM $coredb.pph3 pph WHERE (v.chrom=pph.chrom and v.start=pph.start and v.refallele=pph.ref and v.allele=pph.alt)
+),
+(SELECT group_concat(DISTINCT sift.score )
+FROM $coredb.sift sift WHERE (v.chrom=sift.chrom and v.start=sift.start and v.refallele=sift.ref and v.allele=sift.alt)
+),
+(SELECT group_concat(DISTINCT cadd.phred )
+FROM $coredb.cadd cadd WHERE (v.chrom=cadd.chrom and v.start=cadd.start and v.refallele=cadd.ref and v.allele=cadd.alt)
+),
 group_concat(x.filter separator '<br>'),
 group_concat(x.snvqual separator '<br>'),
 group_concat(x.gtqual separator '<br>'),
@@ -13363,15 +13373,9 @@ INNER JOIN $sampledb.disease           d ON ds.iddisease = d.iddisease
 LEFT  JOIN snv2diseasegroup            f ON (v.idsnv = f.fidsnv AND d.iddiseasegroup=f.fiddiseasegroup)
 LEFT  JOIN snvgene                     y ON v.idsnv = y.idsnv
 LEFT  JOIN gene                        g ON g.idgene = y.idgene
-LEFT  JOIN disease2gene               dg on (g.idgene = dg.idgene)
 LEFT  JOIN $sampledb.mouse            mo ON (g.genesymbol = mo.humanSymbol)
-LEFT  JOIN $coredb.pph3              pph ON (v.chrom=pph.chrom and v.start=pph.start and v.refallele=pph.ref and v.allele=pph.alt)
-LEFT  JOIN $coredb.sift             sift ON (v.chrom=sift.chrom and v.start=sift.start and v.refallele=sift.ref and v.allele=sift.alt)
-LEFT  JOIN $coredb.cadd             cadd ON (v.chrom=cadd.chrom and v.start=cadd.start and v.refallele=cadd.ref and v.allele=cadd.alt)
 LEFT  JOIN $coredb.evs               evs ON (v.chrom=evs.chrom and v.start=evs.start and v.refallele=evs.refallele and v.allele=evs.allele)
 LEFT  JOIN $coredb.evsscores        exac ON (g.genesymbol=exac.gene)
-LEFT  JOIN hgmd_pro.$hg19_coords       h ON (v.chrom = h.chrom AND v.start = h.pos  AND v.refallele=h.ref AND v.allele=h.alt)
-LEFT  JOIN $coredb.clinvar            cv ON (v.chrom=cv.chrom and v.start=cv.start and v.refallele=cv.ref and v.allele=cv.alt)
 LEFT  JOIN $exomevcfe.comment          c ON (v.chrom=c.chrom and v.start=c.start and v.refallele=c.refallele and v.allele=c.altallele and s.idsample=c.idsample)
 WHERE
 $where
@@ -13415,21 +13419,21 @@ while (@row = $out->fetchrow_array) {
 	$idsnv     = $row[-1];
 	pop(@row); #delete checked
 	# summary table
-	if ($row[9] =~ /missense/)   {$summary{missense}++;}
-	if ($row[9] =~ /nonsense/)   {$summary{nonsense}++;}
-	if ($row[9] =~ /indel/)      {$summary{indel}++;}
-	if ($row[9] =~ /splice/)     {$summary{splice}++;}
-	if ($row[9] =~ /frameshift/) {$summary{frameshift}++;}
+	if ($row[12] =~ /missense/)   {$summary{missense}++;}
+	if ($row[12] =~ /nonsense/)   {$summary{nonsense}++;}
+	if ($row[12] =~ /indel/)      {$summary{indel}++;}
+	if ($row[12] =~ /splice/)     {$summary{splice}++;}
+	if ($row[12] =~ /frameshift/) {$summary{frameshift}++;}
 	foreach (@row) {
 		if (!defined($row[$i])) {$row[$i] = "";}
 		if ($i == 0) { #edit project
 			print "<td align=\"center\">$n</td>";
 		}
-		if ($i == 1) {
-			$tmp=&igvlink($dbh,$row[$i],$row[1]);
-			print "<td align=\"center\"> $tmp</td>";
-		}
-		elsif ($i == 5) {
+		#if ($i == 1) {
+		#	$tmp=&igvlink($dbh,$row[$i],$row[5]);
+		#	print "<td align=\"center\"> $tmp</td>";
+		#}
+		if ($i == 5) {
 			$tmp=&ucsclink2($row[$i]);
 			print "<td> $tmp</td>";
 		}
@@ -14042,7 +14046,6 @@ print "Search phrase: $omim<br>";
 &todaysdate;
 &numberofsamples($dbh);
 print "Allowed in in-house Exomes < $ref->{'v.freq'}<br>";
-print "1000 Genomea AF < $ref->{'af'}<br>";
 &printqueryheader($ref,$classprint,$functionprint);
 $where .= " AND g.omim = ? ";
 
@@ -14110,7 +14113,7 @@ $where
 $function
 $class
 GROUP BY
-v.idsnv,g.idgene
+s.idsample,v.idsnv,g.idgene
 ORDER BY
 v.chrom,v.start
 LIMIT 5000
@@ -14181,7 +14184,7 @@ for  $aref (@row2) {
 			print "<td align=\"center\">$n</td>";
 		}
 		if ($i == 1) {
-			$tmp=&igvlink($dbh,$row[$i],$row[3]);
+			$tmp=&igvlink($dbh,$row[$i],$row[5]);
 			print qq#
 			<td style='white-space:nowrap;'>
 			<div class="dropdown">
@@ -14980,7 +14983,6 @@ print "Search phrase: $hpo<br>";
 &todaysdate;
 &numberofsamples($dbh);
 print "Allowed in in-house Exomes < $ref->{'v.freq'}<br>";
-print "1000 Genomea AF < $ref->{'af'}<br>";
 &printqueryheader($ref,$classprint,$functionprint);
 $where .= " AND g.approved = ? ";
 
@@ -15048,7 +15050,7 @@ $where
 $function
 $class
 GROUP BY
-v.idsnv,g.idgene
+s.idsample,v.idsnv,g.idgene
 ORDER BY
 v.chrom,v.start
 LIMIT 5000
@@ -15127,7 +15129,7 @@ for  $aref (@row2) {
 			print "<td align=\"center\">$n</td>";
 		}
 		if ($i == 1) {
-			$tmp=&igvlink($dbh,$row[$i],$row[3]);
+			$tmp=&igvlink($dbh,$row[$i],$row[5]);
 			print "<td> $tmp</td>";
 		}
 		elsif ($i == 5) {
