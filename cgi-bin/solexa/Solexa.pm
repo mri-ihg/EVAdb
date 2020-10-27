@@ -12079,7 +12079,7 @@ $(document).ready(function() {
 print q(
 <style type="text/css">
 table.dataTable tr.odd  { background-color: #f9f9f1; }
-table.dataTable tr.even { background-color: #fffff3; }
+table.dataTable tr.even { background-color: #ffffff; }
 table.dataTable tr.odd  td.sorting_1 { background-color: #efefef; }
 table.dataTable tr.even td.sorting_1 { background-color: #f9f9f5; }
 table.dataTable td {padding: 2px; }
@@ -12123,7 +12123,7 @@ print qq(
 print q(
 <style type="text/css">
 table.dataTable tr.odd  { background-color: #f9f9f1; }
-table.dataTable tr.even { background-color: #fffff3; }
+table.dataTable tr.even { background-color: #ffffff; }
 table.dataTable tr.odd  td.sorting_1 { background-color: #efefef; }
 table.dataTable tr.even td.sorting_1 { background-color: #f9f9f5; }
 table.dataTable td {padding: 2px; }
@@ -12166,7 +12166,7 @@ $(document).ready(function() {
 print q(
 <style type="text/css">
 table.dataTable tr.odd  { background-color: #f9f9f1; }
-table.dataTable tr.even { background-color: #fffff3; }
+table.dataTable tr.even { background-color: #ffffff; }
 table.dataTable tr.odd  td.sorting_1 { background-color: #efefef; }
 table.dataTable tr.even td.sorting_1 { background-color: #f9f9f5; }
 table.dataTable td {padding: 2px; }
