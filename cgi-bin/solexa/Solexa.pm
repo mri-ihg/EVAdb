@@ -12213,8 +12213,8 @@ print qq(
 
 <meta name="viewport" content="width=device-width, height=device-height,  initial-scale=1, minimum-scale=1">
 
-<link rel="stylesheet" type="text/css" href="/EVAdb/evadb/EVAdb.css">
-<script type="text/javascript" src="/EVAdb/evadb/EVAdb.js"></script>
+<link rel="stylesheet" type="text/css" href="/EVAdb/evadb/EVAdbtest.css">
+<script type="text/javascript" src="/EVAdb/evadb/EVAdbtest.js"></script>
 </head>
 ) ;
 
@@ -12236,6 +12236,60 @@ else {
 ########################################################################
 
 sub showMenu {
+
+print qq|
+<div id="mySidenav" class="sidenav">
+<a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+<div class="subnav">Search</div>
+<a href="search.pl">Search</a>
+<div class="subnav">Libraries</div>
+<a href="importLibInfo.pl">Import Libsheet</a>
+<div class="subnav">Taqman</div>
+<a href="taqmanDo.pl">Taqman</a>
+<a href="importTaqman.pl">Import Taqman</a>
+<div class="subnav">Pooling</div>
+<a href="pooling.pl">Pooling</a>
+<a href="makePool.pl">Make Pool intern</a>
+<a href="makePoolExtern.pl">Make Pool extern</a>
+<div class="subnav">Sequencing</div>
+<a href="sequencing.pl">Sequencing</a>
+<a href="run.pl">New Run</a>
+<div class="subnav">Barcodes</div>
+<a href="checkBarcode.pl">Check Pool Barcode</a>
+<div class="subnav">Indices</div>
+<a href="tag.pl">New Index</a>
+<a href="listTags.pl">List Indices</a>
+<div class="subnav">Stocks</div>
+<a href="stock.pl">New Stock</a>
+<a href="searchStocks.pl">Search Stocks</a>
+<div class="subnav">Kits</div>
+<a href="kit.pl">New Kit</a>
+<a href="kitList.pl">List Kits</a>
+<a href="listKits.pl">List Exome Kits</a>
+<div class="subnav">Statistics</div>
+<a href="statistics.pl">Statistics</a>
+<a href="yield.pl">Yield</a>
+<div class="subnav">Order</div>
+<a href="shopping.pl">New Order</a>
+<a href="searchShopping.pl">Search Order</a>
+<div class="subnav">Logout</div>
+<a href="login.pl">Logout</a>
+</div>
+
+<!-- Use any element to open the sidenav -->
+<span style="padding:20px;font-size:24px;cursor:pointer" onclick="openNav()">&#9776; Menu</span>
+
+<!-- Add all page content inside this div if you want the side nav to push page content to the right (not used if you only want the sidenav to sit on top of the page -->
+<div id="main">
+
+|;
+
+}
+########################################################################
+# showMenu
+########################################################################
+
+sub showMenuOld {
 my $self            = shift;
 my $menu            = shift;
 my $project         = "menu";
@@ -12414,9 +12468,10 @@ my $footer = $out->fetchrow_array;
 print qq(
 <br><br>
 </div>
+</div>
 <div id="footer">
 <br>
-<div style="position:relative; left:50px; ">
+<div style="position:relative; left:270px; ">
 $footer
 </div>
 </div>
