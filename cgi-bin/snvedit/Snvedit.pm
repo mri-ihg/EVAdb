@@ -6327,24 +6327,31 @@ sub showMenu {
 
 print qq|
 <div id="mySidenav" class="sidenav">
-  <div class="subnav">Menu</div>
+  <div class="subnav">Samples Libraries</div>
   <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
   <a href="searchSample.pl">Sample search</a>
-  <a href="overview.pl">Overview</a>
   <a href="sample.pl">New sample</a>
-  <a href="importSamples.pl">Import internal samples</a>
   <a href="createLibraries.pl">Create libraries</a>
+<div class="subnav">Diseases</div>
   <a href="disease.pl">New disease</a>
   <a href="listDisease.pl">List diseases</a>
+<div class="subnav">Cooperations</div>
   <a href="cooperation.pl">New cooperation</a>
   <a href="listCooperation.pl">List cooperations</a>
+<div class="subnav">Projects</div>
   <a href="project.pl">New project</a>
   <a href="listProject.pl">List projects</a>
+<div class="subnav">Invoices</div>
   <a href="invoice.pl">New invoice</a>
   <a href="invoiceSearch.pl">Search invoices</a>
+<div class="subnav">Samplesheet import</div>
+  <a href="importSamples.pl">Import internal samples</a>
   <a href="importSamplesExternal.pl">Import external samples</a>
   <a href="importmtDNASamples.pl">Import mtDNA samples</a>
+<div class="subnav">Statistics</div>
+  <a href="overview.pl">Overview</a>
   <a href="statistics.pl">Statistics</a>
+<div class="subnav">Logout</div>
   <a href="login.pl">Logout</a>
 </div>
 
