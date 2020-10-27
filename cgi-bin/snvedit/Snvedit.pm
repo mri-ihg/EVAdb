@@ -6344,7 +6344,7 @@ print qq|
 <div class="subnav">Invoices</div>
   <a href="invoice.pl">New invoice</a>
   <a href="invoiceSearch.pl">Search invoices</a>
-<div class="subnav">Samplesheet import</div>
+<div class="subnav">Sample sheet import</div>
   <a href="importSamples.pl">Import internal samples</a>
   <a href="importSamplesExternal.pl">Import external samples</a>
   <a href="importmtDNASamples.pl">Import mtDNA samples</a>
