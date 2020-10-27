@@ -12033,7 +12033,7 @@ elsif ($width eq "1500px") {
 }
 
 $buf .= qq(
-<div id="container" $width>
+<div id="container2" $width>
 <table id="$tableid" numeric="$numeric" string="$string" html="$html" cellspacing="0" class="compact display" width="100%">
 );
 
@@ -12200,17 +12200,21 @@ print qq(
 
 
 print qq(
-<script type="text/javascript" src="/DataTables/datatables.min.js"></script>
-<link rel="stylesheet" type="text/css" href="/DataTables/datatables.min.css">
+	
+<link rel="stylesheet" type="text/css" href="/DataTables-1.10.22/datatables.min.css">
+<script type="text/javascript" src="/DataTables-1.10.22/datatables.min.js"></script>
 
-<script language="JavaScript" src="/cal/calendar_db.js"></script>
-<link rel="stylesheet" href="/cal/calendar.css">
+<link rel="stylesheet" href="/DataTables-1.10.22/jquery.contextMenu.min.css">
+<script src="/DataTables-1.10.22/jquery.contextMenu.min.js"></script>
+<script src="/DataTables-1.10.22/jquery.ui.position.js"></script>
+
+<link rel="stylesheet" href="/EVAdb/cal/calendar.css">
+<script language="JavaScript" src="/EVAdb/cal/calendar_db.js"></script>
 
 <meta name="viewport" content="width=device-width, height=device-height,  initial-scale=1, minimum-scale=1">
 
-<script type="text/javascript" src="/gif/EVAdb.js"></script>
-<link rel="stylesheet" type="text/css" href="/gif/EVAdb.css">
-
+<link rel="stylesheet" type="text/css" href="/EVAdb/evadb/EVAdb.css">
+<script type="text/javascript" src="/EVAdb/evadb/EVAdb.js"></script>
 </head>
 ) ;
 

@@ -808,23 +808,24 @@ if (($omim ne "") and ($omim ne "0")) {
 	$mode     = "";
 	foreach $tmp (@omim) {
 		if ($tmp != 0) {
-		$query = "SELECT GROUP_CONCAT(DISTINCT omimdisease,' ',inheritance,' ',disease separator '\n'),
-			  GROUP_CONCAT(DISTINCT inheritance separator '\n'),
+		$query = "SELECT 
+			  GROUP_CONCAT(DISTINCT omimdisease,' ',inheritance,' ',disease separator '\n'),
+			  GROUP_CONCAT(DISTINCT inheritance separator ' '),
 			  GROUP_CONCAT(DISTINCT inheritance,' ',disease separator '<br>')
 			  FROM $sampledb.omim WHERE omimgene=$tmp";
 		$out = $dbh->prepare($query) || die print "$DBI::errstr";
 		$out->execute() || die print "$DBI::ersessionrstr";
 		@res = $out->fetchrow_array;
-		$omim .= "<a href='http://www.ncbi.nlm.nih.gov/omim/$tmp' title='$res[0]'>$tmp</a> ";
-		$diseases .= "$res[2] ";
-		$mode .= "$res[1] ";
+		$omim .= "<a href='http://www.ncbi.nlm.nih.gov/omim/$tmp' title='$res[0]'>$tmp</a><br>";
+		$mode .= "$res[1]<br>";
+		$diseases .= "$res[2]<br>";
 		}
 	}
 }
 else {
 	$omim     = "";
-	$diseases = "";
 	$mode     = "";
+	$diseases = "";
 }
 
 return($omim,$mode,$diseases);
@@ -1038,6 +1039,10 @@ if ( ($password_stored eq $password) and ($yubikeyOK eq "OK") ) {
 	print "<font size = 6>YubiKey $yubikeyOK<br>";
 	my $mylocaltime = &mylocaltime;
 	print "$mylocaltime<br>";
+	print qq#
+	<br><br><br>
+	<a href='searchStat.pl'>Search for samples and quality checks</a>
+	#;
 }
 else {
 	# login failed
@@ -6887,41 +6892,38 @@ $explain SELECT
 concat('<a href="listPosition.pl?idsnv=',v.idsnv,'" title="All carriers of this variant">',v.idsnv,'</a>',' '),
 group_concat(DISTINCT '<a href="http://localhost:$igvport/load?file=',$igvserver2,'" title="Open sample in IGV"','>',s.name,'</a>' SEPARATOR '<br>'),
 group_concat(DISTINCT s.pedigree),
+s.sex,
+d.symbol,
 concat(v.chrom,' ',v.start,' ',v.end,' ',v.class,' ',v.refallele,' ',v.allele),
+c.rating,
+c.patho,
 group_concat(DISTINCT $genelink separator '<br>'),
-group_concat(DISTINCT g.nonsynpergene,' (', g.delpergene,')' separator '<br>'),
-dgv.depth,
 group_concat(DISTINCT g.omim separator ' '),
 group_concat(DISTINCT $mgiID separator ' '),
 v.class,
 replace(v.func,',',' '),
+group_concat(DISTINCT x.alleles),
+f.fsample,
+f.samplecontrols,
 group_concat(DISTINCT $exac_gene_link separator '<br>'),
+group_concat(DISTINCT exac.mis_z separator '<br>'),
+group_concat(DISTINCT '<a href="http://$hgmdserver/hgmd/pro/mut.php?accession=',h.id,'">',h.id,'</a>'),
+group_concat(DISTINCT $clinvarlink separator '<br>'),
+group_concat(DISTINCT $exac_link separator '<br>'),
+group_concat(DISTINCT g.nonsynpergene,' (', g.delpergene,')' separator '<br>'),
+dgv.depth,
 group_concat(DISTINCT pph.hvar_prediction separator ' '),
 group_concat(DISTINCT pph.hvar_prob separator ' '),
 group_concat(DISTINCT sift.score separator ' '),
 group_concat(DISTINCT cadd.phred separator ' '),
-f.fsample,
-f.samplecontrols,
-group_concat(DISTINCT x.alleles),
+group_concat(DISTINCT x.filter SEPARATOR ', '),
 group_concat(DISTINCT x.snvqual SEPARATOR ', '),
 group_concat(DISTINCT x.gtqual SEPARATOR ', '),
 group_concat(DISTINCT x.mapqual SEPARATOR ', '),
 group_concat(DISTINCT x.coverage SEPARATOR ', '),
 group_concat(DISTINCT x.percentvar SEPARATOR ', '),
-concat($rssnplink),
-avhet,
-group_concat(DISTINCT '<a href="http://$hgmdserver/hgmd/pro/mut.php?accession=',h.id,'">',h.id,'</a>'),
-group_concat(DISTINCT $clinvarlink separator '<br>'),
-group_concat(DISTINCT v.af),
-group_concat(DISTINCT $exac_ae_link separator '<br>'),
-group_concat(DISTINCT $exac_aa_link separator '<br>'),
-group_concat(DISTINCT $kaviar_link separator '<br>'),
-valid,
-v.transcript,
+replace(v.transcript,':','<br>'),
 group_concat(DISTINCT $primer SEPARATOR '<br>'),
-c.rating,
-c.checked,
-c.confirmed,
 group_concat(dg.class),
 v.chrom,
 v.start,
@@ -6933,21 +6935,20 @@ snv v
 INNER JOIN snvsample                     x ON (v.idsnv = x.idsnv) 
 LEFT  JOIN $coredb.dgvbp               dgv ON (v.chrom = dgv.chrom AND v.start=dgv.start)
 INNER JOIN $sampledb.sample              s ON (s.idsample = x.idsample)
-LEFT  JOIN snvgene                       y ON (v.idsnv = y.idsnv)
-LEFT  JOIN gene                          g ON (g.idgene = y.idgene)
-LEFT  JOIN $coredb.evsscores           exac ON (g.genesymbol=exac.gene)
-LEFT  JOIN $sampledb.mouse              mo ON (g.genesymbol = mo.humanSymbol)
-LEFT  JOIN hgmd_pro.$hg19_coords         h ON (v.chrom = h.chrom AND v.start = h.pos  AND v.refallele=h.ref AND v.allele=h.alt)
-LEFT  JOIN $coredb.clinvar              cv ON (v.chrom=cv.chrom and v.start=cv.start and v.refallele=cv.ref and v.allele=cv.alt)
 INNER JOIN $sampledb.disease2sample     ds ON (s.idsample = ds.idsample)
 INNER JOIN $sampledb.disease             d ON (ds.iddisease = d.iddisease)
 LEFT  JOIN snv2diseasegroup              f ON (v.idsnv = f.fidsnv AND d.iddiseasegroup=f.fiddiseasegroup) 
+LEFT  JOIN snvgene                       y ON (v.idsnv = y.idsnv)
+LEFT  JOIN gene                          g ON (g.idgene = y.idgene)
 LEFT  JOIN disease2gene                 dg ON (ds.iddisease=dg.iddisease AND g.idgene=dg.idgene)
+LEFT  JOIN $sampledb.mouse              mo ON (g.genesymbol = mo.humanSymbol)
 LEFT  JOIN $coredb.pph3                pph ON (v.chrom=pph.chrom and v.start=pph.start and v.refallele=pph.ref and v.allele=pph.alt)
 LEFT  JOIN $coredb.sift               sift ON (v.chrom=sift.chrom and v.start=sift.start and v.refallele=sift.ref and v.allele=sift.alt)
 LEFT  JOIN $coredb.cadd               cadd ON (v.chrom=cadd.chrom and v.start=cadd.start and v.refallele=cadd.ref and v.allele=cadd.alt)
 LEFT  JOIN $coredb.evs                 evs ON (v.chrom=evs.chrom and v.start=evs.start and v.refallele=evs.refallele and v.allele=evs.allele)
-LEFT  JOIN $coredb.kaviar                k ON (v.chrom=k.chrom and v.start=k.start and v.refallele=k.refallele and v.allele=k.allele)
+LEFT  JOIN $coredb.evsscores          exac ON (g.genesymbol=exac.gene)
+LEFT  JOIN hgmd_pro.$hg19_coords         h ON (v.chrom = h.chrom AND v.start = h.pos  AND v.refallele=h.ref AND v.allele=h.alt)
+LEFT  JOIN $coredb.clinvar              cv ON (v.chrom=cv.chrom and v.start=cv.start and v.refallele=cv.ref and v.allele=cv.alt)
 LEFT  JOIN $exomevcfe.comment            c ON (v.chrom=c.chrom and v.start=c.start and v.refallele=c.refallele and v.allele=c.altallele and s.idsample=c.idsample)
 WHERE
 $allowedprojects
@@ -7035,51 +7036,13 @@ while (@row = $out->fetchrow_array) {
 
 } # foreach sampleid
 
-@labels	= (
-	'n',
-	'idsnv',
-	'IGV Comment',
-	'Pedigree',
-	'Chr',
-	'Rating',
-	'ToDo',
-	'Confirmed',
-	'Gene symbol',
-	'Non syn/ Gene',
-	'DGV',
-	'Omim',
-	'Mouse',
-	'Class',
-	'Function',
-	'ExAC pLI',
-	'pph2',
-	'pph2 prob',
-	'Sift',
-	'CADD',
-	'Cases',
-	'Controls',
-	'Variant alleles',
-	'SNV Qual',
-	'Geno- type Qual',
-	'Map Qual',
-	'Depth',
-	'% Var',
-	"$dbsnp",
-	'av Het',
-	'HGMD',
-	'ClinVar',
-	'1000 genomes AF',
-	'gnomAD ea',
-	'gnomAD aa',
-	'Kaviar AC',
-	'Valid',
-	'Transcripts',
-	'Primer'
-	);
+
+# Now print table
+(@labels) = &resultlabels();
 
 $i=0;
 
-&tableheaderDefault();
+&tableheaderResults();
 print "<thead><tr>";
 foreach (@labels) {
 	print "<th align=\"center\">$_</th>";
@@ -7089,13 +7052,14 @@ print "</tr></thead><tbody>\n";
 $n=1;
 my $aref;
 my $damaging     = 0;
+my $omimmode     = "";
+my $omimdiseases = "";
 my $program      = "";
 my $rating       = "";
 my $checked      = "";
 my $confirmed    = "";
 my $idsamplesvcf = "";
 my $idsnvsvcf    = "";
-my $contextmenu  = "\n<script type=\"text/javascript\">";
 #for  $aref (@row2) { 
 #	@row=@{$aref};
 for  $aref (sort keys %row2) { 
@@ -7122,12 +7086,6 @@ for  $aref (sort keys %row2) {
 		$class = "";
 	}
 	pop(@row);
-	$confirmed = $row[-1];
-	pop(@row); #delete confirmed
-	$checked = $row[-1];
-	pop(@row); #delete checked
-	$rating = $row[-1];
-	pop(@row); #delete rating
 	foreach $cgenesymbol (@cgenesymbol) {
 	$i=0;
 	foreach (@row) {
@@ -7137,54 +7095,56 @@ for  $aref (sort keys %row2) {
 				$idsamplesvcf .= "$cidsample,";
 				$idsnvsvcf    .= "$cidsnv,";
 				print "<tr>";
-				print "<td $class align=\"center\">$n</td>";
+				print "<td align=\"center\">$n</td>";
 				$n++;
 			}
-			if ($i == 3) {
-				$tmp=&ucsclink2($row[$i]);
-				print "<td $class align=\"center\">$tmp</td>";
-				print "<td $class>$rating</td>";
-				print "<td $class>$checked</td>";
-				print "<td $class>$confirmed</td>";
+			if ($i == 1) {
+				print qq#
+				<td style='white-space:nowrap;'>
+				<div class="dropdown">
+				$row[$i]&nbsp;&nbsp;
+				<a href="comment.pl?idsnv=$cidsnv&idsample=$cidsample&reason=ad">
+				<img style='width:12pt;height:12pt;' src="/EVAdb/evadb_images/browser-window.png" title="Variant annotation" />
+				</a>
+				</div>
+				</td>
+			#;
 			}
-			elsif ($i == 7) {
-				($tmp)=&omim($dbh,$row[$i]);
-				print "<td $class>$tmp</td>";
+			elsif ($i == 5) {
+				$tmp=&ucsclink2($row[$i]);
+				print "<td align=\"center\">$tmp</td>";
 			}
 			elsif ($i == 9) {
-				($tmp)=&vcf2mutalyzer($dbh,$cidsnv);
-				print "<td $class align=\"center\">$tmp</td>";
+				($tmp,$omimmode,$omimdiseases)=&omim($dbh,$row[$i]);
+				print "<td $class align=\"center\">$tmp</td><td>$omimmode</td><td style='min-width:350px'>$omimdiseases</td>\n";
 			}
-			elsif (($i==13) or ($i==14)) { # !!!to change
-				if ($i==13) {$program = 'polyphen2';}
-				if ($i==14) {$program = 'sift';}
+			elsif ($i == 11) {
+				($tmp)=&vcf2mutalyzer($dbh,$cidsnv);
+				print "<td align=\"center\">$tmp</td>";
+			}
+			elsif (($i==24) or ($i==25)) {
+				if ($i==24) {$program = 'polyphen2';}
+				if ($i==25) {$program = 'sift';}
 				$damaging=&damaging($program,$row[$i]);
 				if ($damaging==1) {
 					print "<td $warningtdbg>$row[$i]</td>";
 				}
 				else {
-					print "<td $class> $row[$i]</td>";
+					print "<td> $row[$i]</td>";
 				}
 			}
-			elsif ($i == 22) { # cnv exomedetph
+			elsif ($i == 31) { # cnv exomedetph
 				$tmp=$row[$i];
-				if ($row[9] eq "cnv") {
-					$tmp=$tmp/100;
+				if ($row[11] eq "cnv") {
+				$tmp=$tmp/100;
 				}
-				print "<td $class>$tmp</td>";
+				print "<td>$tmp</td>";
 			}
-			elsif ($i == 1) {
-			$contextmenu .= "
-					contextComment(\"$n\", \"$cidsnv\", \"$cidsample\", \"ad\");";
-			print qq#
-			<td $class><div class="context-menu-one$n" title="Right click for menu." align="center">
-			$row[$i]
-			</div>
-			</td>
-			#;
+			elsif ($i == 33) { # transcripts
+				print "<td align=\"center\" style='white-space:nowrap;'>$row[$i]</td>\n";
 			}
 			else {
-				print "<td $class> $row[$i]</td>";
+				print "<td align=\"center\">$row[$i]</td>";
 			}
 			if ($i == @row-1) {
 				print "</tr>\n";
@@ -7196,11 +7156,9 @@ for  $aref (sort keys %row2) {
 	}
 }
 print "</tbody></table></div>";
-#&tablescript("10","14","11,12,13");
 
 &callvcf($idsamplesvcf,$idsnvsvcf);
 
-print "$contextmenu</script> ";
 
 $out->finish;
 }
@@ -7408,37 +7366,37 @@ $explain SELECT
 concat('<a href="listPosition.pl?idsnv=',v.idsnv,'" title="All carriers of this variant">',v.idsnv,'</a>',' '),
 group_concat(DISTINCT '<a href="http://localhost:$igvport/load?file=',$igvserver2,'" title="Open sample in IGV"','>',s.name,'</a>' SEPARATOR '<br>'),
 group_concat(DISTINCT s.pedigree),
+s.sex,
+d.symbol,
 concat(v.chrom,' ',v.start,' ',v.end,' ',v.class,' ',v.refallele,' ',v.allele),
+c.rating,
+c.patho,
 group_concat(DISTINCT $genelink separator '<br>'),
-group_concat(DISTINCT g.nonsynpergene,' (', g.delpergene,')' separator '<br>'),
-dgv.depth,
 group_concat(DISTINCT g.omim separator ' '),
 group_concat(DISTINCT $mgiID separator ' '),
 v.class,
 replace(v.func,',',' '),
+group_concat(DISTINCT x.alleles),
+f.fsample,
+f.samplecontrols,
 group_concat(DISTINCT $exac_gene_link separator '<br>'),
+group_concat(DISTINCT exac.mis_z separator '<br>'),
+group_concat(DISTINCT '<a href="http://$hgmdserver/hgmd/pro/mut.php?accession=',h.id,'">',h.id,'</a>'),
+group_concat(DISTINCT $clinvarlink separator '<br>'),
+group_concat(DISTINCT $exac_link separator '<br>'),
+group_concat(DISTINCT g.nonsynpergene,' (', g.delpergene,')' separator '<br>'),
+dgv.depth,
 group_concat(DISTINCT pph.hvar_prediction separator ' '),
 group_concat(DISTINCT pph.hvar_prob separator ' '),
 group_concat(DISTINCT sift.score separator ' '),
 group_concat(DISTINCT cadd.phred separator ' '),
-f.fsample,
-f.samplecontrols,
-group_concat(DISTINCT x.alleles),
+group_concat(DISTINCT x.filter SEPARATOR ', '),
 group_concat(DISTINCT x.snvqual SEPARATOR ', '),
 group_concat(DISTINCT x.gtqual SEPARATOR ', '),
 group_concat(DISTINCT x.mapqual SEPARATOR ', '),
 group_concat(DISTINCT x.coverage SEPARATOR ', '),
 group_concat(DISTINCT x.percentvar SEPARATOR ', '),
-concat($rssnplink),
-avhet,
-group_concat(DISTINCT '<a href="http://$hgmdserver/hgmd/pro/mut.php?accession=',h.id,'">',h.id,'</a>'),
-group_concat(DISTINCT $clinvarlink separator '<br>'),
-group_concat(DISTINCT v.af),
-group_concat(DISTINCT $exac_ae_link separator '<br>'),
-group_concat(DISTINCT $exac_aa_link separator '<br>'),
-group_concat(DISTINCT $kaviar_link separator '<br>'),
-valid,
-v.transcript,
+replace(v.transcript,':','<br>'),
 group_concat(DISTINCT $primer SEPARATOR '<br>'),
 c.rating,
 c.checked,
@@ -7454,21 +7412,20 @@ snv v
 INNER JOIN snvsample                     x ON (v.idsnv = x.idsnv) 
 LEFT  JOIN $coredb.dgvbp               dgv ON (v.chrom = dgv.chrom AND v.start=dgv.start)
 INNER JOIN $sampledb.sample              s ON (s.idsample = x.idsample)
-LEFT  JOIN snvgene                       y ON (v.idsnv = y.idsnv)
-LEFT  JOIN gene                          g ON (g.idgene = y.idgene)
-LEFT  JOIN $coredb.evsscores          exac ON (g.genesymbol=exac.gene)
-LEFT  JOIN $sampledb.mouse              mo ON (g.genesymbol = mo.humanSymbol)
-LEFT  JOIN hgmd_pro.$hg19_coords         h ON (v.chrom = h.chrom AND v.start = h.pos  AND v.refallele=h.ref AND v.allele=h.alt)
-LEFT  JOIN $coredb.clinvar              cv ON (v.chrom=cv.chrom and v.start=cv.start and v.refallele=cv.ref and v.allele=cv.alt)
 INNER JOIN $sampledb.disease2sample     ds ON (s.idsample = ds.idsample)
 INNER JOIN $sampledb.disease             d ON (ds.iddisease = d.iddisease)
 LEFT  JOIN snv2diseasegroup              f ON (v.idsnv = f.fidsnv AND d.iddiseasegroup=f.fiddiseasegroup) 
+LEFT  JOIN snvgene                       y ON (v.idsnv = y.idsnv)
+LEFT  JOIN gene                          g ON (g.idgene = y.idgene)
 LEFT  JOIN disease2gene                 dg ON (ds.iddisease=dg.iddisease AND g.idgene=dg.idgene)
+LEFT  JOIN $sampledb.mouse              mo ON (g.genesymbol = mo.humanSymbol)
 LEFT  JOIN $coredb.pph3                pph ON (v.chrom=pph.chrom and v.start=pph.start and v.refallele=pph.ref and v.allele=pph.alt)
 LEFT  JOIN $coredb.sift               sift ON (v.chrom=sift.chrom and v.start=sift.start and v.refallele=sift.ref and v.allele=sift.alt)
 LEFT  JOIN $coredb.cadd               cadd ON (v.chrom=cadd.chrom and v.start=cadd.start and v.refallele=cadd.ref and v.allele=cadd.alt)
 LEFT  JOIN $coredb.evs                 evs ON (v.chrom=evs.chrom and v.start=evs.start and v.refallele=evs.refallele and v.allele=evs.allele)
-LEFT  JOIN $coredb.kaviar                k ON (v.chrom=k.chrom and v.start=k.start and v.refallele=k.refallele and v.allele=k.allele)
+LEFT  JOIN $coredb.evsscores          exac ON (g.genesymbol=exac.gene)
+LEFT  JOIN hgmd_pro.$hg19_coords         h ON (v.chrom = h.chrom AND v.start = h.pos  AND v.refallele=h.ref AND v.allele=h.alt)
+LEFT  JOIN $coredb.clinvar              cv ON (v.chrom=cv.chrom and v.start=cv.start and v.refallele=cv.ref and v.allele=cv.alt)
 LEFT  JOIN $exomevcfe.comment            c ON (v.chrom=c.chrom and v.start=c.start and v.refallele=c.refallele and v.allele=c.altallele and s.idsample=c.idsample)
 WHERE
 $allowedprojects
@@ -7541,51 +7498,12 @@ while (@row = $out->fetchrow_array) {
 
 } # foreach sampleid
 
-@labels	= (
-	'n',
-	'idsnv',
-	'IGV Comment',
-	'Pedigree',
-	'Chr',
-	'Rating',
-	'ToDo',
-	'Confirmed',
-	'Gene symbol',
-	'Non syn/ Gene',
-	'DGV',
-	'Omim',
-	'Mouse',
-	'Class',
-	'Function',
-	'ExAC pLI',
-	'pph2',
-	'pph2 prob',
-	'Sift',
-	'CADD',
-	'Cases',
-	'Controls',
-	'Variant alleles',
-	'SNV Qual',
-	'Geno- type Qual',
-	'Map Qual',
-	'Depth',
-	'% Var',
-	"$dbsnp",
-	'av Het',
-	'HGMD',
-	'ClinVar',
-	'1000 genomes AF',
-	'gnomAD ea',
-	'gnomAD aa',
-	'Kaviar AC',
-	'Valid',
-	'Transcripts',
-	'Primer'
-	);
+# Now print table
+(@labels) = &resultlabels();
 
 $i=0;
 
-&tableheaderDefault();
+&tableheaderResults();
 print "<thead><tr>";
 foreach (@labels) {
 	print "<th align=\"center\">$_</th>";
@@ -7595,13 +7513,14 @@ print "</tr></thead><tbody>\n";
 $n=1;
 my $aref;
 my $damaging     = 0;
+my $omimmode     = "";
+my $omimdiseases = "";
 my $program      = "";
 my $rating       = "";
 my $checked      = "";
 my $confirmed    = "";
 my $idsamplesvcf = "";
 my $idsnvsvcf    = "";
-my $contextmenu  = "\n<script type=\"text/javascript\">";
 #for  $aref (@row2) { 
 #	@row=@{$aref};
 for  $aref (sort keys %row2) { 
@@ -7642,62 +7561,56 @@ for  $aref (sort keys %row2) {
 				$idsamplesvcf .= "$cidsample,";
 				$idsnvsvcf    .= "$cidsnv,";
 				print "<tr>";
-				print "<td $class align=\"center\">$n</td>";
+				print "<td align=\"center\">$n</td>";
 				$n++;
 			}
-			if ($i == 3) {
-				$tmp=&ucsclink2($row[$i]);
-				print "<td $class align=\"center\">$tmp</td>";
-				print "<td $class>$rating</td>";
-				print "<td $class>$checked</td>";
-				print "<td $class>$confirmed</td>";
+			if ($i == 1) {
+				print qq#
+				<td style='white-space:nowrap;'>
+				<div class="dropdown">
+				$row[$i]&nbsp;&nbsp;
+				<a href="comment.pl?idsnv=$cidsnv&idsample=$cidsample&reason=ad">
+				<img style='width:12pt;height:12pt;' src="/EVAdb/evadb_images/browser-window.png" title="Variant annotation" />
+				</a>
+				</div>
+				</td>
+				#;
 			}
-			elsif ($i == 7) {
-				($tmp)=&omim($dbh,$row[$i]);
-				print "<td $class>$tmp</td>";
+			elsif ($i == 5) {
+				$tmp=&ucsclink2($row[$i]);
+				print "<td align=\"center\">$tmp</td>";
 			}
 			elsif ($i == 9) {
-				($tmp)=&vcf2mutalyzer($dbh,$cidsnv);
-				print "<td $class align=\"center\">$tmp</td>";
+				($tmp,$omimmode,$omimdiseases)=&omim($dbh,$row[$i]);
+				print "<td $class align=\"center\">$tmp</td><td>$omimmode</td><td style='min-width:350px'>$omimdiseases</td>\n";
 			}
-			elsif (($i==13) or ($i==14)) { # !!!to change
-				if ($i==13) {$program = 'polyphen2';}
-				if ($i==14) {$program = 'sift';}
+			elsif ($i == 11) {
+				($tmp)=&vcf2mutalyzer($dbh,$cidsnv);
+				print "<td align=\"center\">$tmp</td>";
+			}
+			elsif (($i==24) or ($i==25)) {
+				if ($i==24) {$program = 'polyphen2';}
+				if ($i==25) {$program = 'sift';}
 				$damaging=&damaging($program,$row[$i]);
 				if ($damaging==1) {
 					print "<td $warningtdbg>$row[$i]</td>";
 				}
 				else {
-					print "<td $class> $row[$i]</td>";
+					print "<td> $row[$i]</td>";
 				}
 			}
-			elsif ($i == 22) { # cnv exomedetph
+			elsif ($i == 31) { # cnv exomedetph
 				$tmp=$row[$i];
-				if ($row[9] eq "cnv") {
-					$tmp=$tmp/100;
+				if ($row[11] eq "cnv") {
+				$tmp=$tmp/100;
 				}
-				print "<td $class>$tmp</td>";
+				print "<td>$tmp</td>";
 			}
-			elsif ($i == 1) {
-			$contextmenu .= "
-			\$(function(){
-			   \$.contextMenu({
-			       	selector: '.context-menu-one$n',
-			        items: {
-			        \"comment\":    {name: \"<a href='comment.pl?idsnv=$cidsnv&idsample=$cidsample&reason=ad' title='Comment page'>Comment</a>\"},
-			        }
-			    });
-			});
-			";
-			print qq#
-			<td $class><div class="context-menu-one$n" title="Right click for menu." align="center">
-			$row[$i]
-			</div>
-			</td>
-			#;
+			elsif ($i == 33) { # transcripts
+				print "<td align=\"center\" style='white-space:nowrap;'>$row[$i]</td>\n";
 			}
 			else {
-				print "<td $class> $row[$i]</td>";
+				print "<td align=\"center\"> $row[$i]</td>";
 			}
 			if ($i == @row-1) {
 				print "</tr>\n";
@@ -7709,11 +7622,9 @@ for  $aref (sort keys %row2) {
 	}
 }
 print "</tbody></table></div>";
-#&tablescript("10","14","11,12,13");
 
 &callvcf($idsamplesvcf,$idsnvsvcf);
 
-print "$contextmenu</script> ";
 
 $out->finish;
 }
@@ -8103,7 +8014,6 @@ my $checked      = "";
 my $confirmed    = "";
 my $idsamplesvcf = "";
 my $idsnvsvcf    = "";
-my $contextmenu  = "\n<script type=\"text/javascript\">";
 #for  $aref (@row2) { 
 #	@row=@{$aref};
 for  $aref (sort keys %row2) { # sorted by chromosome position
@@ -8162,22 +8072,16 @@ for  $aref (sort keys %row2) { # sorted by chromosome position
 				print "<td $class>$confirmed</td>";
 			}
 			elsif ($i == 1) {
-			$contextmenu .= "
-			\$(function(){
-			   \$.contextMenu({
-			       	selector: '.context-menu-one$n',
-			        items: {
-			        \"comment\":    {name: \"<a href='comment.pl?idsnv=$cidsnv&idsample=$cidsample&reason=vcf_tumor&table=wholegenomehg19.variant' title='Comment page'>Comment</a>\"},
-			        }
-			    });
-			});
-			";
-			print qq#
-			<td $class><div class="context-menu-one$n" title="Right click for menu." align="center">
-			$row[$i]
-			</div>
-			</td>
-			#;
+				print qq#
+				<td style='white-space:nowrap;'>
+				<div class="dropdown">
+				$row[$i]&nbsp;&nbsp;
+				<a href="comment.pl?idsnv=$cidsnv&idsample=$cidsample&reason=vcf_tumor&table=wholegenomehg19.variant">
+				<img style='width:12pt;height:12pt;' src="/EVAdb/evadb_images/browser-window.png" title="Variant annotation" />
+				</a>
+				</div>
+				</td>
+				#;
 			}
 			elsif (($i == 8) or ($i == 9)) {
 				print "<td $class style='max-width:50px;overflow:hidden;word-wrap:break-word;'> $row[$i]</td>";
@@ -8199,11 +8103,9 @@ for  $aref (sort keys %row2) { # sorted by chromosome position
 	}
 }
 print "</tbody></table></div>";
-#&tablescript("10","14","11,12,13");
 
 #&callvcf($idsamplesvcf,$idsnvsvcf);
 
-print "$contextmenu</script> ";
 
 $out->finish;
 }
@@ -8614,7 +8516,6 @@ my $checked      = "";
 my $confirmed    = "";
 my $idsamplesvcf = "";
 my $idsnvsvcf    = "";
-my $contextmenu  = "\n<script type=\"text/javascript\">";
 #for  $aref (@row2) { 
 #	@row=@{$aref};
 for  $aref (sort keys %row2) { # sorted by chromosome position
@@ -8673,22 +8574,16 @@ for  $aref (sort keys %row2) { # sorted by chromosome position
 				print "<td $class>$confirmed</td>";
 			}
 			elsif ($i == 1) {
-			$contextmenu .= "
-			\$(function(){
-			   \$.contextMenu({
-			       	selector: '.context-menu-one$n',
-			        items: {
-			        \"comment\":    {name: \"<a href='comment.pl?idsnv=$cidsnv&idsample=$cidsample&reason=vcf_trio&table=wholegenomehg19.variant' title='Comment page'>Comment</a>\"},
-			        }
-			    });
-			});
-			";
-			print qq#
-			<td $class><div class="context-menu-one$n" title="Right click for menu." align="center">
-			$row[$i]
-			</div>
-			</td>
-			#;
+				print qq#
+				<td style='white-space:nowrap;'>
+				<div class="dropdown">
+				$row[$i]&nbsp;&nbsp;
+				<a href="comment.pl?idsnv=$cidsnv&idsample=$cidsample&reason=vcf_trio&table=wholegenomehg19.variant">
+				<img style='width:12pt;height:12pt;' src="/EVAdb/evadb_images/browser-window.png" title="Variant annotation" />
+				</a>
+				</div>
+				</td>
+				#;
 			}
 			elsif (($i == 8) or ($i == 9)) {
 				print "<td $class style='max-width:50px;overflow:hidden;word-wrap:break-word;'> $row[$i]</td>";
@@ -8710,11 +8605,9 @@ for  $aref (sort keys %row2) { # sorted by chromosome position
 	}
 }
 print "</tbody></table></div>";
-#&tablescript("10","14","11,12,13");
 
 #&callvcf($idsamplesvcf,$idsnvsvcf);
 
-print "$contextmenu</script> ";
 
 $out->finish;
 }
@@ -9058,47 +8951,38 @@ file=$igvserver","%3Fsid=$sess_id%26sname=",s.name,"%26file=merged.rmdup.bam"
 ",$igvserver","%3Fsid=$sess_id%26sname=$father%26file=merged.rmdup.bam.bai",
 "\&locus=",v.chrom,"\:",v.start,"-",v.end,"\&merge=true\&name=",s.name,",$mother,$father'",
 ">",s.name,"</a>"),
-concat("<a href='http://localhost:$igvport/load?file=$igvserver",
-"%3Fsid=$sess_id%26sname=$mother%26file=merged.rmdup.bam","\&locus=",v.chrom,"\:",v.start,"-",v.end,"\&merge=true\&name=$mother",
-"'>","Mother $mother</a>"),
-concat("<a href='http://localhost:$igvport/load?file=$igvserver",
-"%3Fsid=$sess_id%26sname=$father%26file=merged.rmdup.bam","\&locus=",v.chrom,"\:",v.start,"-",v.end,"\&merge=true\&name=$father",
-"'>","Father $father</a>"),
+s.pedigree,
+s.sex,
+d.symbol,
 concat(v.chrom,' ',v.start,' ',v.end,' ',v.class,' ',v.refallele,' ',v.allele),
+c.rating,
+c.patho,
 group_concat(distinct $genelink separator " "),
-group_concat(distinct g.nonsynpergene,' (', g.delpergene,')'),
-group_concat(distinct dgv.depth),
 group_concat(distinct g.omim separator " "),
 group_concat(distinct $mgiID separator " "),
 v.class,replace(v.func,',',' '),
-group_concat(DISTINCT $exac_gene_link separator ' '),
+group_concat(distinct x.alleles),
+f.fsample,
+f.samplecontrols,
+group_concat(DISTINCT $exac_gene_link separator '<br>'),
+group_concat(DISTINCT exac.mis_z separator '<br>'),
+group_concat(DISTINCT '<a href="http://$hgmdserver/hgmd/pro/mut.php?accession=',h.id,'">',h.id,'</a>'),
+group_concat(DISTINCT $clinvarlink separator '<br>'),
+group_concat(DISTINCT $exac_link separator '<br>'),
+group_concat(distinct g.nonsynpergene,' (', g.delpergene,')'),
+group_concat(distinct dgv.depth),
 group_concat(DISTINCT pph.hvar_prediction separator ' '),
 group_concat(DISTINCT pph.hvar_prob separator ' '),
 group_concat(DISTINCT sift.score separator ' '),
 group_concat(DISTINCT cadd.phred separator ' '),
-(f.fsample),
-(f.samplecontrols),
-group_concat(distinct x.alleles),
+group_concat(distinct x.filter),
 group_concat(distinct x.snvqual),
 group_concat(distinct x.gtqual),
 group_concat(distinct x.mapqual),
 group_concat(distinct x.coverage),
 group_concat(distinct x.percentvar),
-group_concat(distinct x.filter),
-concat($rssnplink),
-avhet,
-group_concat(DISTINCT '<a href="http://$hgmdserver/hgmd/pro/mut.php?accession=',h.id,'">',h.id,'</a>'),
-group_concat(DISTINCT $clinvarlink separator '<br>'),
-concat(v.af),
-group_concat(DISTINCT $exac_ae_link separator '<br>'),
-group_concat(DISTINCT $exac_aa_link separator '<br>'),
-group_concat(DISTINCT $kaviar_link separator '<br>'),
-valid,
-v.transcript,
+replace(v.transcript,':','<br>'),
 group_concat(DISTINCT $primer SEPARATOR '<br>'),
-c.rating,
-c.checked,
-c.confirmed,
 v.idsnv,
 s.name,
 group_concat(DISTINCT dg.class),
@@ -9108,21 +8992,20 @@ snv v
 INNER JOIN snvsample                    x ON (v.idsnv = x.idsnv) 
 LEFT  JOIN $coredb.dgvbp              dgv ON (v.chrom = dgv.chrom AND v.start=dgv.start)
 INNER JOIN $sampledb.sample             s ON (s.idsample = x.idsample)
-LEFT  JOIN snvgene                      y ON (v.idsnv = y.idsnv)
-LEFT  JOIN gene                         g ON (g.idgene = y.idgene)
-LEFT  JOIN $coredb.evsscores         exac ON (g.genesymbol=exac.gene)
-LEFT  JOIN $sampledb.mouse             mo ON (g.genesymbol = mo.humanSymbol)
-LEFT  JOIN hgmd_pro.$hg19_coords        h ON (v.chrom = h.chrom AND v.start = h.pos  AND v.refallele=h.ref AND v.allele=h.alt)
 INNER JOIN $sampledb.disease2sample    ds ON (s.idsample = ds.idsample)
 INNER JOIN $sampledb.disease            d ON (ds.iddisease = d.iddisease)
 LEFT  JOIN snv2diseasegroup             f ON (v.idsnv = f.fidsnv AND d.iddiseasegroup=f.fiddiseasegroup) 
+LEFT  JOIN snvgene                      y ON (v.idsnv = y.idsnv)
+LEFT  JOIN gene                         g ON (g.idgene = y.idgene)
 LEFT  JOIN disease2gene                dg ON (ds.iddisease=dg.iddisease AND g.idgene=dg.idgene)
+LEFT  JOIN $sampledb.mouse             mo ON (g.genesymbol = mo.humanSymbol)
 LEFT  JOIN $coredb.pph3               pph ON (v.chrom=pph.chrom and v.start=pph.start and v.refallele=pph.ref and v.allele=pph.alt)
 LEFT  JOIN $coredb.sift              sift ON (v.chrom=sift.chrom and v.start=sift.start and v.refallele=sift.ref and v.allele=sift.alt)
 LEFT  JOIN $coredb.cadd              cadd ON (v.chrom=cadd.chrom and v.start=cadd.start and v.refallele=cadd.ref and v.allele=cadd.alt)
-LEFT  JOIN $coredb.clinvar             cv ON (v.chrom=cv.chrom and v.start=cv.start and v.refallele=cv.ref and v.allele=cv.alt)
 LEFT  JOIN $coredb.evs                evs ON (v.chrom=evs.chrom and v.start=evs.start and v.refallele=evs.refallele and v.allele=evs.allele)
-LEFT  JOIN $coredb.kaviar               k ON (v.chrom=k.chrom and v.start=k.start and v.refallele=k.refallele and v.allele=k.allele)
+LEFT  JOIN $coredb.evsscores         exac ON (g.genesymbol=exac.gene)
+LEFT  JOIN hgmd_pro.$hg19_coords        h ON (v.chrom = h.chrom AND v.start = h.pos  AND v.refallele=h.ref AND v.allele=h.alt)
+LEFT  JOIN $coredb.clinvar             cv ON (v.chrom=cv.chrom and v.start=cv.start and v.refallele=cv.ref and v.allele=cv.alt)
 LEFT  JOIN $exomevcfe.comment           c ON (v.chrom=c.chrom and v.start=c.start and v.refallele=c.refallele and v.allele=c.altallele and s.idsample=c.idsample)
 WHERE
 s.idsample = ?
@@ -9200,51 +9083,11 @@ $while++;
 } #end foreach sample
 
 # Now print table
-@labels	= (
-	'n',
-	'idsnv',
-	'IGV Comment',
-	'Chr',
-	'Rating',
-	'ToDo',
-	'Confirmed',
-	'Gene symbol',
-	'NonSyn/ Gene',
-	'DGV',
-	'Omim',
-	'Mouse',
-	'Class',
-	'Function',
-	'ExAC pLI',
-	'pph2',
-	'pph2 prob',
-	'Sift',
-	'CADD',
-	'Cases',
-	'Controls',
-	'Variant alleles',
-	'SNV Qual',
-	'Geno- type Qual',
-	'Map Qual',
-	'Depth',
-	'%Var',
-	'Filter',
-	"$dbsnp",
-	'av Het',
-	'HGMD',
-	'ClinVar',
-	'1000 genomes AF',
-	'gnomAD ea',
-	'gnomAD aa',
-	'Kaviar AC',
-	'Valid',
-	'Transcripts',
-	'Primer'
-	);
+(@labels) = &resultlabels();
 
 $i=0;
 
-&tableheaderDefault();
+&tableheaderResults();
 print "<thead><tr>";
 foreach (@labels) {
 	print "<th align=\"center\">$_</th>";
@@ -9261,7 +9104,8 @@ my $checked      = "";
 my $confirmed    = "";
 my $idsamplesvcf = "";
 my $idsnvsvcf    = "";
-my $contextmenu  = "\n<script type=\"text/javascript\">";
+my $omimmode     = "";
+my $omimdiseases = "";
 
 for  $aref (@row2) { 
 	@row=@{$aref};
@@ -9284,15 +9128,6 @@ for  $aref (@row2) {
 	if (!defined($row[-1])) {$row[-1] = "";}
 	$idsnvtmp=$row[-1];
 	pop(@row); #delete idsnv
-	if (!defined($row[-1])) {$row[-1] = "";}
-	$confirmed = $row[-1];
-	pop(@row); #delete confirmed
-	if (!defined($row[-1])) {$row[-1] = "";}
-	$checked = $row[-1];
-	pop(@row); #delete checked
-	if (!defined($row[-1])) {$row[-1] = "";}
-	$rating = $row[-1];
-	pop(@row); #delete rating
 	foreach (@row) {
 		if (!defined($row[$i])) {$row[$i] = "";}
 		if ($nngenesymbol{$row[5]} >= $ref->{"npedigrees"} ) {
@@ -9300,58 +9135,56 @@ for  $aref (@row2) {
 				$idsamplesvcf .= "$idchild,";
 				$idsnvsvcf    .= "$idsnvtmp,";
 				print "<tr>";
-				print "<td $class align=\"center\">$n</td>";
+				print "<td align=\"center\">$n</td>";
 				$n++;
 			}
-			if ($i == 4) {
+			if ($i == 5) {
 				$tmp=&ucsclink2($row[$i]);
-				print "<td $class>$tmp</td>";
-				print "<td $class>$rating</td>";
-				print "<td $class>$checked</td>";
-				print "<td $class>$confirmed</td>";
+				print "<td>$tmp</td>";
 			}
-			# jedesmal aendern
-			elsif ($i == 10) {
+			elsif ($i == 1) {
+				print qq#
+				<td style='white-space:nowrap;'>
+				<div class="dropdown">
+				$row[$i]&nbsp;&nbsp;
+				<a href="comment.pl?idsnv=$idsnvtmp&idsample=$idchild&reason=denovo">
+				<img style='width:12pt;height:12pt;' src="/EVAdb/evadb_images/browser-window.png" title="Variant annotation" />
+				</a>
+				</div>
+				</td>
+				#;
+			}
+			elsif ($i == 9) { #omim
+				($tmp,$omimmode,$omimdiseases)=&omim($dbh,$row[$i]);
+				print "<td $class align=\"center\">$tmp</td><td>$omimmode</td><td style='min-width:350px'>$omimdiseases</td>\n";
+			}
+			elsif ($i == 11) { #class
 				($tmp)=&vcf2mutalyzer($dbh,$idsnvtmp);
-				print "<td $class align=\"center\">$tmp</td>";
+				print "<td align=\"center\">$tmp</td>";
 			}
-			elsif ($i == 8) {
-				($tmp)=&omim($dbh,$row[$i]);
-				print "<td $class>$tmp</td>";
-			}
-			elsif (($i==14) or ($i==15)) {
-				if ($i==14) {$program = 'polyphen2';}
-				if ($i==15) {$program = 'sift';}
+			elsif (($i==24) or ($i==25)) {
+				if ($i==24) {$program = 'polyphen2';}
+				if ($i==25) {$program = 'sift';}
 				$damaging=&damaging($program,$row[$i]);
 				if ($damaging==1) {
 					print "<td $warningtdbg>$row[$i]</td>";
 				}
 				else {
-					print "<td $class> $row[$i]</td>";
+					print "<td> $row[$i]</td>";
 				}
 			}
-			elsif ($i == 23) { # cnv exomedetph
+			elsif ($i == 31) { #in depth for cnv exomedetph
 				$tmp=$row[$i];
-				if ($row[10] eq "cnv") {
+				if ($row[11] eq "cnv") {
 					$tmp=$tmp/100;
 				}
-				print "<td $class>$tmp</td>";
+				print "<td>$tmp</td>";
 			}
-			elsif ($i == 1) {
-			$contextmenu .= "
-			contextComment(\"$n\", \"$idsnvtmp\", \"$idchild\", \"denovo\");";
-			print qq#
-			<td $class><div class="context-menu-one$n" title="Right click for menu." align="center">
-			$row[$i]
-			</div>
-			</td>
-			#;
-			}
-			elsif (($i==2) or ($i==3)) {
-				# do nothing, are the igv links for the parents
+			elsif ($i == 33) { # cnv exomedetph
+				print "<td align=\"center\" style='white-space:nowrap;'>$row[$i]</td>\n";
 			}
 			else {
-				print "<td $class> $row[$i]</td>";
+				print "<td align=\"center\"> $row[$i]</td>\n";
 			}
 			if ($i == @row-1) {
 				print "</tr>\n";
@@ -9362,11 +9195,8 @@ for  $aref (@row2) {
 }
 
 print "</tbody></table></div>";
-#&tablescript("9","10");
 
 &callvcf($idsamplesvcf,$idsnvsvcf);
-
-print "$contextmenu</script>";
 
 $out->finish;
 }
@@ -10097,6 +9927,52 @@ sub trim($)
 }
 
 ########################################################################
+# resultlabels
+########################################################################
+sub resultlabels {
+my @labels	= (
+	'n',
+	'idsnv',
+	'IGV Comment',
+	'Pedigree',
+	'Sex',
+	'Diagnosis',
+	'Chr',
+	'Rating',
+	'Pathogenicity',
+	'Gene symbol',
+	'Omim',
+	'Mode',
+	'Omim disease',
+	'Mouse',
+	'Class',
+	'Function',
+	'Variant alleles',
+	'Cases',
+	'Controls',
+	'gnomAD pLI',
+	'missense Z-score',
+	'HGMD',
+	'ClinVar',
+	'gnomAD',
+	'NonSyn/ Gene',
+	'DGV',
+	'pph2',
+	'pph2 prob',
+	'Sift',
+	'CADD',
+	'Filter',
+	'SNV Qual',
+	'Geno- type Qual',
+	'Map Qual',
+	'Depth',
+	'%Var',
+	'Transcripts',
+	'Primer'
+	);
+return(@labels);	
+}
+########################################################################
 # searchResultsTumor searchtumor
 ########################################################################
 sub searchResultsTumor {
@@ -10276,58 +10152,62 @@ group_concat(distinct "<a href='http://localhost:$igvport/load?file=$igvserver",
 "\&locus=",v.chrom,"\:",v.start,"-",v.end,"\&merge=true\&name=",s.name,",$excludedsamples[$i]'"," title='Right click for menu'",
 ">",s.name,"</a>"),
 group_concat(distinct s.pedigree),
+s.sex,
+d.symbol,
 concat(v.chrom,' ',v.start,' ',v.end,' ',v.class,' ',v.refallele,' ',v.allele),
-group_concat(distinct $genelink separator " "),
-group_concat(distinct g.nonsynpergene,' (', g.delpergene,')'),
-group_concat(distinct dgv.depth),
+c.rating,
+c.patho,
+group_concat(distinct $genelink separator '<br>'),
 group_concat(distinct g.omim separator " "),
 group_concat(distinct $mgiID separator " "),
-v.class,replace(v.func,',',' '),
+v.class,
+replace(v.func,',',' '),
+group_concat(distinct x.alleles),
+f.fsample,
+f.samplecontrols,
+group_concat(DISTINCT $exac_gene_link separator '<br>'),
+group_concat(DISTINCT exac.mis_z separator '<br>'),
+group_concat(DISTINCT '<a href="http://$hgmdserver/hgmd/pro/mut.php?accession=',h.id,'">',h.id,'</a>'),
+group_concat(DISTINCT $clinvarlink separator '<br>'),
+group_concat(DISTINCT $exac_link separator '<br>'),
+group_concat(distinct g.nonsynpergene,' (', g.delpergene,')'),
+group_concat(distinct dgv.depth),
+
 group_concat(DISTINCT pph.hvar_prediction separator ' '),
 group_concat(DISTINCT pph.hvar_prob separator ' '),
 group_concat(DISTINCT sift.score separator ' '),
-(f.fsample),
-(f.samplecontrols),
-group_concat(distinct x.alleles),
+group_concat(DISTINCT cadd.phred separator ' '),
+group_concat(distinct x.filter),
 group_concat(distinct x.snvqual),
 group_concat(distinct x.gtqual),
 group_concat(distinct x.mapqual),
 group_concat(distinct x.coverage),
 group_concat(distinct x.percentvar),
-concat($rssnplink),
-avhet,
-group_concat(DISTINCT '<a href="http://$hgmdserver/hgmd/pro/mut.php?accession=',h.id,'">',h.id,'</a>'),
-group_concat(DISTINCT $clinvarlink separator '<br>'),
-af,
-group_concat(DISTINCT $exac_ae_link separator '<br>'),
-group_concat(DISTINCT $exac_aa_link separator '<br>'),
-valid,
-v.transcript,
+replace(v.transcript,':','<br>'),
 group_concat(DISTINCT $primer SEPARATOR '<br>'),
 group_concat(dg.class),
 x.idsample,
-c.rating,
-c.checked,
-c.confirmed,
 v.idsnv
 FROM
 snv v 
-INNER JOIN snvsample                    x ON (v.idsnv = x.idsnv) 
-LEFT  JOIN $coredb.dgvbp              dgv ON (v.chrom = dgv.chrom AND v.start=dgv.start)
-INNER JOIN $sampledb.sample             s ON (s.idsample = x.idsample)
-LEFT  JOIN snvgene                      y ON (v.idsnv = y.idsnv)
-LEFT  JOIN gene                         g ON (g.idgene = y.idgene)
-LEFT  JOIN disease2gene                dg ON (g.idgene = dg.idgene AND dg.iddisease=$dgiddisease)
-LEFT  JOIN $sampledb.mouse             mo ON (g.genesymbol = mo.humanSymbol)
-LEFT  JOIN hgmd_pro.$hg19_coords        h ON (v.chrom = h.chrom AND v.start = h.pos  AND v.refallele=h.ref AND v.allele=h.alt)
-INNER JOIN $sampledb.disease2sample    ds ON (s.idsample = ds.idsample)
-INNER JOIN $sampledb.disease            d ON (ds.iddisease = d.iddisease)
-LEFT  JOIN snv2diseasegroup             f ON (v.idsnv = f.fidsnv AND d.iddiseasegroup=f.fiddiseasegroup) 
-LEFT  JOIN $coredb.pph3               pph ON (v.chrom=pph.chrom and v.start=pph.start and v.refallele=pph.ref and v.allele=pph.alt)
-LEFT  JOIN $coredb.sift              sift ON (v.chrom=sift.chrom and v.start=sift.start and v.refallele=sift.ref and v.allele=sift.alt)
-LEFT  JOIN $coredb.clinvar             cv ON (v.chrom=cv.chrom and v.start=cv.start and v.refallele=cv.ref and v.allele=cv.alt)
-LEFT  JOIN $coredb.evs                evs ON (v.chrom=evs.chrom and v.start=evs.start and v.refallele=evs.refallele and v.allele=evs.allele)
-LEFT  JOIN $exomevcfe.comment           c ON (v.chrom=c.chrom and v.start=c.start and v.refallele=c.refallele and v.allele=c.altallele and s.idsample=c.idsample)
+INNER JOIN snvsample                   x ON (v.idsnv = x.idsnv) 
+LEFT  JOIN $coredb.dgvbp             dgv ON (v.chrom = dgv.chrom AND v.start=dgv.start)
+INNER JOIN $sampledb.sample            s ON (s.idsample = x.idsample)
+INNER JOIN $sampledb.disease2sample   ds ON (s.idsample = ds.idsample)
+INNER JOIN $sampledb.disease           d ON (ds.iddisease = d.iddisease)
+LEFT  JOIN snv2diseasegroup            f ON (v.idsnv = f.fidsnv AND d.iddiseasegroup=f.fiddiseasegroup) 
+LEFT  JOIN snvgene                     y ON (v.idsnv = y.idsnv)
+LEFT  JOIN gene                        g ON (g.idgene = y.idgene)
+LEFT  JOIN disease2gene               dg ON (g.idgene = dg.idgene AND dg.iddisease=$dgiddisease)
+LEFT  JOIN $sampledb.mouse            mo ON (g.genesymbol = mo.humanSymbol)
+LEFT  JOIN $coredb.pph3              pph ON (v.chrom=pph.chrom and v.start=pph.start and v.refallele=pph.ref and v.allele=pph.alt)
+LEFT  JOIN $coredb.sift             sift ON (v.chrom=sift.chrom and v.start=sift.start and v.refallele=sift.ref and v.allele=sift.alt)
+LEFT  JOIN $coredb.cadd             cadd ON (v.chrom=cadd.chrom and v.start=cadd.start and v.refallele=cadd.ref and v.allele=cadd.alt)
+LEFT  JOIN $coredb.evs               evs ON (v.chrom=evs.chrom and v.start=evs.start and v.refallele=evs.refallele and v.allele=evs.allele)
+LEFT  JOIN $coredb.evsscores        exac ON (g.genesymbol=exac.gene)
+LEFT  JOIN hgmd_pro.$hg19_coords       h ON (v.chrom = h.chrom AND v.start = h.pos  AND v.refallele=h.ref AND v.allele=h.alt)
+LEFT  JOIN $coredb.clinvar            cv ON (v.chrom=cv.chrom and v.start=cv.start and v.refallele=cv.ref and v.allele=cv.alt)
+LEFT  JOIN $exomevcfe.comment          c ON (v.chrom=c.chrom and v.start=c.start and v.refallele=c.refallele and v.allele=c.altallele and s.idsample=c.idsample)
 WHERE
 $allowedprojects
 $function
@@ -10395,48 +10275,13 @@ while (@row = $out->fetchrow_array) {
 $i++;
 } # end for eache idsample
 
-@labels	= (
-	'n',
-	'idsnv',
-	'IGV Comment',
-	'Pedigree',
-	'Chr',
-	'Rating',
-	'ToDo',
-	'Confirmed',
-	'Gene symbol',
-	'Non Syn/ Gene',
-	'DGV',
-	'Omim',
-	'Mouse',
-	'Class',
-	'Function',
-	'pph2',
-	'pph2 prob',
-	'Sift',
-	'Cases',
-	'Controls',
-	'Variant alleles',
-	'SNV Qual',
-	'Geno- type Qual',
-	'Map Qual',
-	'Depth',
-	'% Var',
-	"$dbsnp",
-	'av Het',
-	'HGMD',
-	'ClinVar',
-	'1000 genomes AF',
-	'gnomAD ea',
-	'gnomAD aa',
-	'Valid',
-	'Transcripts',
-	'Primer'
-	);
+
+# Now print table
+(@labels) = &resultlabels();
 
 $i=0;
 
-&tableheaderDefault();
+&tableheaderResults();
 print "<thead><tr>";
 foreach (@labels) {
 	print "<th align=\"center\">$_</th>";
@@ -10446,16 +10291,14 @@ print "</tr></thead><tbody>\n";
 $n=1;
 my $aref;
 my $program   = "";
+my $omimmode     = "";
+my $omimdiseases = "";
 my $damaging  = "";
 my $idsnvtmp  = "";
-my $rating    = "";
-my $checked   = "";
-my $confirmed = "";
 my $idtumor   = "";
 # for vcf
 my $idsamplesvcf = "";
 my $idsnvsvcf    = "";
-my $contextmenu  = "\n<script type=\"text/javascript\">";
 for  $aref (@row2) { 
 	@row=@{$aref};
 	$i=0;
@@ -10467,12 +10310,6 @@ for  $aref (@row2) {
 	if ($ngenesymbol{$row[2]} >= $ref->{"ncases"} ) {
 	$idsnvtmp=$row[-1];
 	pop(@row); #delete idsnv
-	$confirmed = $row[-1];
-	pop(@row); #delete confirmed
-	$checked = $row[-1];
-	pop(@row); #delete checked
-	$rating = $row[-1];
-	pop(@row); #delete rating
 	$idtumor = $row[-1];
 	pop(@row); #delete idtumor
 	# bekannte Gene in disease2gene color red
@@ -10488,54 +10325,56 @@ for  $aref (@row2) {
 			$idsamplesvcf .= "$idtumor,";
 			$idsnvsvcf    .= "$idsnvtmp,";
 			print "<tr>";
-			print "<td $class align=\"center\">$n</td>";
+			print "<td align=\"center\">$n</td>";
 			$n++;
 		}
-		if ($i == 3) {
-			$tmp=&ucsclink2($row[$i]);
-			print "<td $class>$tmp</td>";
-			print "<td $class>$rating</td>";
-			print "<td $class>$checked</td>";
-			print "<td $class>$confirmed</td>";
-		}
-		elsif ($i == 1) {
-			$contextmenu .= "
-			contextComment(\"$n\", \"$idsnvtmp\", \"$idtumor\", \"tumor\");";
+		if ($i == 1) {
 			print qq#
-			<td $class><div class="context-menu-one$n" title="Right click for menu." align="center">
-			$row[$i]
+			<td style='white-space:nowrap;'>
+			<div class="dropdown">
+			$row[$i]&nbsp;&nbsp;
+			<a href="comment.pl?idsnv=$idsnvtmp&idsample=$idtumor&reason=tumor">
+			<img style='width:12pt;height:12pt;' src="/EVAdb/evadb_images/browser-window.png" title="Variant annotation" />
+			</a>
 			</div>
 			</td>
 			#;
 		}
-		elsif ($i == 7) {
-			($tmp)=&omim($dbh,$row[$i]);
-			print "<td $class>$tmp</td>";
+		elsif ($i == 5) {
+			$tmp=&ucsclink2($row[$i]);
+			print "<td>$tmp</td>";
 		}
 		elsif ($i == 9) {
-			($tmp)=&vcf2mutalyzer($dbh,$idsnvtmp);
-			print "<td $class align=\"center\">$tmp</td>";
+			($tmp,$omimmode,$omimdiseases)=&omim($dbh,$row[$i]);
+			print "<td $class align=\"center\">$tmp</td><td>$omimmode</td><td style='min-width:350px'>$omimdiseases</td>\n";
 		}
-		elsif (($i==12) or ($i==13)) { # !!!to change
-			if ($i==12) {$program = 'polyphen2';}
-			if ($i==13) {$program = 'sift';}
+		elsif ($i == 11) {
+			($tmp)=&vcf2mutalyzer($dbh,$idsnvtmp);
+			print "<td align=\"center\">$tmp</td>";
+		}
+		elsif (($i==24) or ($i==25)) {
+			if ($i==24) {$program = 'polyphen2';}
+			if ($i==25) {$program = 'sift';}
 			$damaging=&damaging($program,$row[$i]);
 			if ($damaging==1) {
 				print "<td $warningtdbg>$row[$i]</td>";
 			}
 			else {
-				print "<td $class> $row[$i]</td>";
+				print "<td> $row[$i]</td>";
 			}
 		}
-		elsif ($i == 20) { # cnv exomedetph
+		elsif ($i == 31) { # cnv exomedetph
 			$tmp=$row[$i];
-			if ($row[9] eq "cnv") {
+			if ($row[11] eq "cnv") {
 				$tmp=$tmp/100;
 			}
-			print "<td $class>$tmp</td>";
+			print "<td>$tmp</td>";
+		}
+		elsif ($i == 33) { # transcripts
+			print "<td align=\"center\" style='white-space:nowrap;'>$row[$i]</td>\n";
 		}
 		else {
-			print "<td $class> $row[$i]</td>";
+			print "<td align=\"center\"> $row[$i]</td>";
 		}
 		if ($i == @row-1) {
 			print "</tr>\n";
@@ -10545,11 +10384,9 @@ for  $aref (@row2) {
 	}
 }
 print "</tbody></table></div>";
-#&tablescript("8","9");
 
 &callvcf($idsamplesvcf,$idsnvsvcf);
 
-print "$contextmenu</script>";
 
 $out->finish;
 }
@@ -10821,7 +10658,6 @@ LEFT  JOIN disease2gene                dg ON (ds.iddisease=dg.iddisease AND g.id
 LEFT  JOIN $coredb.pph3               pph ON (v.chrom=pph.chrom and v.start=pph.start and v.refallele=pph.ref and v.allele=pph.alt)
 LEFT  JOIN $coredb.sift              sift ON (v.chrom=sift.chrom and v.start=sift.start and v.refallele=sift.ref and v.allele=sift.alt)
 LEFT  JOIN $coredb.evs                evs ON (v.chrom=evs.chrom and v.start=evs.start and v.refallele=evs.refallele and v.allele=evs.allele)
-LEFT  JOIN $coredb.kaviar               k ON (v.chrom=k.chrom and v.start=k.start and v.refallele=k.refallele and v.allele=k.allele)
 WHERE
 $individuals
 $rssnp
@@ -10896,50 +10732,12 @@ while (@row = $out->fetchrow_array) {
 
 }
 
-@labels	= (
-	'n',
-	'idsnv',
-	'IGV Comment',
-	'Pedigree',
-	'Chr',
-	'Rating',
-	'ToDo',
-	'Confirmed',
-	'Gene',
-	'NonSyn/ Gene',
-	'DGV',
-	'Omim',
-	'Mouse',
-	'Class',
-	'Function',
-	'pph2',
-	'pph2 prob',
-	'Sift',
-	'CADD',
-	'Cases',
-	'Controls',
-	'Variant alleles',
-	'SNV Qual',
-	'Geno- type Qual',
-	'Map Qual',
-	'Depth',
-	'Percent Var',
-	"$dbsnp",
-	'av Het',
-	'HGMD',
-	'ClinVar',
-	'1000 genomes AF',
-	'gnomAD ea',
-	'gnomAD aa',
-	'Kaviar AC',
-	'Valid',
-	'Transcripts',
-	'Primer'
-	);
+# Now print table
+(@labels) = &resultlabels();
 
-print q(<table border="1" cellspacing="0" cellpadding="2"> );
 $i=0;
 
+&tableheaderResults();
 print "<thead><tr>";
 foreach (@labels) {
 	print "<th align=\"center\">$_</th>";
@@ -10947,6 +10745,8 @@ foreach (@labels) {
 print "</tr></thead><tbody>\n";
 
 $n=1;
+my $omimmode     = "";
+my $omimdiseases = "";
 my $aref;
 my $tmpchild;
 my @tmp        =();
@@ -10961,11 +10761,8 @@ my @idsnv      = ();
 my $idsnv      = "";
 my $nidsnv     = "";
 my $idsample   = "";
-my $oldn       = 0;
 my $nrows      = 0;
 my $genesymbol = "";
-#my $tmpidsnv   = "";
-my $nplus      = 0;
 my $idsnvtmp   = "";
 my $rating     = "";
 my $checked    = "";
@@ -10973,14 +10770,12 @@ my $confirmed  = "";
 my $affected   = "";
 my $idsamplesvcf = "";
 my $idsnvsvcf    = "";
-my $contextmenu  = "\n<script type=\"text/javascript\">";
 my $diseaseflag=0;
 #for  $aref (@row2) { 
 	#@row1=@{$aref};
 for  $aref (sort keys %row2) { 
 	@row1=@{ $row2{$aref} };
 	$i=0;
-	$nplus = 0;
 	(@idsnv)=split(/\,/,$row1[0]);
 	$nrows = 0;
 	$nrows = @idsnv; #for table spanrow
@@ -10989,14 +10784,14 @@ for  $aref (sort keys %row2) {
 	#sometimes mother is NULL, sometimes 0
 	if ( (!defined($mother)) or ($mother == 0) ) {$mother = "";}
 	if ($mother ne "") { # for igv
-		$mother = &getigv($dbh,$mother,'Mother');
-		$mother = qq("mother":     {name: "$mother"},);
+		$mother = &getigv($dbh,$mother,'Mother');      # obsolet for contextMenus
+		$mother = qq("mother":     {name: "$mother"},); # obsolet for contextMenus
 	}
 	$father=$row1[7];
 	if ( (!defined($father)) or ($father == 0) ) {$father = "";}
 	if ($father ne "") {
-		$father = &getigv($dbh,$father,'Father');
-		$father = qq("father":     {name: "$father"},);
+		$father = &getigv($dbh,$father,'Father'); # obsolet for contextMenus
+		$father = qq("father":     {name: "$father"},); # obsolet for contextMenus
 	}
 	#print "idsnv $row1[0]<br>";
 	if ($ngenesymbol{$row1[2]} >= $ref->{"v.idsnv"} ) {
@@ -11024,15 +10819,6 @@ for  $aref (sort keys %row2) {
 		if (!defined($row[-1])) {$row[-1] = "";}
 		$idsnvtmp=$row[-1];
 		pop(@row); #delete idsnv
-		if (!defined($row[-1])) {$row[-1] = "";}
-		$confirmed = $row[-1];
-		pop(@row); #delete confirmed
-		if (!defined($row[-1])) {$row[-1] = "";}
-		$checked = $row[-1];
-		pop(@row); #delete checked
-		if (!defined($row[-1])) {$row[-1] = "";}
-		$rating = $row[-1];
-		pop(@row); #delete rating
 		if (!defined($row[-1])) {$row[-1] = "";}
 		$affected = $row[-1];
 		pop(@row); #delete affected
@@ -11071,109 +10857,80 @@ for  $aref (sort keys %row2) {
 				# (Erlaubt, falls das Kind 3 SNVs hat, und zwei davon vom Vater und 1 von der Mutter
 				# ($nplus==1) if one snv is printed, the next ones must be printed because rowspan is defined in the first snv (can be deleted, because of gene_with_homozygous
 				# gene_with_homozygous{$idsample}{$genesymbol}>=1, if a homozygous variant is present in child: display all variants
-		if (($n%2) == 1) {
-			print "<tr class='odd'>";
-		}
-		else 	{
-			print "<tr class='even'>";
-		}
+		print "<tr>";
 		
 		foreach (@row) { 
 				if (!defined($row[$i])) {$row[$i] = "";}
-				if (($i == 0) and ($n != $oldn)) { 
-					print "<td $class rowspan='$nrows' align=\"center\">$n</td>";
-					#$n++;
+				if ($i == 0) { 
+					print "<td align=\"center\">$n</td>";
 				}
-				if ($i == 3) {
+				if ($i == 1) {
+					if (!defined($mother)) {$mother="";}
+					if (!defined($father)) {$father="";}
+						print qq#
+						<td style='white-space:nowrap;'>
+						<div class="dropdown">
+						$row[$i]&nbsp;&nbsp;
+						<a href="comment.pl?idsnv=$idsnvtmp&idsample=$idsample&reason=ar">
+						<img style='width:12pt;height:12pt;' src="/EVAdb/evadb_images/browser-window.png" title="Variant annotation" />
+						</a>
+						</div>
+						</td>
+						#;
+				}
+				elsif ($i == 5) {
 					$idsamplesvcf .= "$idsample,";
 					$idsnvsvcf    .= "$idsnv,";
 					$tmp=&ucsclink2($row[$i]);
-					print "<td $class> $tmp</td>";
-					print "<td $class>$rating</td>";
-					print "<td $class>$checked</td>";
-					print "<td $class>$confirmed</td>";
-				}
-				# immer aendern, rowspan
-				elsif (($i == 4) or ($i == 5) or ($i == 8) or ($i == 2)) {
-					if ($n != $oldn) {
-						print "<td $class rowspan='$nrows' align=\"center\">$row[$i]</td>";
-					}
-				}
-				elsif ($i == 7) {
-					($tmp)=&omim($dbh,$row[$i]);
-					if ($n != $oldn) {
-						print "<td $class rowspan='$nrows' align=\"center\">$tmp</td>";
-					}
+					print "<td align=\"center\"> $tmp</td>";
+					$n++;
 				}
 				elsif ($i == 9) {
-					($tmp)=&vcf2mutalyzer($dbh,$idsnv);
-					print "<td $class align=\"center\">$tmp</td>";
+					($tmp,$omimmode,$omimdiseases)=&omim($dbh,$row[$i]);
+					print "<td $class align=\"center\">$tmp</td><td>$omimmode</td><td style='min-width:350px'>$omimdiseases</td>\n";
 				}
-				elsif (($i==12) or ($i==13)) {
-					if ($i==12) {$program = 'polyphen2';}
-					if ($i==13) {$program = 'sift';}
+				elsif ($i == 11) {
+					($tmp)=&vcf2mutalyzer($dbh,$idsnv);
+					print "<td align=\"center\">$tmp</td>";
+				}
+				elsif (($i==24) or ($i==25)) {
+					if ($i==24) {$program = 'polyphen2';}
+					if ($i==25) {$program = 'sift';}
 					$damaging=&damaging($program,$row[$i]);
 					if ($damaging==1) {
 						print "<td $warningtdbg>$row[$i]</td>";
 					}
 					else {
-						print "<td $class> $row[$i]</td>";
+						print "<td> $row[$i]</td>";
 					}
 				}
-				elsif ($i == 21) { # cnv exomedetph
+				elsif ($i == 31) { # cnv exomedetph
 					$tmp=$row[$i];
-					if ($row[9] eq "cnv") {
-						$tmp=$tmp/100;
+					if ($row[11] eq "cnv") {
+					$tmp=$tmp/100;
 					}
-					print "<td $class>$tmp</td>";
+					print "<td>$tmp</td>";
 				}
-				elsif ($i == 1) {
-				if (!defined($mother)) {$mother="";}
-				if (!defined($father)) {$father="";}
-				$contextmenu .="
-				\$(function(){
-			   	 \$.contextMenu({
-			       	 	selector: '.context-menu-one$nidsnv',
-			        	items: {
-					$mother
-					$father
-			            	\"comment\":    {name: \"<a href='comment.pl?idsnv=$idsnvtmp&idsample=$idsample&reason=ar' title='Comment page'>Comment</a>\"},
-			        	}
-			    	});
-				});
-				";				
-				#contextCommentParents(\"$nidsnv\", \"$idsnvtmp\", \"$idsample\", \"ar\", \"$mother\", \"$father\");";
-				print qq#
-				<td $class><div class="context-menu-one$nidsnv" title="Right click for menu." align="center">
-				$row[$i]
-				</div>
-				</td>
-				#;
+				elsif ($i == 33) { # transcripts
+					print "<td align=\"center\" style='white-space:nowrap;'>$row[$i]</td>\n";
 				}
 				else {
-					print "<td $class> $row[$i]</td>";
+					print "<td align=\"center\"> $row[$i]</td>";
 				}
-				if ($i == @row-1) { #hier, weil nicht jeder query result geprinted wird
+				if ($i == @row-1) { #hier, weil die letzte column nicht geprinted wird
 					print "</tr>\n";
-					$oldn=$n;
-					$nplus=1;
 				}
 				$i++;
 			}
 		}
 		#print "</tr>\n";
-		#$oldn=$n;
 	} # foreach @idsnv
 	} # if ngenesymbol
-	if ($nplus) {
-		$n++;
-	}
 }
 print "</tbody></table>";
 
 &callvcf($idsamplesvcf,$idsnvsvcf);
 
-print "$contextmenu</script>";
 
 $out->finish;
 }
@@ -11234,64 +10991,62 @@ SELECT
 group_concat(DISTINCT '<a href="listPosition.pl?idsnv=',v.idsnv,'" title="All carriers of this variant">',v.idsnv,'</a>' SEPARATOR '<br>'),
 group_concat(DISTINCT '<a href="http://localhost:$igvport/load?file=',$igvserver2,'" title="Open sample in IGV"','>',s.name,'</a>' SEPARATOR '<br>'),
 group_concat(DISTINCT s.pedigree),
+s.sex,
+d.symbol,
 group_concat(DISTINCT v.chrom,' ',v.start,' ',v.end,' ',v.class,' ',v.refallele,' ',v.allele SEPARATOR '|'),
+c.rating,
+c.patho,
 group_concat(DISTINCT $genelink),
-group_concat(DISTINCT g.nonsynpergene,' (', g.delpergene,')'),
-group_concat(DISTINCT dgv.depth),
 group_concat(DISTINCT g.omim separator ''),
 group_concat(DISTINCT $mgiID),
 group_concat(DISTINCT v.class),
-group_concat(DISTINCT v.func),
+replace(v.func,',',' '),
+group_concat(DISTINCT x.alleles),
+group_concat(DISTINCT f.fsample),
+group_concat(DISTINCT f.samplecontrols),
+group_concat(DISTINCT $exac_gene_link separator '<br>'),
+group_concat(DISTINCT exac.mis_z separator '<br>'),
+group_concat(DISTINCT '<a href="http://$hgmdserver/hgmd/pro/mut.php?accession=',h.id,'">',h.id,'</a>'),
+group_concat(DISTINCT $clinvarlink separator '<br>'),
+group_concat(DISTINCT $exac_link separator '<br>'),
+group_concat(DISTINCT g.nonsynpergene,' (', g.delpergene,')'),
+group_concat(DISTINCT dgv.depth),
 group_concat(DISTINCT pph.hvar_prediction separator ' '),
 group_concat(DISTINCT pph.hvar_prob separator ' '),
 group_concat(DISTINCT sift.score separator ' '),
 group_concat(DISTINCT cadd.phred separator ' '),
-group_concat(DISTINCT f.fsample),
-group_concat(DISTINCT f.samplecontrols),
-group_concat(DISTINCT x.alleles),
+group_concat(DISTINCT x.filter SEPARATOR ', '),
 group_concat(DISTINCT x.snvqual),
 group_concat(DISTINCT x.gtqual),
 group_concat(DISTINCT x.mapqual),
 group_concat(DISTINCT x.coverage),
 group_concat(DISTINCT x.percentvar),
-group_concat(DISTINCT $rssnplink SEPARATOR '<br>'),
-group_concat(DISTINCT avhet SEPARATOR '<br>'),
-group_concat(DISTINCT '<a href="http://$hgmdserver/hgmd/pro/mut.php?accession=',h.id,'">',h.id,'</a>'),
-group_concat(DISTINCT $clinvarlink separator '<br>'),
-group_concat(DISTINCT v.af),
-group_concat(DISTINCT $exac_ae_link separator '<br>'),
-group_concat(DISTINCT $exac_aa_link separator '<br>'),
-group_concat(DISTINCT $kaviar_link separator '<br>'),
-valid,
-group_concat(DISTINCT  v.transcript),
+replace(v.transcript,':','<br>'),
 group_concat(DISTINCT $primer SEPARATOR '<br>'),
 s.saffected,
-c.rating,
-c.checked,
-c.confirmed,
 v.idsnv,
 group_concat(DISTINCT g.genesymbol),
 group_concat(DISTINCT x.alleles),
 dg.class
 FROM
 snv v 
-RIGHT JOIN snvsample                    x ON (v.idsnv = x.idsnv) 
+INNER JOIN snvsample                    x ON (v.idsnv = x.idsnv) 
 LEFT  JOIN $coredb.dgvbp              dgv ON (v.chrom = dgv.chrom AND v.start=dgv.start)
-LEFT  JOIN $sampledb.sample             s ON (s.idsample = x.idsample)
-RIGHT JOIN snvgene                      y ON (v.idsnv = y.idsnv)
-RIGHT JOIN gene                         g ON (g.idgene = y.idgene)
-LEFT  JOIN $sampledb.mouse             mo ON (g.genesymbol = mo.humanSymbol)
-LEFT  JOIN hgmd_pro.$hg19_coords        h ON (v.chrom = h.chrom AND v.start = h.pos  AND v.refallele=h.ref AND v.allele=h.alt)
-LEFT  JOIN $sampledb.disease2sample    ds ON (s.idsample = ds.idsample)
+INNER JOIN $sampledb.sample             s ON (s.idsample = x.idsample)
+INNER JOIN $sampledb.disease2sample    ds ON (s.idsample = ds.idsample)
 INNER JOIN $sampledb.disease            d ON (ds.iddisease = d.iddisease)
 LEFT  JOIN snv2diseasegroup             f ON (v.idsnv = f.fidsnv AND d.iddiseasegroup=f.fiddiseasegroup) 
+LEFT  JOIN snvgene                      y ON (v.idsnv = y.idsnv)
+LEFT  JOIN gene                         g ON (g.idgene = y.idgene)
 LEFT  JOIN disease2gene                dg ON (dg.iddisease = ? AND g.idgene=dg.idgene)
+LEFT  JOIN $sampledb.mouse             mo ON (g.genesymbol = mo.humanSymbol)
 LEFT  JOIN $coredb.pph3               pph ON (v.chrom=pph.chrom and v.start=pph.start and v.refallele=pph.ref and v.allele=pph.alt)
 LEFT  JOIN $coredb.sift              sift ON (v.chrom=sift.chrom and v.start=sift.start and v.refallele=sift.ref and v.allele=sift.alt)
 LEFT  JOIN $coredb.cadd              cadd ON (v.chrom=cadd.chrom and v.start=cadd.start and v.refallele=cadd.ref and v.allele=cadd.alt)
-LEFT  JOIN $coredb.clinvar             cv ON (v.chrom=cv.chrom and v.start=cv.start and v.refallele=cv.ref and v.allele=cv.alt)
 LEFT  JOIN $coredb.evs                evs ON (v.chrom=evs.chrom and v.start=evs.start and v.refallele=evs.refallele and v.allele=evs.allele)
-LEFT  JOIN $coredb.kaviar               k ON (v.chrom=k.chrom and v.start=k.start and v.refallele=k.refallele and v.allele=k.allele)
+LEFT  JOIN $coredb.evsscores         exac ON (g.genesymbol=exac.gene)
+LEFT  JOIN hgmd_pro.$hg19_coords        h ON (v.chrom = h.chrom AND v.start = h.pos  AND v.refallele=h.ref AND v.allele=h.alt)
+LEFT  JOIN $coredb.clinvar             cv ON (v.chrom=cv.chrom and v.start=cv.start and v.refallele=cv.ref and v.allele=cv.alt)
 LEFT  JOIN $exomevcfe.comment           c ON (v.chrom=c.chrom and v.start=c.start and v.refallele=c.refallele and v.allele=c.altallele and s.idsample=c.idsample)
 WHERE
 v.idsnv = ?
@@ -11514,7 +11269,7 @@ print qq(
 
         var options = {
           title: 'Fraction of reads carrying the alternative allele',
-	  backgroundColor: '#fffff3',
+	  backgroundColor: '#ffffff',
 	  vAxis: {title: 'Percent', minValue : 0, maxValue : 100, logScale: false, format:'#.###'},
 	  hAxis: {title: 'bp'},
 	  lineWidth: 0,
@@ -11740,7 +11495,7 @@ LEFT JOIN snvgene                   y ON v.idsnv = y.idsnv
 LEFT JOIN gene                      g ON g.idgene = y.idgene
 LEFT JOIN $coredb.evs             evs ON (v.chrom=evs.chrom and v.start=evs.start and v.refallele=evs.refallele and v.allele=evs.allele)
 LEFT JOIN $coredb.kaviar            k ON (v.chrom=k.chrom and v.start=k.start and v.refallele=k.refallele and v.allele=k.allele)
-LEFT  JOIN $exomevcfe.comment       c ON (v.chrom=c.chrom and v.start=c.start and v.refallele=c.refallele and v.allele=c.altallele and s.idsample=c.idsample)
+LEFT JOIN $exomevcfe.comment        c ON (v.chrom=c.chrom and v.start=c.start and v.refallele=c.refallele and v.allele=c.altallele and s.idsample=c.idsample)
 WHERE
 $where
 GROUP BY
@@ -12625,7 +12380,6 @@ foreach (@labels) {
 print "</tr></thead><tbody>\n";
 
 $n=1;
-my $contextmenu  = "\n<script type=\"text/javascript\">";
 my $cidsample    = "";
 my $cidsvsample    = "";
 while (@row = $out->fetchrow_array) {
@@ -12659,22 +12413,16 @@ while (@row = $out->fetchrow_array) {
 			print "<td>$tmp</td>";
 		}
 		elsif ($i == 1) {
-		$contextmenu .= "
-		\$(function(){
-		   \$.contextMenu({
-		       selector: '.context-menu-one$n',
-		       items: {
-		       \"comment\":    {name: \"<a href='comment.pl?idsnv=$cidsvsample&idsample=$cidsample&reason=sv&table=svsample' title='Comment page'>Comment</a>\"},
-		        }
-		    });
-		});
-			";
-		print qq#
-		<td><div class="context-menu-one$n" title="Right click for menu." align="center">
-		$row[$i]
-		</div>
-		</td>
-		#;
+			print qq#
+			<td style='white-space:nowrap;'>
+			<div class="dropdown">
+			$row[$i]&nbsp;&nbsp;
+			<a href="comment.pl?idsnv=$cidsvsample&idsample=$cidsample&reason=sv&table=svsample">
+			<img style='width:12pt;height:12pt;' src="/EVAdb/evadb_images/browser-window.png" title="Variant annotation" />
+			</a>
+			</div>
+			</td>
+			#;
 		}
 		else {
 			print "<td align=\"center\"> $row[$i]</td>";
@@ -12685,7 +12433,6 @@ while (@row = $out->fetchrow_array) {
 	$n++;
 }
 print "</tbody></table></div>";
-print "$contextmenu</script> ";
 
 }
 ########################################################################
@@ -13404,7 +13151,7 @@ print qq(
 
         var options = {
           title:  '$name $chomosome Fraction of reads carrying the alternative allele',
-	  backgroundColor: '#fffff3',
+	  backgroundColor: '#ffffff',
 	  vAxis: {title: 'Percent', minValue : 0, maxValue : 100, logScale: false, format:'#.###'},
 	  hAxis: {title: 'bp'},
 	  lineWidth: 0,
@@ -13571,60 +13318,65 @@ $i=0;
 $query = qq#
 SELECT
 concat('<a href="listPosition.pl?idsnv=',v.idsnv,'" title="All carriers of this variant">',v.idsnv,'</a>',' '),
+group_concat(s.name separator '<br>'),
+group_concat(s.pedigree separator '<br>'),
+group_concat(s.sex separator ' <br>'),
+group_concat(d.symbol separator '<br>'),
 concat(v.chrom,' ',v.start,' ',v.end,' ',v.class,' ',v.refallele,' ',v.allele),
-group_concat(s.name separator ' '),
-group_concat(s.pedigree separator ' <br>'),
-group_concat(i.symbol separator ' <br>'),
+group_concat(c.rating separator '<br>'),
+group_concat(c.patho separator '<br>'),
 g.genesymbol,
-concat(g.nonsynpergene,' (', g.delpergene,')'),
-group_concat(distinct g.omim separator " "),
+group_concat(DISTINCT g.omim separator ' '),
+group_concat(DISTINCT $mgiID separator ' '),
 v.class,
-v.func,
-(SELECT group_concat( pph.hvar_prediction,'(',pph.hvar_prob,')' separator ' <br>')
-FROM $coredb.pph3 pph WHERE (v.chrom=pph.chrom and v.start=pph.start and v.refallele=pph.ref and v.allele=pph.alt)
-),
-(SELECT group_concat( sift.score )
-FROM $coredb.sift sift WHERE (v.chrom=sift.chrom and v.start=sift.start and v.refallele=sift.ref and v.allele=sift.alt)
-),
-(SELECT group_concat( cadd.phred )
-FROM $coredb.cadd cadd WHERE (v.chrom=cadd.chrom and v.start=cadd.start and v.refallele=cadd.ref and v.allele=cadd.alt)
-),
-(SELECT DISTINCT f.fsampleall FROM snv2diseasegroup f WHERE v.idsnv=f.fidsnv),
-group_concat(x.alleles separator ' <br>'),
-concat($rssnplink),avhet,
+replace(v.func,',',' '),
+group_concat(x.alleles separator '<br>'),
+group_concat(f.fsample separator '<br>'),
+v.freq,
+group_concat(DISTINCT $exac_gene_link separator '<br>'),
+group_concat(DISTINCT exac.mis_z separator '<br>'),
 (SELECT group_concat('<a href="http://$hgmdserver/hgmd/pro/mut.php?accession=',h.id,'">',h.id,'</a>' separator ' <br>')
 FROM hgmd_pro.$hg19_coords h WHERE v.chrom = h.chrom AND v.start = h.pos AND v.refallele=h.ref AND v.allele=h.alt),
 (SELECT group_concat( DISTINCT $clinvarlink separator ' <br>')
-FROM $coredb.clinvar cv WHERE (v.chrom=cv.chrom and v.start=cv.start AND v.refallele=cv.ref AND v.allele=cv.alt)
+FROM $coredb.clinvar cv WHERE (v.chrom=cv.chrom and v.start=cv.start AND v.refallele=cv.ref AND v.allele=cv.alt)),
+group_concat(DISTINCT $exac_link separator '<br>'),
+concat(g.nonsynpergene,' (', g.delpergene,')'),
+group_concat(DISTINCT dgv.depth),
+(SELECT group_concat(DISTINCT pph.hvar_prediction separator ' <br>')
+FROM $coredb.pph3 pph WHERE (v.chrom=pph.chrom and v.start=pph.start and v.refallele=pph.ref and v.allele=pph.alt)
 ),
-v.af,
-group_concat(DISTINCT $exac_ae_link separator '<br>'),
-group_concat(DISTINCT $exac_aa_link separator '<br>'),
-group_concat(DISTINCT $kaviar_link separator '<br>'),
-group_concat(x.snvqual separator ' <br>'),
-group_concat(x.gtqual separator ' <br>'),
-group_concat(x.mapqual separator ' <br>'),
-group_concat(x.coverage separator ' <br>'),
-group_concat(x.percentvar separator ' <br>'),
-group_concat(x.filter separator ' <br>'),
-v.transcript,
-group_concat(c.reason separator ' <br>'),
-group_concat(c.inheritance separator ' <br>'),
-group_concat(c.genotype separator ' <br>'),
-group_concat(c.rating separator ' <br>'),
-group_concat(c.confirmed separator ' <br>'),
+(SELECT group_concat(DISTINCT pph.hvar_prob separator ' <br>')
+FROM $coredb.pph3 pph WHERE (v.chrom=pph.chrom and v.start=pph.start and v.refallele=pph.ref and v.allele=pph.alt)
+),
+(SELECT group_concat(DISTINCT sift.score )
+FROM $coredb.sift sift WHERE (v.chrom=sift.chrom and v.start=sift.start and v.refallele=sift.ref and v.allele=sift.alt)
+),
+(SELECT group_concat(DISTINCT cadd.phred )
+FROM $coredb.cadd cadd WHERE (v.chrom=cadd.chrom and v.start=cadd.start and v.refallele=cadd.ref and v.allele=cadd.alt)
+),
+group_concat(x.filter separator '<br>'),
+group_concat(x.snvqual separator '<br>'),
+group_concat(x.gtqual separator '<br>'),
+group_concat(x.mapqual separator '<br>'),
+group_concat(x.coverage separator '<br>'),
+group_concat(x.percentvar separator '<br>'),
+replace(v.transcript,':','<br>'),
+group_concat(DISTINCT $primer SEPARATOR '<br>'),
 group_concat(DISTINCT v.idsnv separator ' <br>')
 FROM
 snv v 
-INNER JOIN snvsample                 x ON v.idsnv = x.idsnv 
-INNER JOIN $sampledb.sample          s ON s.idsample = x.idsample
-LEFT  JOIN $sampledb.disease2sample ds ON s.idsample=ds.idsample
-LEFT  JOIN $sampledb.disease         i ON ds.iddisease = i.iddisease
-LEFT  JOIN snvgene                   y ON v.idsnv = y.idsnv
-LEFT  JOIN gene                      g ON g.idgene = y.idgene
-LEFT  JOIN $coredb.evs             evs ON (v.chrom=evs.chrom and v.start=evs.start and v.refallele=evs.refallele and v.allele=evs.allele)
-LEFT  JOIN $coredb.kaviar            k ON (v.chrom=k.chrom and v.start=k.start and v.refallele=k.refallele and v.allele=k.allele)
-LEFT  JOIN $exomevcfe.comment        c ON (v.chrom=c.chrom and v.start=c.start and v.refallele=c.refallele and v.allele=c.altallele and s.idsample=c.idsample)
+INNER JOIN snvsample                   x ON v.idsnv = x.idsnv 
+LEFT  JOIN $coredb.dgvbp             dgv ON (v.chrom = dgv.chrom AND v.start=dgv.start)
+INNER JOIN $sampledb.sample            s ON s.idsample = x.idsample
+INNER JOIN $sampledb.disease2sample   ds ON s.idsample=ds.idsample
+INNER JOIN $sampledb.disease           d ON ds.iddisease = d.iddisease
+LEFT  JOIN snv2diseasegroup            f ON (v.idsnv = f.fidsnv AND d.iddiseasegroup=f.fiddiseasegroup)
+LEFT  JOIN snvgene                     y ON v.idsnv = y.idsnv
+LEFT  JOIN gene                        g ON g.idgene = y.idgene
+LEFT  JOIN $sampledb.mouse            mo ON (g.genesymbol = mo.humanSymbol)
+LEFT  JOIN $coredb.evs               evs ON (v.chrom=evs.chrom and v.start=evs.start and v.refallele=evs.refallele and v.allele=evs.allele)
+LEFT  JOIN $coredb.evsscores        exac ON (g.genesymbol=exac.gene)
+LEFT  JOIN $exomevcfe.comment          c ON (v.chrom=c.chrom and v.start=c.start and v.refallele=c.refallele and v.allele=c.altallele and s.idsample=c.idsample)
 WHERE
 $where
 $where1
@@ -13643,48 +13395,13 @@ LIMIT 5000
 $out = $dbh->prepare($query) || die print "$DBI::errstr";
 $out->execute(@prepare,@prepare1) || die print "$DBI::errstr";
 
-@labels	= (
-	'n',
-	'idsnv',
-	'Chr',
-	'DNA id',
-	'Pedigree',
-	'Disease',
-	'Gene symbol',
-	'Non syn/ Gene',
-	'Omim',
-	'Class',
-	'Function',
-	'pph2',
-	'Sift',
-	'CADD',
-	'Count',
-	'Variant<br>alleles',
-	"$dbsnp",
-	'av Het',
-	'HGMD',
-	'ClinVar',
-	'1000 genomes AF',
-	'gnomAD ea',
-	'gnomAD aa',
-	'Kaviar AC',
-	'SNV Qual',
-	'Geno- type Qual',
-	'Map Qual',
-	'Depth',
-	'%Var',
-	'Filter',
-	'UCSC<br>Transcripts',
-	'Genotype',
-	'Inheritance',
-	'Rating',
-	'Context',
-	'Confirmed'
-	);
+# Now print table
+(@labels) = &resultlabels();
+$labels[18] = "Exomes";
 
 $i=0;
 
-&tableheaderDefault();
+&tableheaderResults();
 print "<thead><tr>";
 foreach (@labels) {
 	print "<th align=\"center\">$_</th>";
@@ -13692,84 +13409,46 @@ foreach (@labels) {
 print "</tr></thead><tbody>";
 
 $n=1;
-my $damaging  = 0;
-my $program   = "";
+my $damaging     = 0;
+my $omimmode     = "";
+my $omimdiseases = "";
+my $program      = "";
 while (@row = $out->fetchrow_array) {
 	print "<tr>";
 	$i=0;
 	$idsnv     = $row[-1];
 	pop(@row); #delete checked
-	if (!defined($row[-1])) {$row[-1] = "";}
-	$confirmed = $row[-1];
-	pop(@row); #delete checked
-	if (!defined($row[-1])) {$row[-1] = "";}
-	$rating    = $row[-1];
-	pop(@row); #delete rating
-	if (!defined($row[-1])) {$row[-1] = "";}
-	$genotype  = $row[-1];
-	pop(@row); #delete rating
-	if (!defined($row[-1])) {$row[-1] = "";}
-	$inheritance = $row[-1];
-	pop(@row); #delete rating
-	if (!defined($row[-1])) {$row[-1] = "";}
-	$reason = $row[-1];
-	pop(@row); #delete rating
 	# summary table
-	if ($row[9] =~ /missense/)   {$summary{missense}++;}
-	if ($row[9] =~ /nonsense/)   {$summary{nonsense}++;}
-	if ($row[9] =~ /indel/)      {$summary{indel}++;}
-	if ($row[9] =~ /splice/)     {$summary{splice}++;}
-	if ($row[9] =~ /frameshift/) {$summary{frameshift}++;}
+	if ($row[12] =~ /missense/)   {$summary{missense}++;}
+	if ($row[12] =~ /nonsense/)   {$summary{nonsense}++;}
+	if ($row[12] =~ /indel/)      {$summary{indel}++;}
+	if ($row[12] =~ /splice/)     {$summary{splice}++;}
+	if ($row[12] =~ /frameshift/) {$summary{frameshift}++;}
 	foreach (@row) {
 		if (!defined($row[$i])) {$row[$i] = "";}
 		if ($i == 0) { #edit project
 			print "<td align=\"center\">$n</td>";
 		}
-		if ($i == 1) {
+		#if ($i == 1) {
+		#	$tmp=&igvlink($dbh,$row[$i],$row[5]);
+		#	print "<td align=\"center\"> $tmp</td>";
+		#}
+		if ($i == 5) {
 			$tmp=&ucsclink2($row[$i]);
 			print "<td> $tmp</td>";
 		}
-		# jedesmal aendern
-		elsif ($i == 8) {
+		elsif ($i == 9) {
+			($tmp,$omimmode,$omimdiseases)=&omim($dbh,$row[$i]);
+			print "<td $class align=\"center\">$tmp</td><td>$omimmode</td><td style='min-width:350px'>$omimdiseases</td>\n";
+		}
+		elsif ($i == 11) {
 			($tmp)=&vcf2mutalyzer($dbh,$idsnv);
 			print "<td align=\"center\">$tmp</td>";
 		}
-		elsif ($i == 29) {
-			print "<td>$row[$i]</td>";
-			print "<td>$genotype</td>";
-			print "<td>$inheritance</td>";
-			print "<td>$rating</td>";
-			print "<td>$reason</td>";
-			print "<td>$confirmed</td>";
-		}
-		elsif ($i == 2) {
-			$tmp=&igvlink($dbh,$row[$i],$row[1]);
-			print "<td> $tmp</td>";
-		}
-		elsif ($i == 7) {
-			($tmp)=&omim($dbh,$row[$i]);
-			print "<td $class>$tmp</td>";
-		}
-		elsif ($i == 26) { # cnv exomedetph
-			$tmp=$row[$i];
-			if ($row[8] eq "cnv") {
-				$tmp=$tmp/100;
-			}
-			print "<td>$tmp</td>";
-		}
-		elsif (($i==10) or ($i==11)) {
-			if ($i==10) {$program = 'polyphen2';}
-			if ($i==11) {$program = 'sift';}
-			$tmp=$row[$i];
-			if ($i==10) {
-				$tmp=~s/benign//g;
-				$tmp=~s/probably damaging//g;
-				$tmp=~s/possibly damaging//g;
-				$tmp=~s/\)//g;
-				$tmp=~s/\(//g;
-				$tmp=~s/<br>/ /g;
-			}
-			$damaging=&damaging($program,$tmp);
+		elsif (($i==24) or ($i==25)) {
+			if ($i==24) {$program = 'polyphen2';}
+			if ($i==25) {$program = 'sift';}
+			$damaging=&damaging($program,$row[$i]);
 			if ($damaging==1) {
 				print "<td $warningtdbg>$row[$i]</td>";
 			}
@@ -13777,8 +13456,18 @@ while (@row = $out->fetchrow_array) {
 				print "<td> $row[$i]</td>";
 			}
 		}
+		elsif ($i == 31) { # cnv exomedetph
+			$tmp=$row[$i];
+			if ($row[11] eq "cnv") {
+				$tmp=$tmp/100;
+			}
+			print "<td>$tmp</td>";
+		}
+		elsif ($i == 33) { # transcripts
+			print "<td align=\"center\" style='white-space:nowrap;'>$row[$i]</td>\n";
+		}
 		else {
-			print "<td> $row[$i]</td>";
+			print "<td align=\"center\"> $row[$i]</td>";
 		}
 		$i++;
 	}
@@ -13812,19 +13501,19 @@ group_concat(DISTINCT v.idsnv ORDER BY v.chrom, v.start),
 group_concat(DISTINCT s.idsample)
 FROM
 snv v 
-LEFT  JOIN snvsample                 x ON v.idsnv = x.idsnv 
-LEFT  JOIN $sampledb.sample          s ON s.idsample = x.idsample
-LEFT  JOIN $sampledb.disease2sample ds ON s.idsample=ds.idsample
-LEFT  JOIN $sampledb.disease         i ON ds.iddisease = i.iddisease
-LEFT  JOIN snvgene                   y ON v.idsnv = y.idsnv
-LEFT  JOIN gene                      g ON g.idgene = y.idgene
-LEFT  JOIN snv2diseasegroup          f ON (v.idsnv = f.fidsnv)
-LEFT  JOIN hgmd_pro.$hg19_coords     h ON (v.chrom = h.chrom AND v.start = h.pos  AND v.refallele=h.ref AND v.allele=h.alt)
-LEFT  JOIN $coredb.pph3            pph ON (v.chrom=pph.chrom and v.start=pph.start and v.refallele=pph.ref and v.allele=pph.alt)
-LEFT  JOIN $coredb.sift           sift ON (v.chrom=sift.chrom and v.start=sift.start and v.refallele=sift.ref and v.allele=sift.alt)
-LEFT  JOIN $coredb.cadd           cadd ON (v.chrom=cadd.chrom and v.start=cadd.start and v.refallele=cadd.ref and v.allele=cadd.alt)
-LEFT  JOIN $coredb.evs             evs ON (v.chrom=evs.chrom and v.start=evs.start and v.refallele=evs.refallele and v.allele=evs.allele)
-LEFT  JOIN $coredb.kaviar            k ON (v.chrom=k.chrom and v.start=k.start and v.refallele=k.refallele and v.allele=k.allele)
+INNER JOIN snvsample                   x ON v.idsnv = x.idsnv 
+LEFT  JOIN $coredb.dgvbp             dgv ON (v.chrom = dgv.chrom AND v.start=dgv.start)
+INNER JOIN $sampledb.sample            s ON s.idsample = x.idsample
+INNER JOIN $sampledb.disease2sample   ds ON s.idsample=ds.idsample
+INNER JOIN $sampledb.disease           d ON ds.iddisease = d.iddisease
+LEFT  JOIN snvgene                     y ON v.idsnv = y.idsnv
+LEFT  JOIN gene                        g ON g.idgene = y.idgene
+LEFT  JOIN snv2diseasegroup            f ON (v.idsnv = f.fidsnv)
+LEFT  JOIN hgmd_pro.$hg19_coords       h ON (v.chrom = h.chrom AND v.start = h.pos  AND v.refallele=h.ref AND v.allele=h.alt)
+LEFT  JOIN $coredb.pph3              pph ON (v.chrom=pph.chrom and v.start=pph.start and v.refallele=pph.ref and v.allele=pph.alt)
+LEFT  JOIN $coredb.sift             sift ON (v.chrom=sift.chrom and v.start=sift.start and v.refallele=sift.ref and v.allele=sift.alt)
+LEFT  JOIN $coredb.cadd             cadd ON (v.chrom=cadd.chrom and v.start=cadd.start and v.refallele=cadd.ref and v.allele=cadd.alt)
+LEFT  JOIN $coredb.evs               evs ON (v.chrom=evs.chrom and v.start=evs.start and v.refallele=evs.refallele and v.allele=evs.allele)
 WHERE
 $where
 $where1
@@ -13842,87 +13531,56 @@ LIMIT 5000
 $out = $dbh->prepare($query) || die print "$DBI::errstr";
 $out->execute(@prepare,@prepare1) || die print "$DBI::errstr";
 
-@labels	= (
-	'n',
-	'idsnv',
-	'Chr',
-	'DNA id',
-	'Pedigree',
-	'Disease',
-	'Gene symbol',
-	'Non syn/ Gene',
-	'Omim',
-	'Class',
-	'Function',
-	'pph2',
-	'Sift',
-	'Cadd',
-	'Count',
-	'Variant alleles',
-	"$dbsnp",
-	'avHet',
-	'HGMD',
-	'ClinVar',
-	'1000 genomes AF',
-	'gnomAD ea',
-	'gnomAD aa',
-	'SNV Qual',
-	'Geno- type Qual',
-	'Map Qual',
-	'Depth',
-	'%Var',
-	'Filter',
-	'UCSC Transcripts'
-	);
+# Now print table
+(@labels) = &resultlabels();
 
-print q(<table border="1" cellspacing="0" cellpadding="2"> );
 $i=0;
 
+&tableheaderResults();
 print "<thead><tr>";
 foreach (@labels) {
 	print "<th align=\"center\">$_</th>";
 }
-print "</tr></thead><tbody>";
+print "</tr></thead><tbody>\n";
 
 $n=1;
-my $damaging = 0;
-my $program  = "";
-my @row1     = ();
-my @idsnv    = ();
-my $idsnv    = "";
-my $idsample = "";
-my $oldn     = 0;
-my $nrows    = 0;
+my $damaging     = 0;
+my $omimmode     = "";
+my $omimdiseases = "";
+my $program      = "";
+my @row1         = ();
+my @idsnv        = ();
+my $idsnv        = "";
+my $idsample     = "";
+my $nrows        = 0;
 
 while (@row1 = $out->fetchrow_array) {
 	(@idsnv)=split(/\,/,$row1[0]);
 	$nrows = @idsnv;
 	$idsample=$row1[1];
 	foreach $idsnv (@idsnv) {
-		if (($n%2) == 1) {
-			print "<tr class='odd'>";
-		}
-		else {
-			print "<tr class='even'>";
-		}
 		$i=0;
-		(@row)=&singleRecessive($dbh,$idsnv,$idsample,$ref->{"g.genesymbol"});
+		(@row)=&singleRecessiveMain($dbh,$idsnv,$idsample,$ref->{"g.genesymbol"});
+		pop(@row);
+		pop(@row);
+		pop(@row);		
+		pop(@row);		
+		pop(@row);		
 		foreach (@row) {
 			if (!defined($row[$i])) {$row[$i] = "";}
-			if (($i == 0) and ($n != $oldn)) {
-				print "<td rowspan='$nrows' align=\"center\">$n</td>";
+			if ($i == 0) {
+				print "<td align=\"center\">$n</td>";
+				$n++;
 			}
-			if ($i == 1) {
+			if ($i == 5) {
 				$tmp=&ucsclink2($row[$i]);
-				print "<td> $tmp</td>";
+				print "<td align=\"center\"> $tmp</td>";
 			}
-			elsif (($i == 3) or ($i == 4) or ($i == 5) or ($i == 6) or ($i == 7)) {
-				if ($n != $oldn) {
-					print "<td rowspan='$nrows' align=\"center\">$row[$i]</td>";
-				}
+			elsif ($i == 9) {
+				($tmp,$omimmode,$omimdiseases)=&omim($dbh,$row[$i]);
+				print "<td $class align=\"center\">$tmp</td><td>$omimmode</td><td style='min-width:350px'>$omimdiseases</td>\n";
 			}
-			# jedesmal aendern
-			elsif ($i == 7) {
+			elsif ($i == 11) {
 				($tmp)=&vcf2mutalyzer($dbh,$idsnv);
 				print "<td align=\"center\">$tmp</td>";
 			}
@@ -13933,19 +13591,10 @@ while (@row1 = $out->fetchrow_array) {
 				}
 				print "<td>$tmp</td>";
 			}
-			elsif (($i==10) or ($i==11)) {
-				if ($i==10) {$program = 'polyphen2';}
-				if ($i==11) {$program = 'sift';}
-				$tmp=$row[$i];
-				if ($i==10) {
-					$tmp=~s/benign//g;
-					$tmp=~s/probably damaging//g;
-					$tmp=~s/possibly damaging//g;
-					$tmp=~s/\)//g;
-					$tmp=~s/\(//g;
-					$tmp=~s/<br>/ /g;
-				}
-				$damaging=&damaging($program,$tmp);
+			elsif (($i==24) or ($i==25)) {
+				if ($i==24) {$program = 'polyphen2';}
+				if ($i==25) {$program = 'sift';}
+				$damaging=&damaging($program,$row[$i]);
 				if ($damaging==1) {
 					print "<td $warningtdbg>$row[$i]</td>";
 				}
@@ -13953,12 +13602,21 @@ while (@row1 = $out->fetchrow_array) {
 					print "<td> $row[$i]</td>";
 				}
 			}
+			elsif ($i == 31) { # cnv exomedetph
+				$tmp=$row[$i];
+				if ($row[11] eq "cnv") {
+				$tmp=$tmp/100;
+				}
+				print "<td>$tmp</td>";
+			}
+			elsif ($i == 33) { # transcripts
+				print "<td align=\"center\" style='white-space:nowrap;'>$row[$i]</td>\n";
+			}
 			else {
-				print "<td> $row[$i]</td>";
+				print "<td align=\"center\"> $row[$i]</td>";
 			}
 			$i++;
 		}
-		$oldn=$n;
 		print "</tr>\n";
 	} # foreach @idsnv
 	$n++;
@@ -14027,16 +13685,20 @@ while (@row = $out->fetchrow_array) {
 		$variants{$row[0]}{$row[1]}{$row[2]}=$row[3];
 		$samples{$row[0]}{$row[1]}{$row[2]}=$row[4];
 }
-print "<table>";
 @labels	= (
+	'n',
 	'Disease group',
 	'Disease',
 	'Affected',
 	'Exomes',
 	'n variants',
 	'n samples',
+	'% variants',
+	'% samples',
 	);
+$n = 1;
 
+&tableheaderDefault_new("table02","1000px");
 print "<thead><tr>";
 foreach (@labels) {
 	print "<th align=\"center\">$_</th>";
@@ -14049,17 +13711,29 @@ foreach $diseasegroup (sort keys %exomes) {
 	foreach $disease (sort keys %{$exomes{$diseasegroup}}) {
 		foreach $affected (sort keys %{$exomes{$diseasegroup}{$disease}}) {
 			print "<tr>";
+			print "<td>$n</td>";
 			print "<td>$diseasegroup</td>";
 			print "<td>$disease</td>";
 			print "<td>$affected</td>";
 			print "<td>$exomes{$diseasegroup}{$disease}{$affected}</td>";
 			print "<td>$variants{$diseasegroup}{$disease}{$affected}</td>";
 			print "<td>$samples{$diseasegroup}{$disease}{$affected}</td>";
+			$tmp=sprintf("%.3f",$variants{$diseasegroup}{$disease}{$affected}/$exomes{$diseasegroup}{$disease}{$affected});
+			if ($tmp == 0) {
+				$tmp="";
+			}
+			print "<td>$tmp</td>";
+			$tmp=sprintf("%.3f",$samples{$diseasegroup}{$disease}{$affected}/$exomes{$diseasegroup}{$disease}{$affected});
+			if ($tmp == 0) {
+				$tmp="";
+			}
+			print "<td>$tmp</td>";
 			print "</tr>";
+			$n++;
 		}
 	}
 }
-print "</table>";
+print "</tbody></table></div>";
 
 #determine number exomes
 print "<br><br>Without child of trios";
@@ -14119,16 +13793,19 @@ while (@row = $out->fetchrow_array) {
 		$variants{$row[0]}{$row[1]}{$row[2]}=$row[3];
 		$samples{$row[0]}{$row[1]}{$row[2]}=$row[4];
 }
-print "<table>";
 @labels	= (
+	'n',
 	'Disease group',
 	'Disease',
 	'Affected',
 	'Exomes',
 	'n variants',
 	'n samples',
+	'% variants',
+	'% samples',
 	);
-
+$n = 1;
+&tableheaderDefault_new("table03","1000px");
 print "<thead><tr>";
 foreach (@labels) {
 	print "<th align=\"center\">$_</th>";
@@ -14141,17 +13818,29 @@ foreach $diseasegroup (sort keys %exomes) {
 	foreach $disease (sort keys %{$exomes{$diseasegroup}}) {
 		foreach $affected (sort keys %{$exomes{$diseasegroup}{$disease}}) {
 			print "<tr>";
+			print "<td>$n</td>";
 			print "<td>$diseasegroup</td>";
 			print "<td>$disease</td>";
 			print "<td>$affected</td>";
 			print "<td>$exomes{$diseasegroup}{$disease}{$affected}</td>";
 			print "<td>$variants{$diseasegroup}{$disease}{$affected}</td>";
 			print "<td>$samples{$diseasegroup}{$disease}{$affected}</td>";
+			$tmp=sprintf("%.3f",$variants{$diseasegroup}{$disease}{$affected}/$exomes{$diseasegroup}{$disease}{$affected});
+			if ($tmp == 0) {
+				$tmp="";
+			}
+			print "<td>$tmp</td>";
+			$tmp=sprintf("%.3f",$samples{$diseasegroup}{$disease}{$affected}/$exomes{$diseasegroup}{$disease}{$affected});
+			if ($tmp == 0) {
+				$tmp="";
+			}
+			print "<td>$tmp</td>";
 			print "</tr>";
+			$n++;
 		}
 	}
 }
-print "</table>";
+print "</tbody></table></div>";
 }
 ########################################################################
 $out->finish;
@@ -14305,8 +13994,8 @@ if (($ref->{'s.name'} eq "") and ($ref->{'ds.iddisease'} eq "") and
 	print "No sample ID, disease, cooperation or project.";
 	exit(1);
 }
-if ($omim ne "") {
-	$prefix = $ref->{'mode'};
+if ($omim ne "") {  # omim = omim search phrase
+	$prefix = $ref->{'mode'}; #mode = full-text, title, synopsis ....
 	$solrres = &querySolr($omim,$prefix);
 	
 	if(ref($solrres) eq "HASH"){
@@ -14357,7 +14046,6 @@ print "Search phrase: $omim<br>";
 &todaysdate;
 &numberofsamples($dbh);
 print "Allowed in in-house Exomes < $ref->{'v.freq'}<br>";
-print "1000 Genomea AF < $ref->{'af'}<br>";
 &printqueryheader($ref,$classprint,$functionprint);
 $where .= " AND g.omim = ? ";
 
@@ -14365,57 +14053,67 @@ $query = qq#
 SELECT
 concat('<a href="listPosition.pl?idsnv=',v.idsnv,'" title="All carriers of this variant">',v.idsnv,'</a>',' '),
 group_concat(DISTINCT s.name separator ' '),
-group_concat(DISTINCT s.pedigree separator '<br>'),
+group_concat(DISTINCT s.pedigree separator ' '),
+s.sex,
+d.symbol,
 concat(v.chrom,' ',v.start,' ',v.end,' ',v.class,' ',v.refallele,' ',v.allele),
+c.rating,
+c.patho,
 group_concat(DISTINCT $genelink separator '<br>'),
-concat(g.nonsynpergene,' (', g.delpergene,')'),
-concat(g.omim),
+group_concat(DISTINCT g.omim separator ' '),
+group_concat(distinct $mgiID separator ' '),
 v.class,
-v.func,
-(SELECT group_concat(DISTINCT  pph.hvar_prediction,'(',pph.hvar_prob,')' separator '<br>')
-FROM $coredb.pph3 pph WHERE (v.chrom=pph.chrom and v.start=pph.start and v.refallele=pph.ref and v.allele=pph.alt)
-),
-(SELECT group_concat(DISTINCT  sift.score )
-FROM $coredb.sift sift WHERE (v.chrom=sift.chrom and v.start=sift.start and v.refallele=sift.ref and v.allele=sift.alt)
-),
-group_concat(DISTINCT cadd.phred separator ' '),
-(SELECT DISTINCT f.fsampleall FROM snv2diseasegroup f WHERE v.idsnv=f.fidsnv),
+replace(v.func,',',' '),
 group_concat(DISTINCT x.alleles separator '<br>'),
-concat($rssnplink),avhet,
-(SELECT group_concat('<a href="http://$hgmdserver/hgmd/pro/mut.php?accession=',h.id,'">',h.id,'</a>' separator '<br>')
-FROM hgmd_pro.$hg19_coords h WHERE v.chrom = h.chrom AND v.start = h.pos AND v.refallele=h.ref AND v.allele=h.alt),
+f.fsample,
+f.samplecontrols,
+group_concat(DISTINCT $exac_gene_link separator '<br>'),
+group_concat(DISTINCT exac.mis_z separator '<br>'),
+group_concat(DISTINCT '<a href="http://$hgmdserver/hgmd/pro/mut.php?accession=',h.id,'">',h.id,'</a>'),
 group_concat(DISTINCT $clinvarlink separator '<br>'),
-v.af,
-group_concat(DISTINCT $exac_ae_link separator '<br>'),
-group_concat(DISTINCT $exac_aa_link separator '<br>'),
-group_concat(DISTINCT $kaviar_link separator '<br>'),
+group_concat(DISTINCT $exac_link separator '<br>'),
+group_concat(distinct g.nonsynpergene,' (', g.delpergene,')'),
+group_concat(distinct dgv.depth),
+group_concat(DISTINCT pph.hvar_prediction separator ' '),
+group_concat(DISTINCT pph.hvar_prob separator ' '),
+group_concat(DISTINCT sift.score separator ' '),
+group_concat(DISTINCT cadd.phred separator ' '),
+group_concat(DISTINCT x.filter separator '<br>'),
 group_concat(DISTINCT x.snvqual separator '<br>'),
 group_concat(DISTINCT x.gtqual separator '<br>'),
 group_concat(DISTINCT x.mapqual separator '<br>'),
 group_concat(DISTINCT x.coverage separator '<br>'),
 group_concat(DISTINCT x.percentvar separator '<br>'),
-group_concat(DISTINCT x.filter separator '<br>'),
-v.transcript,
+replace(v.transcript,':','<br>'),
+group_concat(DISTINCT $primer SEPARATOR '<br>'),
 v.idsnv
 FROM
 snv v 
-INNER JOIN snvsample                 x ON (v.idsnv = x.idsnv) 
-INNER JOIN $sampledb.sample          s ON (s.idsample = x.idsample)
-LEFT  JOIN $sampledb.disease2sample ds ON (s.idsample=ds.idsample)
-LEFT  JOIN $sampledb.disease         i ON (ds.iddisease = i.iddisease)
-LEFT  JOIN snvgene                   y ON (v.idsnv = y.idsnv)
-LEFT  JOIN gene                      g ON (g.idgene = y.idgene)
-LEFT  JOIN $coredb.cadd           cadd ON (v.chrom=cadd.chrom and v.start=cadd.start and v.refallele=cadd.ref and v.allele=cadd.alt)
-LEFT  JOIN $coredb.clinvar          cv ON (v.chrom=cv.chrom and v.start=cv.start and v.refallele=cv.ref and v.allele=cv.alt)
-LEFT  JOIN $coredb.evs             evs ON (v.chrom=evs.chrom AND v.start=evs.start AND v.refallele=evs.refallele AND v.allele=evs.allele)
-LEFT  JOIN $coredb.kaviar            k ON (v.chrom=k.chrom and v.start=k.start and v.refallele=k.refallele and v.allele=k.allele)
+INNER JOIN snvsample                   x ON (v.idsnv = x.idsnv) 
+LEFT  JOIN $coredb.dgvbp             dgv ON (v.chrom = dgv.chrom AND v.start=dgv.start)
+INNER JOIN $sampledb.sample            s ON (s.idsample = x.idsample)
+LEFT  JOIN $sampledb.disease2sample   ds ON (s.idsample=ds.idsample)
+LEFT  JOIN $sampledb.disease           d ON (ds.iddisease = d.iddisease)
+LEFT  JOIN snv2diseasegroup            f ON (v.idsnv = f.fidsnv AND d.iddiseasegroup=f.fiddiseasegroup)
+LEFT  JOIN snvgene                     y ON (v.idsnv = y.idsnv)
+LEFT  JOIN gene                        g ON (g.idgene = y.idgene)
+LEFT  JOIN disease2gene               dg on (g.idgene = dg.idgene)
+LEFT  JOIN $sampledb.mouse            mo ON (g.genesymbol = mo.humanSymbol)
+LEFT  JOIN $coredb.pph3              pph ON (v.chrom=pph.chrom and v.start=pph.start and v.refallele=pph.ref and v.allele=pph.alt)
+LEFT  JOIN $coredb.sift             sift ON (v.chrom=sift.chrom and v.start=sift.start and v.refallele=sift.ref and v.allele=sift.alt)
+LEFT  JOIN $coredb.cadd             cadd ON (v.chrom=cadd.chrom and v.start=cadd.start and v.refallele=cadd.ref and v.allele=cadd.alt)
+LEFT  JOIN $coredb.evs               evs ON (v.chrom=evs.chrom AND v.start=evs.start AND v.refallele=evs.refallele AND v.allele=evs.allele)
+LEFT  JOIN $coredb.evsscores        exac ON (g.genesymbol=exac.gene)
+LEFT  JOIN hgmd_pro.$hg19_coords       h ON (v.chrom = h.chrom AND v.start = h.pos  AND v.refallele=h.ref AND v.allele=h.alt)
+LEFT  JOIN $coredb.clinvar            cv ON (v.chrom=cv.chrom and v.start=cv.start and v.refallele=cv.ref and v.allele=cv.alt)
+LEFT  JOIN $exomevcfe.comment          c ON (v.chrom=c.chrom and v.start=c.start and v.refallele=c.refallele and v.allele=c.altallele and s.idsample=c.idsample)
 WHERE
 $allowedprojects
 $where
 $function
 $class
 GROUP BY
-v.idsnv
+s.idsample,v.idsnv,g.idgene
 ORDER BY
 v.chrom,v.start
 LIMIT 5000
@@ -14423,65 +14121,38 @@ LIMIT 5000
 #print "$query<br>";
 #print "query = $where<br>";
 #print "query = @prepare $idomim<br>";
-# foreach gene returned by solr
-foreach $idomim (sort {$solrresh{$b} <=> $solrresh{$a} } keys %solrresh) {
+
+# foreach omim gene id returned by solr
+foreach $idomim (sort {$solrresh{$b} <=> $solrresh{$a} } keys %solrresh) { #sort according score
 	$out = $dbh->prepare($query) || die print "$DBI::errstr";
 	$out->execute(@prepare,$idomim) || die print "$DBI::errstr";
 	#print "$idomim<br>";
 	while (@row = $out->fetchrow_array) {
-		push(@row,$solrresh{$idomim});
+		push(@row,$solrresh{$idomim}); #add score
 		push(@row2,[@row]);
 		# if mode eq ar
-		($tmp,$mode)=&omim($dbh,$row[6]); # g.omim=$row[6]
+		($tmp,$mode)=&omim($dbh,$row[9]); # g.omim=$row[9]
 		$mode =~ s/\s+//g;	
-		#print "$row[6] $row[13] '$mode'<br>";
-		if ($mode eq "ar") {
-			#print "$row[6] $row[13] $mode<br>";
+		$mode =~ s/<br>//g;	
+		#print "$row[9] $row[13] '$mode'<br>"; # omim alleles mode
+		if ($mode eq "ar") { # check if autosomal recessive, i.e. if omim number occurs twice !!!! not prepared for multiple samples
+			#print "$row[9] $row[13] $mode<br>";
 			$ar{$idomim} += $row[13]; #variant allele=row[13]
 			#print "asdf $ar{$idomim}<br>";
 		}
 		else {
-			$ar{$idomim} = 2; #variant allele=row[13]
+			$ar{$idomim} = 2; #variant allele=row[13] # if not ar mode all results are set to '2 alleles' 
 		}
 	}
 } #foreach gene returned by solr
 
-@labels	= (
-	'n',
-	'idsnv',
-	'DNA ID',
-	'Pedigree',
-	'Chr',
-	'Gene',
-	'Non syn/ Gene',
-	'Omim',
-	'Mode',
-	'Class',
-	'Function',
-	'pph2',
-	'Sift',
-	'CADD',
-	'Count',
-	'Variant alleles',
-	"$dbsnp",
-	'av Het',
-	'HGMD',
-	'ClinVar',
-	'1000 genomes AF',
-	'gnomAD ea',
-	'gnomAD aa',
-	'Kaviar AC',
-	'SNV Qual',
-	'Geno- type Qual',
-	'Map Qual',
-	'Depth',
-	'%Var',
-	'Filter',
-	'UCSC Transcripts',
-	'Score'
-	);
+# Now print table
+(@labels) = &resultlabels();
+$labels[11] = "Score"; # replace column header 'Mode' by 'Score'
 
-&tableheaderDefault();
+$i=0;
+
+&tableheaderResults();
 print "<thead><tr>";
 foreach (@labels) {
 	print "<th align=\"center\">$_</th>";
@@ -14491,18 +14162,21 @@ print "</tr></thead><tbody>";
 $n=1;
 my $damaging = 0;
 my $program  = "";
+my $damaging     = "";
+my $omimmode     = "";
+my $omimdiseases = "";
 my $aref     = "";
 my $score    = "";
 my $idsnv    = "";
-my $contextmenu  = "\n<script type=\"text/javascript\">";
 for  $aref (@row2) { 
 	@row=@{$aref};
 	$score    = $row[-1];
+	$score=sprintf("%.2f",$score);
 	pop(@row);
 	$idsnv    = $row[-1];
 	pop(@row);
-	push(@row,$score);
-	if ($ar{$row[6]} >= $ar) {
+	#push(@row,$score);
+	if ($ar{$row[9]} >= $ar) {  # !!!!!!! grouped by v.idsnv and g.idgene to avoid rare cases where query returns rows with more than a single omim gene id
 	print "<tr>";
 	$i=0;
 	foreach (@row) {
@@ -14510,44 +14184,35 @@ for  $aref (@row2) {
 		if ($i == 0) { #edit project
 			print "<td align=\"center\">$n</td>";
 		}
-		if ($i == 3) {
-			$tmp=&ucsclink2($row[$i]);
-			print "<td> $tmp</td>";
-		}
-		# jedesmal aendern
-		elsif ($i == 6) {
-			($tmp,$mode)=&omim($dbh,$row[$i]);
-			print "<td>$tmp</td>";
-			print "<td>$mode</td>";
-		}
-		elsif ($i == 1) {
-			$tmp=&igvlink($dbh,$row[$i],$row[3]);
-			$contextmenu .= "
-					contextComment(\"$n\", \"$idsnv\", \"$idsample\", \"omim\");";
+		if ($i == 1) {
+			$tmp=&igvlink($dbh,$row[$i],$row[5]);
 			print qq#
-			<td $class><div class="context-menu-one$n" title="Right click for menu." align="center">
-			$tmp
+			<td style='white-space:nowrap;'>
+			<div class="dropdown">
+			$tmp&nbsp;&nbsp;
+			<a href="comment.pl?idsnv=$idsnv&idsample=$idsample&reason=omim">
+			<img style='width:12pt;height:12pt;' src="/EVAdb/evadb_images/browser-window.png" title="Variant annotation" />
+			</a>
 			</div>
 			</td>
 			#;
 		}
-		elsif ($i == 7) {
+		elsif ($i == 5) {
+			$tmp=&ucsclink2($row[$i]);
+			print "<td> $tmp</td>";
+		}
+		elsif ($i == 9) {
+			($tmp,$omimmode,$omimdiseases)=&omim($dbh,$row[$i]);
+			print "<td $class align=\"center\">$tmp</td><td align=\"center\">$score</td><td style='min-width:350px'>$omimdiseases</td>\n";
+		}
+		elsif ($i == 11) {
 			($tmp)=&vcf2mutalyzer($dbh,$idsnv);
 			print "<td align=\"center\">$tmp</td>";
 		}
-		elsif (($i==9) or ($i==10)) {
-			if ($i==9) {$program = 'polyphen2';}
-			if ($i==10) {$program = 'sift';}
-			$tmp=$row[$i];
-			if ($i==9) {
-				$tmp=~s/benign//g;
-				$tmp=~s/probably damaging//g;
-				$tmp=~s/possibly damaging//g;
-				$tmp=~s/\)//g;
-				$tmp=~s/\(//g;
-				$tmp=~s/<br>/ /g;
-			}
-			$damaging=&damaging($program,$tmp);
+		elsif (($i==24) or ($i==25)) {
+			if ($i==24) {$program = 'polyphen2';}
+			if ($i==25) {$program = 'sift';}
+			$damaging=&damaging($program,$row[$i]);
 			if ($damaging==1) {
 				print "<td $warningtdbg>$row[$i]</td>";
 			}
@@ -14555,12 +14220,15 @@ for  $aref (@row2) {
 				print "<td> $row[$i]</td>";
 			}
 		}
-		elsif ($i == 25) { # cnv exomedetph
+		elsif ($i == 31) { # cnv exomedetph
 			$tmp=$row[$i];
-			if ($row[7] eq "cnv") {
+			if ($row[11] eq "cnv") {
 				$tmp=$tmp/100;
 			}
 			print "<td>$tmp</td>";
+		}
+		elsif ($i == 33) { # cnv exomedetph
+			print "<td align=\"center\" style='white-space:nowrap;'>$row[$i]</td>\n";
 		}
 		else {
 			print "<td> $row[$i]</td>";
@@ -14569,10 +14237,9 @@ for  $aref (@row2) {
 	}
 	print "</tr>\n";
 	$n++;
-	}
+	} #if ar
 }
 print "</tbody></table></div>";
-print "$contextmenu</script> ";
 
 
 print "<br>";
@@ -15317,7 +14984,6 @@ print "Search phrase: $hpo<br>";
 &todaysdate;
 &numberofsamples($dbh);
 print "Allowed in in-house Exomes < $ref->{'v.freq'}<br>";
-print "1000 Genomea AF < $ref->{'af'}<br>";
 &printqueryheader($ref,$classprint,$functionprint);
 $where .= " AND g.approved = ? ";
 
@@ -15325,59 +14991,67 @@ $query = qq#
 SELECT
 concat('<a href="listPosition.pl?idsnv=',v.idsnv,'" title="All carriers of this variant">',v.idsnv,'</a>',' '),
 group_concat(DISTINCT s.name separator ' '),
-group_concat(DISTINCT s.pedigree separator '<br>'),
+group_concat(DISTINCT s.pedigree separator ' '),
+s.sex,
+d.symbol,
 concat(v.chrom,' ',v.start,' ',v.end,' ',v.class,' ',v.refallele,' ',v.allele),
+c.rating,
+c.patho,
 group_concat(DISTINCT $genelink separator '<br>'),
-concat(g.nonsynpergene,' (', g.delpergene,')'),
-concat(g.omim),
-group_concat(DISTINCT $mgiID separator ' '),
+group_concat(DISTINCT g.omim separator ' '),
+group_concat(distinct $mgiID separator ' '),
 v.class,
-v.func,
-group_concat(DISTINCT $exac_gene_link separator '<br>'),
-(SELECT group_concat(DISTINCT  pph.hvar_prediction,'(',pph.hvar_prob,')' separator '<br>')
-FROM $coredb.pph3 pph WHERE (v.chrom=pph.chrom and v.start=pph.start and v.refallele=pph.ref and v.allele=pph.alt)
-),
-(SELECT group_concat(DISTINCT  sift.score )
-FROM $coredb.sift sift WHERE (v.chrom=sift.chrom and v.start=sift.start and v.refallele=sift.ref and v.allele=sift.alt)
-),
-group_concat(DISTINCT cadd.phred separator ' '),
-(SELECT DISTINCT f.fsampleall FROM snv2diseasegroup f WHERE v.idsnv=f.fidsnv),
+replace(v.func,',',' '),
 group_concat(DISTINCT x.alleles separator '<br>'),
-concat($rssnplink),avhet,
-(SELECT group_concat('<a href="http://$hgmdserver/hgmd/pro/mut.php?accession=',h.id,'">',h.id,'</a>' separator '<br>')
-FROM hgmd_pro.$hg19_coords h WHERE v.chrom = h.chrom AND v.start = h.pos AND v.refallele=h.ref AND v.allele=h.alt),
+f.fsample,
+f.samplecontrols,
+group_concat(DISTINCT $exac_gene_link separator '<br>'),
+group_concat(DISTINCT exac.mis_z separator '<br>'),
+group_concat(DISTINCT '<a href="http://$hgmdserver/hgmd/pro/mut.php?accession=',h.id,'">',h.id,'</a>'),
 group_concat(DISTINCT $clinvarlink separator '<br>'),
-af,
-group_concat(DISTINCT $exac_ae_link separator '<br>'),
-group_concat(DISTINCT $exac_aa_link separator '<br>'),
+group_concat(DISTINCT $exac_link separator '<br>'),
+group_concat(distinct g.nonsynpergene,' (', g.delpergene,')'),
+group_concat(distinct dgv.depth),
+group_concat(DISTINCT pph.hvar_prediction separator ' '),
+group_concat(DISTINCT pph.hvar_prob separator ' '),
+group_concat(DISTINCT sift.score separator ' '),
+group_concat(DISTINCT cadd.phred separator ' '),
+group_concat(DISTINCT x.filter separator '<br>'),
 group_concat(DISTINCT x.snvqual separator '<br>'),
 group_concat(DISTINCT x.gtqual separator '<br>'),
 group_concat(DISTINCT x.mapqual separator '<br>'),
 group_concat(DISTINCT x.coverage separator '<br>'),
 group_concat(DISTINCT x.percentvar separator '<br>'),
-group_concat(DISTINCT x.filter separator '<br>'),
-v.transcript,
+replace(v.transcript,':','<br>'),
+group_concat(DISTINCT $primer SEPARATOR '<br>'),
 v.idsnv
 FROM
 snv v 
-INNER JOIN snvsample                 x ON (v.idsnv = x.idsnv) 
-INNER JOIN $sampledb.sample          s ON (s.idsample = x.idsample)
-LEFT  JOIN $sampledb.disease2sample ds ON (s.idsample=ds.idsample)
-LEFT  JOIN $sampledb.disease         i ON (ds.iddisease = i.iddisease)
-LEFT  JOIN snvgene                   y ON (v.idsnv = y.idsnv)
-LEFT  JOIN gene                      g ON (g.idgene = y.idgene)
-LEFT  JOIN $coredb.evsscores      exac ON (g.genesymbol=exac.gene)
-LEFT  JOIN $sampledb.mouse          mo ON (g.genesymbol = mo.humanSymbol)
-LEFT  JOIN $coredb.cadd           cadd ON (v.chrom=cadd.chrom and v.start=cadd.start and v.refallele=cadd.ref and v.allele=cadd.alt)
-LEFT  JOIN $coredb.clinvar          cv ON (v.chrom=cv.chrom and v.start=cv.start and v.refallele=cv.ref and v.allele=cv.alt)
-LEFT  JOIN $coredb.evs             evs ON (v.chrom=evs.chrom AND v.start=evs.start AND v.refallele=evs.refallele AND v.allele=evs.allele)
+INNER JOIN snvsample                   x ON (v.idsnv = x.idsnv) 
+LEFT  JOIN $coredb.dgvbp             dgv ON (v.chrom = dgv.chrom AND v.start=dgv.start)
+INNER JOIN $sampledb.sample            s ON (s.idsample = x.idsample)
+LEFT  JOIN $sampledb.disease2sample   ds ON (s.idsample=ds.idsample)
+LEFT  JOIN $sampledb.disease           d ON (ds.iddisease = d.iddisease)
+LEFT  JOIN snv2diseasegroup            f ON (v.idsnv = f.fidsnv AND d.iddiseasegroup=f.fiddiseasegroup)
+LEFT  JOIN snvgene                     y ON (v.idsnv = y.idsnv)
+LEFT  JOIN gene                        g ON (g.idgene = y.idgene)
+LEFT  JOIN disease2gene               dg on (g.idgene = dg.idgene)
+LEFT  JOIN $sampledb.mouse            mo ON (g.genesymbol = mo.humanSymbol)
+LEFT  JOIN $coredb.pph3              pph ON (v.chrom=pph.chrom and v.start=pph.start and v.refallele=pph.ref and v.allele=pph.alt)
+LEFT  JOIN $coredb.sift             sift ON (v.chrom=sift.chrom and v.start=sift.start and v.refallele=sift.ref and v.allele=sift.alt)
+LEFT  JOIN $coredb.cadd             cadd ON (v.chrom=cadd.chrom and v.start=cadd.start and v.refallele=cadd.ref and v.allele=cadd.alt)
+LEFT  JOIN $coredb.evs               evs ON (v.chrom=evs.chrom AND v.start=evs.start AND v.refallele=evs.refallele AND v.allele=evs.allele)
+LEFT  JOIN $coredb.evsscores        exac ON (g.genesymbol=exac.gene)
+LEFT  JOIN hgmd_pro.$hg19_coords       h ON (v.chrom = h.chrom AND v.start = h.pos  AND v.refallele=h.ref AND v.allele=h.alt)
+LEFT  JOIN $coredb.clinvar            cv ON (v.chrom=cv.chrom and v.start=cv.start and v.refallele=cv.ref and v.allele=cv.alt)
+LEFT  JOIN $exomevcfe.comment          c ON (v.chrom=c.chrom and v.start=c.start and v.refallele=c.refallele and v.allele=c.altallele and s.idsample=c.idsample)
 WHERE
 $allowedprojects
 $where
 $function
 $class
 GROUP BY
-v.idsnv
+s.idsample,v.idsnv,g.idgene
 ORDER BY
 v.chrom,v.start
 LIMIT 5000
@@ -15385,7 +15059,8 @@ LIMIT 5000
 #print "$query<br>";
 #print "query = $where<br>";
 #print "query = @prepare $idomim<br>";
-# foreach gene returned by solr
+
+# foreach gene returned by hpo search
 foreach $genesymbol (sort {$genesymbol{$b}<=>$genesymbol{$a}} sort keys %genesymbol) {
 	#print "asdf '$genesymbol' $genesymbol{$genesymbol}<br>";
 	$out = $dbh->prepare($query) || die print "$DBI::errstr";
@@ -15394,62 +15069,30 @@ foreach $genesymbol (sort {$genesymbol{$b}<=>$genesymbol{$a}} sort keys %genesym
 		push(@row2,[@row,$genesymbol{$genesymbol},$hits{$genesymbol},$maxic{$genesymbol}]);
 
 		# if mode eq ar
-		($tmp,$mode)=&omim($dbh,$row[6]); # g.omim=$row[6]
+		($tmp,$mode)=&omim($dbh,$row[9]); # g.omim=$row[9]
 		$mode =~ s/\s+//g;	
-		#print "$row[6] $row[13] '$mode'<br>";
+		$mode =~ s/<br>//g;	
+		#print "$row[9] $row[13] '$mode'<br>";
 		if ($mode eq "ar") {
-			#print "$row[6] $row[15] $mode<br>";
+			#print "$row[9] $row[13] $mode<br>";
 			# for compound heterozyous
-			$ar{$row[6]} += $row[15]; #variant allele=row[15]
+			$ar{$row[9]} += $row[13]; #variant allele=row[13]
 			#print "asdf $ar{$idomim}<br>";
 		}
 		else {
-			# if ad gene are set to 2, the will be shown in anny case because ($ar{$row[6]} >= $ar)
-			$ar{$row[6]} = 2; #variant allele=row[13]
+			# if ad gene are set to 2, the will be shown in any case because ($ar{$row[9]} >= $ar)
+			$ar{$row[9]} = 2; #variant allele=row[13]
 		}
 	}
-} #foreach gene returned by exomizer
+} 
 
-@labels	= (
-	'n',
-	'idsnv',
-	'DNA ID',
-	'Pedigree',
-	'Chr',
-	'Gene',
-	'Non syn/ Gene',
-	'Omim',
-	'Mode',
-	'Mouse',
-	'Class',
-	'Function',
-	'ExAC pLI',
-	'pph2',
-	'Sift',
-	'CADD',
-	'Count',
-	'Variant alleles',
-	"$dbsnp",
-	'av Het',
-	'HGMD',
-	'ClinVar',
-	'1000 genomes AF',
-	'gnomAD ea',
-	'gnomAD aa',
-	'SNV Qual',
-	'Geno- type Qual',
-	'Map Qual',
-	'Depth',
-	'%Var',
-	'Filter',
-	'UCSC Transcripts',
-	'Score',
-	'Hits',
-	'Max IC'
-	);
+# Now print table
+(@labels) = &resultlabels();
+$labels[11] = "Avg_IC<br>Max_IC<br>Hits"; # replace column header 'Mode' by 'Score'
 
+$i=0;
 
-&tableheaderDefault();
+&tableheaderResults();
 print "<thead><tr>";
 foreach (@labels) {
 	print "<th align=\"center\">$_</th>";
@@ -15457,23 +15100,29 @@ foreach (@labels) {
 print "</tr></thead><tbody>";
 
 $n=1;
-my $damaging = 0;
-my $program  = "";
-my $aref     = "";
-$score    = "";
-my $idsnv    = "";
+my $program      = "";
+my $damaging     = 0;
+my $omimmode     = "";
+my $omimdiseases = "";
+my $hposcores    = "";
+my $aref         = "";
+$score           = "";
+my $idsnv        = "";
 for  $aref (@row2) { 
 	@row=@{$aref};
 	$maxic    = $row[-1];
+	$maxic    = sprintf("%.2f",$maxic);
 	pop(@row);
-	$hits    = $row[-1];
+	$hits     = $row[-1];
 	pop(@row);
 	$score    = $row[-1];
+	$score    = sprintf("%.2f",$score);
 	pop(@row);
 	$idsnv    = $row[-1];
 	pop(@row);
-	push(@row,$score,$hits,$maxic);
-	if ($ar{$row[6]} >= $ar) {
+	#push(@row,$score,$hits,$maxic);
+	$hposcores = "$score<br>$maxic<br>$hits";
+	if ($ar{$row[9]} >= $ar) {
 	print "<tr>";
 	$i=0;
 	foreach (@row) {
@@ -15481,50 +15130,43 @@ for  $aref (@row2) {
 		if ($i == 0) { #edit project
 			print "<td align=\"center\">$n</td>";
 		}
-		if ($i == 3) {
+		if ($i == 1) {
+			$tmp=&igvlink($dbh,$row[$i],$row[5]);
+			print "<td> $tmp</td>";
+		}
+		elsif ($i == 5) {
 			$tmp=&ucsclink2($row[$i]);
 			print "<td> $tmp</td>";
 		}
 		# jedesmal aendern
-		elsif ($i == 6) {
-			($tmp,$mode)=&omim($dbh,$row[$i]);
-			print "<td>$tmp</td>";
-			print "<td>$mode</td>";
+		elsif ($i == 9) {
+			($tmp,$omimmode,$omimdiseases)=&omim($dbh,$row[$i]);
+			print "<td $class align=\"center\">$tmp</td><td align=\"center\">$hposcores</td><td style='min-width:350px'>$omimdiseases</td>\n";
 		}
-		elsif ($i == 1) {
-			$tmp=&igvlink($dbh,$row[$i],$row[3]);
-			print "<td> $tmp</td>";
-		}
-		elsif ($i == 8) {
+		elsif ($i == 11) {
 			($tmp)=&vcf2mutalyzer($dbh,$idsnv);
 			print "<td align=\"center\">$tmp</td>";
 		}
-		elsif (($i==11) or ($i==12)) {
-			if ($i==9) {$program = 'polyphen2';}
-			if ($i==10) {$program = 'sift';}
-			$tmp=$row[$i];
-			if ($i==9) {
-				$tmp=~s/benign//g;
-				$tmp=~s/probably damaging//g;
-				$tmp=~s/possibly damaging//g;
-				$tmp=~s/\)//g;
-				$tmp=~s/\(//g;
-				$tmp=~s/<br>/ /g;
-			}
-			$damaging=&damaging($program,$tmp);
+		elsif (($i==24) or ($i==25)) {
+			if ($i==24) {$program = 'polyphen2';}
+			if ($i==25) {$program = 'sift';}
+			$damaging=&damaging($program,$row[$i]);
 			if ($damaging==1) {
-				print "<td $warningbg>$row[$i]</td>";
+				print "<td $warningtdbg>$row[$i]</td>";
 			}
 			else {
 				print "<td> $row[$i]</td>";
 			}
 		}
-		elsif ($i == 26) { # cnv exomedetph
+		elsif ($i == 31) { # cnv exomedetph
 			$tmp=$row[$i];
-			if ($row[7] eq "cnv") {
+			if ($row[11] eq "cnv") {
 				$tmp=$tmp/100;
 			}
 			print "<td>$tmp</td>";
+		}
+		elsif ($i == 33) { # cnv exomedetph
+			print "<td align=\"center\" style='white-space:nowrap;'>$row[$i]</td>\n";
 		}
 		else {
 			print "<td> $row[$i]</td>";
@@ -16056,46 +15698,62 @@ SELECT
 concat('<a href="listPosition.pl?idsnv=',v.idsnv,'" title="All carriers of this variant">',v.idsnv,'</a>',' '),
 group_concat(DISTINCT '<a href="http://localhost:$igvport/load?file=',$igvserver2,'" title="Open sample in IGV"','>',s.name,'</a>' SEPARATOR '<br>'),
 group_concat(DISTINCT s.pedigree," "),
+s.sex,
+d.symbol,
 concat($ucsclink),
+c.rating,
+c.patho,
 group_concat(DISTINCT $genelink separator '<br>'),
-group_concat(distinct g.nonsynpergene,' (', g.delpergene,')'),
 group_concat(DISTINCT g.omim separator ' '),
+group_concat(distinct $mgiID separator ' '),
 v.class,
-v.func,
+replace(v.func,',',' '),
+x.alleles,
+f.fsample,
+f.samplecontrols,
+group_concat(DISTINCT $exac_gene_link separator '<br>'),
+group_concat(DISTINCT exac.mis_z separator '<br>'),
+group_concat(DISTINCT '<a href="http://$hgmdserver/hgmd/pro/mut.php?accession=',h.id,'">',h.id,'</a>'),
+group_concat(DISTINCT $clinvarlink separator '<br>'),
+group_concat(DISTINCT $exac_link separator '<br>'),
+group_concat(distinct g.nonsynpergene,' (', g.delpergene,')'),
+group_concat(distinct dgv.depth),
 group_concat(DISTINCT pph.hvar_prediction separator ' '),
 group_concat(DISTINCT pph.hvar_prob separator ' '),
 group_concat(DISTINCT sift.score separator ' '),
 group_concat(DISTINCT cadd.phred separator ' '),
-f.fsampleall,
-x.alleles,
-concat($rssnplink),
-group_concat(DISTINCT '<a href="http://$hgmdserver/hgmd/pro/mut.php?accession=',h.id,'">',h.id,'</a>'),
-group_concat(DISTINCT $clinvarlink separator '<br>'),
-group_concat(DISTINCT $exac_link separator '<br>'),
-group_concat(DISTINCT $exac_aa_link separator '<br>'),
-x.filter,x.snvqual,x.gtqual,x.mapqual,x.coverage,
-group_concat(distinct x.percentvar),v.transcript,
+x.filter,
+x.snvqual,
+x.gtqual,
+x.mapqual,
+x.coverage,
+group_concat(distinct x.percentvar),
+replace(v.transcript,':','<br>'),
+group_concat(DISTINCT $primer SEPARATOR '<br>'),
 group_concat(DISTINCT dg.class),
 v.idsnv,
 x.idsample
 FROM
 snv v 
-INNER JOIN snvsample                 x on (v.idsnv = x.idsnv) 
-LEFT  JOIN snv2diseasegroup          f ON (v.idsnv = f.fidsnv)
-INNER JOIN $sampledb.sample          s on (s.idsample = x.idsample)
-INNER JOIN $sampledb.disease2sample ds ON (s.idsample = ds.idsample)
-INNER JOIN $sampledb.disease         d on (ds.iddisease = d.iddisease)
-INNER JOIN snvgene                   y on (v.idsnv = y.idsnv)
-INNER JOIN gene                      g on (g.idgene = y.idgene)
-INNER JOIN disease2gene             dg on (g.idgene = dg.idgene)
-LEFT  JOIN $sampledb.exomestat      es ON s.idsample = es.idsample AND ((es.idlibtype = 5) or (es.idlibtype = 1))
-LEFT  JOIN $coredb.pph3            pph ON (v.chrom=pph.chrom and v.start=pph.start and v.refallele=pph.ref and v.allele=pph.alt)
-LEFT  JOIN $coredb.sift           sift ON (v.chrom=sift.chrom and v.start=sift.start and v.refallele=sift.ref and v.allele=sift.alt)
-LEFT  JOIN $coredb.cadd           cadd ON (v.chrom=cadd.chrom and v.start=cadd.start and v.refallele=cadd.ref and v.allele=cadd.alt)
-LEFT  JOIN $coredb.evs             evs ON (v.chrom=evs.chrom and v.start=evs.start and v.refallele=evs.refallele and v.allele=evs.allele)
-LEFT  JOIN $coredb.kaviar            k ON (v.chrom=k.chrom and v.start=k.start and v.refallele=k.refallele and v.allele=k.allele)
-LEFT  JOIN hgmd_pro.$hg19_coords     h ON (v.chrom = h.chrom AND v.start = h.pos  AND v.refallele=h.ref AND v.allele=h.alt)
-LEFT  JOIN $coredb.clinvar          cv ON (v.chrom=cv.chrom and v.start=cv.start and v.refallele=cv.ref and v.allele=cv.alt)
+INNER JOIN snvsample                   x on (v.idsnv = x.idsnv) 
+LEFT  JOIN $coredb.dgvbp             dgv ON (v.chrom = dgv.chrom AND v.start=dgv.start)
+INNER JOIN $sampledb.sample            s on (s.idsample = x.idsample)
+INNER JOIN $sampledb.disease2sample   ds ON (s.idsample = ds.idsample)
+INNER JOIN $sampledb.disease           d on (ds.iddisease = d.iddisease)
+LEFT  JOIN snv2diseasegroup            f ON (v.idsnv = f.fidsnv AND d.iddiseasegroup=f.fiddiseasegroup)
+LEFT  JOIN snvgene                     y on (v.idsnv = y.idsnv)
+LEFT  JOIN gene                        g on (g.idgene = y.idgene)
+LEFT  JOIN disease2gene               dg on (g.idgene = dg.idgene)
+LEFT  JOIN $sampledb.mouse            mo ON (g.genesymbol = mo.humanSymbol)
+LEFT  JOIN $sampledb.exomestat        es ON s.idsample = es.idsample AND ((es.idlibtype = 5) or (es.idlibtype = 1))
+LEFT  JOIN $coredb.pph3              pph ON (v.chrom=pph.chrom and v.start=pph.start and v.refallele=pph.ref and v.allele=pph.alt)
+LEFT  JOIN $coredb.sift             sift ON (v.chrom=sift.chrom and v.start=sift.start and v.refallele=sift.ref and v.allele=sift.alt)
+LEFT  JOIN $coredb.cadd             cadd ON (v.chrom=cadd.chrom and v.start=cadd.start and v.refallele=cadd.ref and v.allele=cadd.alt)
+LEFT  JOIN $coredb.evs               evs ON (v.chrom=evs.chrom and v.start=evs.start and v.refallele=evs.refallele and v.allele=evs.allele)
+LEFT  JOIN $coredb.evsscores        exac ON (g.genesymbol=exac.gene)
+LEFT  JOIN hgmd_pro.$hg19_coords       h ON (v.chrom = h.chrom AND v.start = h.pos  AND v.refallele=h.ref AND v.allele=h.alt)
+LEFT  JOIN $coredb.clinvar            cv ON (v.chrom=cv.chrom and v.start=cv.start and v.refallele=cv.ref and v.allele=cv.alt)
+LEFT  JOIN $exomevcfe.comment          c ON (v.chrom=c.chrom and v.start=c.start and v.refallele=c.refallele and v.allele=c.altallele and s.idsample=c.idsample)
 WHERE
 dg.iddisease = ?
 $function
@@ -16113,41 +15771,12 @@ v.chrom,v.start
 $out = $dbh->prepare($query) || die print "$DBI::errstr";
 $out->execute($ref->{'dg.iddisease'},@prepare) || die print "$DBI::errstr";
 
-@labels	= (
-	'n',
-	'idsnv',
-	'IGV Comment',
-	'Pedigree',
-	'Chr',
-	'Gene symbol',
-	'Non syn/ Gene',
-	'Omim',
-	'Mode',
-	'Class',
-	'Function',
-	'pph2',
-	'pph2 prob',
-	'Sift',
-	'CADD',
-	'Count',
-	'Variant alleles',
-	"$dbsnp",
-	'HGMD',
-	'ClinVar',
-	'gnomAD',
-	'gnomAD aa',
-	'Filter',
-	'SNV qual',
-	'Geno- type qual',
-	'Map qual',
-	'Depth',
-	'%Var',
-	'UCSC Transcripts'
-	);
+# Now print table
+(@labels) = &resultlabels();
 
 $i=0;
 
-&tableheaderDefault();
+&tableheaderResults();
 print "<thead><tr>";
 foreach (@labels) {
 	print "<th align=\"center\">$_</th>";
@@ -16156,12 +15785,12 @@ print "</tr></thead><tbody>\n";
 $class = "";
 
 $n=1;
-my $program  = "";
-my $damaging = "";
-my $mode     = "";
-my $idsnv    = "";
-my $idsample = "";
-my $contextmenu  = "\n<script type=\"text/javascript\">";
+my $program      = "";
+my $damaging     = "";
+my $omimmode     = "";
+my $omimdiseases = "";
+my $idsnv        = "";
+my $idsample     = "";
 while (@row = $out->fetchrow_array) {
 	print "<tr>";
 	$i=0;
@@ -16179,12 +15808,32 @@ while (@row = $out->fetchrow_array) {
 	pop(@row);
 	foreach (@row) {
 		if (!defined($row[$i])) {$row[$i] = "";}
-		if ($i == 0) { #edit project
+		if ($i == 0) { 
 			print "<td align=\"center\">$n</td>";
 		}
-		if (($i==10) or ($i==11)) {
-			if ($i==10) {$program = 'polyphen2';}
-			if ($i==11) {$program = 'sift';}
+		if ($i == 1) {
+			print qq#
+			<td style='white-space:nowrap;'>
+			<div class="dropdown">
+			$row[$i]&nbsp;&nbsp;
+			<a href="comment.pl?idsnv=$idsnv&idsample=$idsample&reason=other">
+			<img style='width:12pt;height:12pt;' src="/EVAdb/evadb_images/browser-window.png" title="Variant annotation" />
+			</a>
+			</div>
+			</td>
+			#;
+		}
+		elsif ($i == 9) {
+			($tmp,$omimmode,$omimdiseases)=&omim($dbh,$row[$i]);
+			print "<td $class align=\"center\">$tmp</td><td>$omimmode</td><td style='min-width:350px'>$omimdiseases</td>\n";
+		}
+		elsif ($i == 11) {
+			($tmp)=&vcf2mutalyzer($dbh,$idsnv);
+			print "<td align=\"center\">$tmp</td>";
+		}
+		elsif (($i==24) or ($i==25)) {
+			if ($i==24) {$program = 'polyphen2';}
+			if ($i==25) {$program = 'sift';}
 			$damaging=&damaging($program,$row[$i]);
 			if ($damaging==1) {
 				print "<td $warningtdbg>$row[$i]</td>";
@@ -16193,34 +15842,18 @@ while (@row = $out->fetchrow_array) {
 				print "<td> $row[$i]</td>";
 			}
 		}
-		elsif ($i == 1) {
-			$contextmenu .= "
-					contextComment(\"$n\", \"$idsnv\", \"$idsample\", \"other\");";
-			print qq#
-			<td><div class="context-menu-one$n" title="Right click for menu." align="center">
-			$row[$i]
-			</div>
-			</td>
-			#;
-		}
-		elsif ($i == 7) {
-			($tmp)=&vcf2mutalyzer($dbh,$idsnv);
-			print "<td align=\"center\">$tmp</td>";
-		}
-		elsif ($i == 6) {
-			($tmp,$mode)=&omim($dbh,$row[$i]);
-			print "<td $class>$tmp</td>";
-			print "<td>$mode</td>";
-		}
-		elsif ($i == 24) { # cnv exomedetph
+		elsif ($i == 31) { # cnv exomedetph
 			$tmp=$row[$i];
-			if ($row[7] eq "cnv") {
+			if ($row[11] eq "cnv") {
 				$tmp=$tmp/100;
 			}
 			print "<td>$tmp</td>";
 		}
+		elsif ($i == 33) { # transcripts
+			print "<td align=\"center\" style='white-space:nowrap;'>$row[$i]</td>\n";
+		}
 		else {
-			print "<td class='$class' > $row[$i]</td>";
+			print "<td align=\"center\"> $row[$i]</td>\n";
 		}
 		$i++;
 	}
@@ -16228,8 +15861,6 @@ while (@row = $out->fetchrow_array) {
 	$n++;
 }
 print "</tbody></table></div>";
-#&tablescript("","5,10");
-print "$contextmenu</script> ";
 
 $n--;
 print "<br>Variants found $n<br>";
@@ -17397,12 +17028,15 @@ foreach (@labels) {
 }
 print "</tr></thead><tbody>";
 
-$i=0;
-$n=1;
-$tmp = "";
-my $contextmenu  = "\n<script type=\"text/javascript\">";
+$i           = 0;
+$n           = 1;
+$tmp         = "";
+my $sname    = "";
+my $pedigree = "";
 while (@row = $out->fetchrow_array) {
 	$idsample = $row[-1];
+	$sname    = $row[0];
+	$pedigree = $row[1];
 	pop(@row);
 	print "<tr>";
 	$i=0;
@@ -17412,11 +17046,34 @@ while (@row = $out->fetchrow_array) {
 			print "<td align=\"center\">$n</td>";
 		}
 		if ($i == 0) { 
-			$contextmenu .= "
-			contextM(\"$n\", \"$idsample\", \"$row[$i]\", \"$row[1]\");";
 			print qq#
-			<td><div class="context-menu-one$n" title="Right click for menu." align="center">
-			$row[$i]
+			<td style='white-space:nowrap;'>
+			<div class="dropdown">
+			$row[$i]&nbsp;&nbsp;
+			<img style='width:14pt;height:14pt;' src="/EVAdb/evadb_images/down-squared.png" title="Links to analysis functions" onclick="myFunction($n)" class="dropbtn" />
+			<div id="myDropdown$n" class="dropdown-content">
+			        <a href='search.pl?pedigree=$pedigree'>Autosomal dominant</a>
+				<a href='searchGeneInd.pl?pedigree=$sname'>Autosomal recessive</a>
+				<a href='searchTrio.pl?pedigree=$sname'>De novo trio</a>
+				<a href='searchTumor.pl?pedigree=$sname'>Tumor/Control</a>
+				<a href='searchDiseaseGene.pl?sname=$sname'>Disease panels</a>
+				<a href='searchHGMD.pl?sname=$sname'>ClinVar/HGMD</a>
+				<a href='searchOmim.pl?sname=$sname'>OMIM</a>
+				<a href='searchDiagnostics.pl?sname=$sname'>Coverage lists</a>
+				<a href='searchHomo.pl?sname=$sname'>Homozygosity</a>
+				<a href='searchCnv.pl?sname=$sname'>CNV</a>
+				#;
+				if ($contextM eq "contextMg") { # is genome
+					print qq#
+					<a href='searchSv.pl?sname=$sname'>Structural variants</a>
+					#;
+				}
+				print qq#
+				<a href='searchHPO.pl?sname=$sname'>HPO</a>
+				<a href='searchSample.pl?pedigree=$pedigree'>Sample information</a>
+				<a href='conclusion.pl?idsample=$idsample'>Sample conclusions</a>
+				<a href='report.pl?sname=$sname'>Report</a>
+			</div>
 			</div>
 			</td>
 			#;
@@ -17459,9 +17116,6 @@ while (@row = $out->fetchrow_array) {
 	$n++;
 }
 print "</tbody></table></div>";
-#&tablescript(14,15);
-
-print "$contextmenu\n</script>";
 
 
 $out->finish;
@@ -17859,13 +17513,14 @@ print "</tr></thead><tbody>";
 
 $i=0;
 $n=1;
+my $pedigree = "";
 # http://swisnl.github.io/jQuery-contextMenu/demo.html
 # https://api.jquery.com/contextmenu/
-my $contextmenu  = "\n<script type=\"text/javascript\">";
 
 while (@row = $out->fetchrow_array) {
 	$idsample = $row[-1];
 	$sname    = $row[0];
+	$pedigree = $row[3];
 	pop(@row);
 	print "<tr>";
 	$i=0;
@@ -17875,17 +17530,39 @@ while (@row = $out->fetchrow_array) {
 			print "<td align=\"center\">$n</td>";
 		}
 		if ($i == 0) { 
-			$contextmenu .= 
-			"
-			$contextM(\"$n\", \"$idsample\", \"$row[$i]\", \"$row[3]\");
-			";
 			$tmp = &getigv($dbh,$idsample,"");
 			print qq#
-			<td><div class="context-menu-one$n" idsample="$idsample" title="Right click for menu." align="center">
-			$tmp
+			<td style='white-space:nowrap;'>
+			<div class="dropdown">
+			$tmp&nbsp;&nbsp;
+			<img style='width:14pt;height:14pt;' src="/EVAdb/evadb_images/down-squared.png" title="Links to analysis functions" onclick="myFunction($n)" class="dropbtn" />
+			<div id="myDropdown$n" class="dropdown-content">
+			        <a href='search.pl?pedigree=$pedigree'>Autosomal dominant</a>
+				<a href='searchGeneInd.pl?pedigree=$sname'>Autosomal recessive</a>
+				<a href='searchTrio.pl?pedigree=$sname'>De novo trio</a>
+				<a href='searchTumor.pl?pedigree=$sname'>Tumor/Control</a>
+				<a href='searchDiseaseGene.pl?sname=$sname'>Disease panels</a>
+				<a href='searchHGMD.pl?sname=$sname'>ClinVar/HGMD</a>
+				<a href='searchOmim.pl?sname=$sname'>OMIM</a>
+				<a href='searchDiagnostics.pl?sname=$sname'>Coverage lists</a>
+				<a href='searchHomo.pl?sname=$sname'>Homozygosity</a>
+				<a href='searchCnv.pl?sname=$sname'>CNV</a>
+				#;
+				if ($contextM eq "contextMg") { # is genome
+					print qq#
+					<a href='searchSv.pl?sname=$sname'>Structural variants</a>
+					#;
+				}
+				print qq#
+				<a href='searchHPO.pl?sname=$sname'>HPO</a>
+				<a href='searchSample.pl?pedigree=$pedigree'>Sample information</a>
+				<a href='conclusion.pl?idsample=$idsample'>Sample conclusions</a>
+				<a href='report.pl?sname=$sname'>Report</a>
+			</div>
 			</div>
 			</td>
 			#;
+
 		}
 		elsif ($i == 2) { # HPO
 			if ($row[$i] ne "") {
@@ -17940,9 +17617,7 @@ while (@row = $out->fetchrow_array) {
 	$n++;
 }
 print "</tbody></table></div>";
-#&tablescript("6,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,29","1");
 
-print "$contextmenu</script>";
 
 $out->finish;
 }
@@ -18587,7 +18262,7 @@ print qq(
 
         var options = {
           title: 'Coverage',
-	  backgroundColor: '#fffff3',
+	  backgroundColor: '#ffffff',
 	  vAxis: {title: 'Coverage (log scale)', logScale: true, format:'#.###'},
 	  hAxis: {title: 'Exons'},
 	  pointSize: 4,
@@ -19179,8 +18854,6 @@ my $function        = "";
 my $functionprint   = "";
 my $class           = "";
 my $classprint      = "";
-my $dummy           = "";
-my $diseases        = "";
 my $clinvar         = "";
 
 
@@ -19199,7 +18872,8 @@ delete($ref->{wwwcsrf});
 #############################################################
 
 if ($ref->{agmd} ne "") {
-	$where .= "dg.iddisease=448 ";
+	#$where .= "AND dg.iddisease=448 ";
+	$where .= "AND dgd.name='AGMD' ";
 }
 
 if ($ref->{mode} eq "homozygous") {
@@ -19282,41 +18956,60 @@ $i=0;
 $query = qq#
 SELECT 
 group_concat(DISTINCT '<a href="listPosition.pl?idsnv=',v.idsnv,'" title="All carriers of this variant">',v.idsnv,'</a>' separator '<br>'),
-group_concat(DISTINCT $ucsclink separator '<br>'),
 group_concat(DISTINCT '<a href="http://localhost:$igvport/load?file=',$igvserver2,'" title="Open sample in IGV"','>',s.name,'</a>' SEPARATOR '<br>'),
 s.pedigree,
 s.sex,
-i.symbol,
-group_concat(DISTINCT g.genesymbol, ' '),
+d.symbol,
+group_concat(DISTINCT $ucsclink separator '<br>'),
+group_concat(DISTINCT c.rating separator '<br>'),
+group_concat(DISTINCT c.patho separator '<br>'),
+group_concat(DISTINCT $genelink separator '<br>'),
 group_concat(DISTINCT g.omim, ' '),
-group_concat(DISTINCT  '<a href="http://$hgmdserver/hgmd/pro/mut.php?accession=',h.id,'">',h.id,'</a>' separator '<br>'),
-group_concat(DISTINCT $clinvarlink separator '<br>'),
+group_concat(distinct $mgiID separator " "),
 group_concat(DISTINCT v.class separator '<br>'),
 group_concat(DISTINCT v.func separator '<br>'),
-group_concat(DISTINCT v.freq separator '<br>'),
 group_concat(DISTINCT x.alleles separator '<br>'),
-group_concat(DISTINCT $rssnplink separator '<br>'),
-group_concat(DISTINCT v.af separator '<br>') ,
-group_concat(DISTINCT $exac_ae_link separator '<br>'),
-group_concat(DISTINCT $exac_aa_link separator '<br>'),
+group_concat(DISTINCT f.fsample separator '<br>'),
+group_concat(DISTINCT f.samplecontrols separator '<br>'),
+group_concat(DISTINCT $exac_gene_link separator ' '),
+group_concat(DISTINCT exac.mis_z separator ' '),
+group_concat(DISTINCT  '<a href="http://$hgmdserver/hgmd/pro/mut.php?accession=',h.id,'">',h.id,'</a>' separator '<br>'),
+group_concat(DISTINCT $clinvarlink separator '<br>'),
+group_concat(DISTINCT $exac_link separator '<br>'),
+group_concat(distinct g.nonsynpergene,' (', g.delpergene,')'),
+group_concat(distinct dgv.depth),
+group_concat(DISTINCT pph.hvar_prediction separator ' '),
+group_concat(DISTINCT pph.hvar_prob separator ' '),
+group_concat(DISTINCT sift.score separator ' '),
+group_concat(DISTINCT cadd.phred separator ' '),
+group_concat(DISTINCT x.filter separator '<br>'),
 group_concat(DISTINCT x.snvqual separator '<br>'),
 group_concat(DISTINCT x.gtqual separator '<br>'),
 group_concat(DISTINCT x.mapqual separator '<br>'),
 group_concat(DISTINCT x.coverage separator '<br>'),
 group_concat(DISTINCT x.percentvar separator '<br>'),
-group_concat(DISTINCT x.filter separator '<br>'),
-group_concat(DISTINCT v.transcript separator '<br>')
+group_concat(DISTINCT replace(v.transcript,':','<br>') separator '<br>'),
+group_concat(DISTINCT $primer SEPARATOR '<br>')
 FROM  hgmd_pro.$hg19_coords h
 INNER JOIN snv                         v ON (v.chrom      = h.chrom AND v.start = h.pos AND v.refallele=h.ref AND v.allele=h.alt)
-INNER JOIN snvgene                    vg ON (v.idsnv      = vg.idsnv)
-INNER JOIN gene                        g ON (vg.idgene    = g.idgene)
+INNER JOIN snvgene                     y ON (v.idsnv      = y.idsnv)
+INNER JOIN gene                        g ON (y.idgene     = g.idgene)
 INNER JOIN snvsample                   x ON (v.idsnv      = x.idsnv)
 INNER JOIN $sampledb.sample            s ON (x.idsample   = s.idsample)
 INNER JOIN $sampledb.disease2sample   ds ON (s.idsample   = ds.idsample)
-INNER JOIN $sampledb.disease           i ON (ds.iddisease = i.iddisease)
+INNER JOIN $sampledb.disease           d ON (ds.iddisease = d.iddisease)
+LEFT  JOIN snv2diseasegroup            f ON (v.idsnv = f.fidsnv AND d.iddiseasegroup=f.fiddiseasegroup)
 LEFT  JOIN disease2gene               dg ON (g.idgene=dg.idgene)
+LEFT  JOIN $sampledb.disease         dgd ON (dg.iddisease=dgd.iddisease)
+LEFT  JOIN $sampledb.mouse            mo ON (g.genesymbol = mo.humanSymbol)
+LEFT  JOIN $coredb.dgvbp             dgv ON (v.chrom = dgv.chrom AND v.start=dgv.start)
+LEFT  JOIN $coredb.pph3              pph ON (v.chrom=pph.chrom and v.start=pph.start and v.refallele=pph.ref and v.allele=pph.alt)
+LEFT  JOIN $coredb.sift             sift ON (v.chrom=sift.chrom and v.start=sift.start and v.refallele=sift.ref and v.allele=sift.alt)
+LEFT  JOIN $coredb.cadd             cadd ON (v.chrom=cadd.chrom and v.start=cadd.start and v.refallele=cadd.ref and v.allele=cadd.alt)
 LEFT  JOIN $coredb.evs               evs ON (v.chrom      = evs.chrom and v.start=evs.start and v.refallele=evs.refallele and v.allele=evs.allele)
+LEFT  JOIN $coredb.evsscores        exac ON (g.genesymbol=exac.gene)
 LEFT  JOIN $sampledb.omim           omim ON (g.omim       = omim.omimgene)
+LEFT  JOIN $exomevcfe.comment          c ON (v.chrom=c.chrom and v.start=c.start and v.refallele=c.refallele and v.allele=c.altallele and s.idsample=c.idsample)
 LEFT  JOIN $coredb.clinvar            cv ON (v.chrom      = cv.chrom and v.start=cv.start and v.refallele=cv.ref and v.allele=cv.alt)
 WHERE 
 $allowedprojects
@@ -19329,41 +19022,60 @@ $homozygous
 UNION
 SELECT 
 group_concat(DISTINCT '<a href="listPosition.pl?idsnv=',v.idsnv,'" title="All carriers of this variant">',v.idsnv,'</a>' separator '<br>'),
-group_concat(DISTINCT $ucsclink separator '<br>'),
 group_concat(DISTINCT '<a href="http://localhost:$igvport/load?file=',$igvserver2,'" title="Open sample in IGV"','>',s.name,'</a>' SEPARATOR '<br>'),
 s.pedigree,
 s.sex,
-i.symbol,
-group_concat(DISTINCT g.genesymbol, ' '),
+d.symbol,
+group_concat(DISTINCT $ucsclink separator '<br>'),
+group_concat(DISTINCT c.rating separator '<br>'),
+group_concat(DISTINCT c.patho separator '<br>'),
+group_concat(DISTINCT $genelink separator '<br>'),
 group_concat(DISTINCT g.omim, ' '),
-group_concat(DISTINCT  '<a href="http://$hgmdserver/hgmd/pro/mut.php?accession=',h.id,'">',h.id,'</a>' separator '<br>'),
-group_concat(DISTINCT $clinvarlink separator '<br>'),
+group_concat(distinct $mgiID separator " "),
 group_concat(DISTINCT v.class separator '<br>'),
 group_concat(DISTINCT v.func separator '<br>'),
-group_concat(DISTINCT v.freq separator '<br>'),
 group_concat(DISTINCT x.alleles separator '<br>'),
-group_concat(DISTINCT $rssnplink separator '<br>'),
-group_concat(DISTINCT v.af separator '<br>') ,
-group_concat(DISTINCT $exac_ae_link separator '<br>'),
-group_concat(DISTINCT $exac_aa_link separator '<br>'),
+group_concat(DISTINCT f.fsample separator '<br>'),
+group_concat(DISTINCT f.samplecontrols separator '<br>'),
+group_concat(DISTINCT $exac_gene_link separator ' '),
+group_concat(DISTINCT exac.mis_z separator ' '),
+group_concat(DISTINCT  '<a href="http://$hgmdserver/hgmd/pro/mut.php?accession=',h.id,'">',h.id,'</a>' separator '<br>'),
+group_concat(DISTINCT $clinvarlink separator '<br>'),
+group_concat(DISTINCT $exac_link separator '<br>'),
+group_concat(distinct g.nonsynpergene,' (', g.delpergene,')'),
+group_concat(distinct dgv.depth),
+group_concat(DISTINCT pph.hvar_prediction separator ' '),
+group_concat(DISTINCT pph.hvar_prob separator ' '),
+group_concat(DISTINCT sift.score separator ' '),
+group_concat(DISTINCT cadd.phred separator ' '),
+group_concat(DISTINCT x.filter separator '<br>'),
 group_concat(DISTINCT x.snvqual separator '<br>'),
 group_concat(DISTINCT x.gtqual separator '<br>'),
 group_concat(DISTINCT x.mapqual separator '<br>'),
 group_concat(DISTINCT x.coverage separator '<br>'),
 group_concat(DISTINCT x.percentvar separator '<br>'),
-group_concat(DISTINCT x.filter separator '<br>'),
-group_concat(DISTINCT v.transcript separator '<br>')
+group_concat(DISTINCT replace(v.transcript,':','<br>') separator '<br>'),
+group_concat(DISTINCT $primer SEPARATOR '<br>')
 FROM $coredb.clinvar            cv 
 INNER JOIN snv                         v ON (v.chrom      = cv.chrom AND v.start = cv.start AND v.refallele=cv.ref AND v.allele=cv.alt)
-INNER JOIN snvgene                    vg ON (v.idsnv      = vg.idsnv)
-INNER JOIN gene                        g ON (vg.idgene    = g.idgene)
+INNER JOIN snvgene                     y ON (v.idsnv      = y.idsnv)
+INNER JOIN gene                        g ON (y.idgene    = g.idgene)
 INNER JOIN snvsample                   x ON (v.idsnv      = x.idsnv)
 INNER JOIN $sampledb.sample            s ON (x.idsample   = s.idsample)
 INNER JOIN $sampledb.disease2sample   ds ON (s.idsample   = ds.idsample)
-INNER JOIN $sampledb.disease           i ON (ds.iddisease = i.iddisease)
+INNER JOIN $sampledb.disease           d ON (ds.iddisease = d.iddisease)
+LEFT  JOIN snv2diseasegroup            f ON (v.idsnv = f.fidsnv AND d.iddiseasegroup=f.fiddiseasegroup)
 LEFT  JOIN disease2gene               dg ON (g.idgene=dg.idgene)
+LEFT  JOIN $sampledb.disease         dgd ON (dg.iddisease=dgd.iddisease)
+LEFT  JOIN $sampledb.mouse            mo ON (g.genesymbol = mo.humanSymbol)
+LEFT  JOIN $coredb.dgvbp             dgv ON (v.chrom = dgv.chrom AND v.start=dgv.start)
+LEFT  JOIN $coredb.pph3              pph ON (v.chrom=pph.chrom and v.start=pph.start and v.refallele=pph.ref and v.allele=pph.alt)
+LEFT  JOIN $coredb.sift             sift ON (v.chrom=sift.chrom and v.start=sift.start and v.refallele=sift.ref and v.allele=sift.alt)
+LEFT  JOIN $coredb.cadd             cadd ON (v.chrom=cadd.chrom and v.start=cadd.start and v.refallele=cadd.ref and v.allele=cadd.alt)
 LEFT  JOIN $coredb.evs               evs ON (v.chrom      = evs.chrom and v.start=evs.start and v.refallele=evs.refallele and v.allele=evs.allele)
+LEFT  JOIN $coredb.evsscores        exac ON (g.genesymbol=exac.gene)
 LEFT  JOIN $sampledb.omim           omim ON (g.omim       = omim.omimgene)
+LEFT  JOIN $exomevcfe.comment          c ON (v.chrom=c.chrom and v.start=c.start and v.refallele=c.refallele and v.allele=c.altallele and s.idsample=c.idsample)
 LEFT  JOIN hgmd_pro.$hg19_coords       h ON (v.chrom      = h.chrom and v.start=h.pos and v.refallele=h.ref and v.allele=h.alt)
 WHERE 
 $allowedprojects
@@ -19373,7 +19085,7 @@ $function
 $class
 GROUP BY s.idsample,g.genesymbol
 $homozygous
-ORDER BY 7
+ORDER BY 9
 #;
 #print "query = $query<br>";
 #print "prepare = @prepare<br>";
@@ -19385,61 +19097,62 @@ ORDER BY 7
 $out = $dbh->prepare($query) || die print "$DBI::errstr";
 $out->execute(@prepare,@prepare) || die print "$DBI::errstr";
 
-@labels	= (
-	'n',
-	'idsnv',
-	'Position',
-	'id',
-	'Pedigree',
-	'Sex',
-	'Disease',
-	'Gene',
-	'OMIM',
-	'Disease',
-	'HGMD',
-	'ClinVar',
-	'Class',
-	'Function',
-	'Count',
-	'Variant alleles',
-	'rsSNP',
-	'1000Gneomes AF',
-	'gnomAD ea',
-	'gnomAD aa',
-	'SNVQual',
-	'Geno- type Qual',
-	'MapQual',
-	'Depth',
-	'%Var',
-	'Filter',
-	'Transcript'
-	);
-
+# Now print table
+(@labels) = &resultlabels();
 
 $i=0;
-&tableheaderDefault();
+
+&tableheaderResults();
 
 print "<thead><tr>";
 foreach (@labels) {
-	print "<th align=\"center\">$_</th>\n";
+	print "<th align=\"center\">$_</th>";
 }
 print "</tr></thead><tbody>";
 
 $n=1;
+my $program      = "";
+my $damaging     = "";
+my $omimmode     = "";
+my $omimdiseases = "";
+my $idsnv        = "";
+# no mutalyzer for group by gene
+# sub omim prepared for more than one omim entry split by space
 while (@row = $out->fetchrow_array) {
 	print "<tr>";
 	$i=0;
 	foreach (@row) {
 		if (!defined($row[$i])) {$row[$i] = "";}
 		if ($i == 0) { 
-			print "<td align=\"center\">$n</td>\n";
+			print "<td align=\"center\">$n</td>";
 		}
-		if ($i == 7) {
-			($tmp,$dummy,$diseases)=&omim($dbh,$row[$i]);
-			print "<td align=\"center\">$tmp</td><td style='min-width:350px'>$diseases</td>\n";
+		if ($i == 9) {
+			($tmp,$omimmode,$omimdiseases)=&omim($dbh,$row[$i]);
+			print "<td align=\"center\">$tmp</td><td>$omimmode</td><td style='min-width:350px'>$omimdiseases</td>\n";
+		}
+		elsif (($i==24) or ($i==25)) {
+			if ($i==24) {$program = 'polyphen2';}
+			if ($i==25) {$program = 'sift';}
+			$damaging=&damaging($program,$row[$i]);
+			if ($damaging==1) {
+				print "<td $warningtdbg>$row[$i]</td>";
+			}
+			else {
+				print "<td> $row[$i]</td>";
+			}
+		}
+		elsif ($i == 31) { # cnv exomedetph
+			$tmp=$row[$i];
+			if ($row[11] eq "cnv") {
+				$tmp=$tmp/100;
+			}
+			print "<td>$tmp</td>";
+		}
+		elsif ($i == 33) { # cnv exomedetph
+			print "<td align=\"center\" style='white-space:nowrap;'>$row[$i]</td>\n";
 		}
 		else {
-			print "<td align=\"center\"> $row[$i]</td>\n";
+			print "<td align=\"center\">$row[$i]</td>\n";
 		}
 		$i++;
 	}
@@ -19596,22 +19309,43 @@ foreach (@labels) {
 print "</tr></thead><tbody>";
 
 $n=1;
-my $contextmenu  = "\n<script type=\"text/javascript\">";
 while (@row = $out->fetchrow_array) {
 	print "<tr>";
 	$i=0;
-	$idsample = $row[15];
-	$pedigree = $row[4];
+	$idsample = $row[16];
+	$pedigree = $row[5];
 	$sname    = $row[0];
 	foreach (@row) {
 		if ($i == 0) { #edit project
 			print "<td align=\"center\">$n</td>";
-			$contextmenu .= "
-			contextMg(\"$n\", \"$idsample\", \"$row[$i]\", \"$pedigree\");
-			";
 			print qq#
-			<td><div class="context-menu-one$n" title="Right click for menu." align="center">
-			$row[$i]
+			<td style='white-space:nowrap;'>
+			<div class="dropdown">
+			$row[$i]&nbsp;&nbsp;
+			<img style='width:14pt;height:14pt;' src="/EVAdb/evadb_images/down-squared.png" title="Links to analysis functions" onclick="myFunction($n)" class="dropbtn" />
+			<div id="myDropdown$n" class="dropdown-content">
+			        <a href='search.pl?pedigree=$pedigree'>Autosomal dominant</a>
+				<a href='searchGeneInd.pl?pedigree=$sname'>Autosomal recessive</a>
+				<a href='searchTrio.pl?pedigree=$sname'>De novo trio</a>
+				<a href='searchTumor.pl?pedigree=$sname'>Tumor/Control</a>
+				<a href='searchDiseaseGene.pl?sname=$sname'>Disease panels</a>
+				<a href='searchHGMD.pl?sname=$sname'>ClinVar/HGMD</a>
+				<a href='searchOmim.pl?sname=$sname'>OMIM</a>
+				<a href='searchDiagnostics.pl?sname=$sname'>Coverage lists</a>
+				<a href='searchHomo.pl?sname=$sname'>Homozygosity</a>
+				<a href='searchCnv.pl?sname=$sname'>CNV</a>
+				#;
+				if ($contextM eq "contextM") { # is genome
+					print qq#
+					<a href='searchSv.pl?sname=$sname'>Structural variants</a>
+					#;
+				}
+				print qq#
+				<a href='searchHPO.pl?sname=$sname'>HPO</a>
+				<a href='searchSample.pl?pedigree=$pedigree'>Sample information</a>
+				<a href='conclusion.pl?idsample=$idsample'>Sample conclusions</a>
+				<a href='report.pl?sname=$sname'>Report</a>
+			</div>
 			</div>
 			</td>
 			#;
@@ -19634,7 +19368,6 @@ while (@row = $out->fetchrow_array) {
 }
 print "</tbody></table></div>";
 
-print "$contextmenu</script>";
 
 $out->finish;
 }
@@ -20562,24 +20295,173 @@ my $buf     = "";
 if (!defined($width)) {$width = "";}
 $buf = "<br><br>";
 if ($width eq "650px") {
-	$width = "class='width650'";
+	$width = "style='width:650px'";
 }
 elsif ($width eq "1000px") {
-	$width = "class='width1000'";
+	$width = "style='width:1000px'";
 }
 elsif ($width eq "1500px") {
-	$width = "class='width1500'";
+	$width = "style='width:1500px'";
 }
 elsif ($width eq "1750px") {
-	$width = "class='width1750'";
+	$width = "style='width:1750px'";
 }
 elsif ($width eq "2000px") {
-	$width = "class='width2000'";
+	$width = "style='width:2000px'";
 }
 
 $buf .= qq(
 <div id="container" $width>
 <table id="default" numeric="$numeric" string="$string" html="$html" cellspacing="0" class="display compact" width="100%"> 
+);
+
+if ($mode eq "") {
+	print $buf;
+}
+else {
+	return $buf;
+}
+
+}
+
+########################################################################
+# tableheaderResults
+########################################################################
+sub tableheaderResults {
+my $width   = shift;
+my $numeric = shift;
+my $string  = shift;
+my $html    = shift;
+my $mode    = shift;  # for burden test
+my $buf     = "";
+
+if (!defined($width)) {$width = "style='width:1900px;'";}
+$buf = "<br><br>";
+if ($width eq "650px") {
+	$width = "style='width:650px'";
+}
+elsif ($width eq "1000px") {
+	$width = "style='width:1000px'";
+}
+elsif ($width eq "1500px") {
+	$width = "style='width:1500px'";
+}
+elsif ($width eq "1750px") {
+	$width = "style='width:1750px'";
+}
+elsif ($width eq "2000px") {
+	$width = "style='width:2000px'";
+}
+
+$buf .= qq(
+<div id="container" $width>
+<div>
+Toggle columns: 
+  <a class="toggle-vis" data_column="3,4,5">Personal Inf.</a>
+- <a class="toggle-vis" data_column="7,8">Comments</a>
+- <a class="toggle-vis" data_column="11,12">Omim</a>
+- <a class="toggle-vis" data_column="13">Mouse</a>
+- <a class="toggle-vis" data_column="24">NonSyn/Gene</a>
+- <a class="toggle-vis" data_column="25">DGV</a>
+- <a class="toggle-vis" data_column="26,27,28,29">Predictions</a>
+- <a class="toggle-vis" data_column="30,31,32,33,34,35">Quality</a>
+- <a class="toggle-vis" data_column="37">Primer</a>
+</div>
+<br>
+
+<table id="results" numeric="$numeric" string="$string" html="$html" cellspacing="0" class="display compact" style="width:100%"> 
+);
+
+
+if ($mode eq "") {
+	print $buf;
+}
+else {
+	return $buf;
+}
+
+}
+
+########################################################################
+# tableheaderDefault
+########################################################################
+sub tableheaderDefault {
+my $width   = shift;
+my $numeric = shift;
+my $string  = shift;
+my $html    = shift;
+my $mode    = shift;  # for burden test
+my $buf     = "";
+
+if (!defined($width)) {$width = "";}
+$buf = "<br><br>";
+if ($width eq "650px") {
+	$width = "style='width:650px'";
+}
+elsif ($width eq "1000px") {
+	$width = "style='width:1000px'";
+}
+elsif ($width eq "1500px") {
+	$width = "style='width:1500px'";
+}
+elsif ($width eq "1750px") {
+	$width = "style='width:1750px'";
+}
+elsif ($width eq "2000px") {
+	$width = "style='width:2000px'";
+}
+
+$buf .= qq(
+<div id="container" $width>
+<table id="default" numeric="$numeric" string="$string" html="$html" cellspacing="0" class="display compact" width="100%"> 
+);
+
+if ($mode eq "") {
+	print $buf;
+}
+else {
+	return $buf;
+}
+
+}
+
+########################################################################
+# tableheaderDefault_new
+########################################################################
+sub tableheaderDefault_new {
+my $tableid = shift;
+my $width   = shift;
+my $numeric = shift;
+my $string  = shift;
+my $html    = shift;
+my $mode    = shift;  # for burden test
+my $buf     = "";
+if ($tableid eq "") {
+	$tableid = "table01";
+}
+
+if (!defined($width)) {$width = "";}
+$buf = "<br><br>";
+if ($width eq "650px") {
+	$width = "style='width:650px;'";
+}
+elsif ($width eq "1000px") {
+	$width = "style='width:1000px'";
+}
+elsif ($width eq "1500px") {
+	$width = "style='width:1500px'";
+}
+elsif ($width eq "1750px") {
+	$width = "style='width:1750px'";
+}
+elsif ($width eq "2000px") {
+	$width = "style='width:2000px'";
+}
+
+
+$buf .= qq(
+<div id="container1" $width>
+<table id="$tableid" numeric="$numeric" string="$string" html="$html" cellspacing="0" class="compact display" width="100%">
 );
 
 if ($mode eq "") {
@@ -21505,7 +21387,7 @@ if ($sessionid eq "fork") {
 	<html>
 	<head>
 	<title>EVAdb</title>
-	) ;
+	);
 }
 else {
 	print qq(
@@ -21516,21 +21398,30 @@ else {
 	<title>EVAdb</title>
 	) ;
 }
+if ($sessionid eq "sessionid_created") { # redirect to Quality control
+	print qq(
+	<meta http-equiv="refresh" content="4; url='searchStat.pl'" />
+	);
+}
 
 # Tell Perl not to buffer our output
 $| = 1;
 
 print qq(
-<script type="text/javascript" src="/DataTables/datatables.min.js"></script>
-<link rel="stylesheet" type="text/css" href="/DataTables/datatables.min.css">
-<script type="text/javascript" src="/medialize-jQuery-contextMenu-09dffab/src/jquery.contextMenu.js"></script>
-<script type="text/javascript" src="/medialize-jQuery-contextMenu-09dffab/src/jquery.ui.position.js"></script>
-<link rel="stylesheet" type="text/css" href="/medialize-jQuery-contextMenu-09dffab/src/jquery.contextMenu.css">
-<script language="JavaScript" src="/cal/calendar_db.js"></script>
-<link rel="stylesheet" href="/cal/calendar.css">
+	
+<link rel="stylesheet" type="text/css" href="/DataTables-1.10.22/datatables.min.css">
+<script type="text/javascript" src="/DataTables-1.10.22/datatables.min.js"></script>
+
+<link rel="stylesheet" href="/DataTables-1.10.22/jquery.contextMenu.min.css">
+<script src="/DataTables-1.10.22/jquery.contextMenu.min.js"></script>
+<script src="/DataTables-1.10.22/jquery.ui.position.js"></script>
+
+<link rel="stylesheet" href="/EVAdb/cal/calendar.css">
+<script language="JavaScript" src="/EVAdb/cal/calendar_db.js"></script>
+
 <meta name="viewport" content="width=device-width, height=device-height,  initial-scale=1, minimum-scale=1">
-<script type="text/javascript" src="/gif/EVAdb.js"></script>
-<link rel="stylesheet" type="text/css" href="/gif/EVAdb.css">
+<link rel="stylesheet" type="text/css" href="/EVAdb/evadb/EVAdbtest.css">
+<script type="text/javascript" src="/EVAdb/evadb/EVAdbtest.js"></script>
 </head>
 ) ;
 
@@ -21632,8 +21523,102 @@ sub htmlencodehash {
 ########################################################################
 # showMenu
 ########################################################################
-
 sub showMenu {
+
+
+print qq|
+  <div id="mySidenav" class="sidenav">
+  <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+  <div class="subnav">Sample searches</div>
+  <a href="searchStat.pl">Samples with quality</a>
+  <a href="searchSample.pl">Samples</a>
+  <div class="subnav">Variant searches</div>
+  <a href="search.pl">Autosomal dominant</a>
+  <a href="searchGeneInd.pl">Autosmal recessive</a>
+  <a href="searchTrio.pl">De novo trio</a>
+  <a href="searchDiseaseGene.pl">Disease panels</a>
+  <a href="searchGene.pl">Genes</a>
+  <a href="searchHGMD.pl">ClinVar/HGMD</a>
+  <a href="searchOmim.pl">OMIM</a>
+  <a href="searchHPO.pl">HPO</a>
+  <a href="searchTumor.pl">Tumor/Controls</a>
+  <a href="searchSameVariant.pl">Same Variant</a>
+  <a href="searchPosition.pl">Region</a>
+  <div class="subnav">CNV</div>
+  <a href="searchCnv.pl">CNV</a>
+  <div class="subnav">Coverage</div>
+  <a href="searchTranscriptstat.pl">Coverage of genes</a>
+  <a href="searchDiagnostics.pl">Coverage of panels</a>
+  <div class="subnav">Other</div>
+  <a href="searchHomo.pl">Homozygosity</a>
+  <a href="searchIbs.pl">IBS</a>
+  <a href="importHPO.pl">Import HPO</a>
+  <a href="searchVcfTrio.pl">GATK denovo</a>
+  <a href="searchVcf.pl">GATK Mutect2</a>
+|;
+if ($sv_menu) {
+print qq|
+  <div class="subnav">Structural variants</div>
+  <a href="searchSv.pl">Structural variants</a>
+|;
+}
+if ($translocation_menu) {
+print qq|
+  <div class="subnav">Translocations</div>
+  <a href="searchTrans.pl">Translocations</a>
+|;
+}
+print qq|
+  <div class="subnav">Annotations/Report</div>
+  <a href="searchComment.pl">Variant annotation</a>
+  <a href="searchConclusion.pl">Case conclusions</a>
+  <a href="report.pl">Report</a>
+|;
+if ($mtdna_menu) {
+print qq|
+  <div class="subnav">Mito</div>
+  <a href="searchMito.pl">Mito</a>
+|;
+}
+if ($rna_menu) {
+print qq|
+  <div class="subnav">RNA</div>
+  <a href="searchRnaStat.pl">RNA</a>
+  <a href="searchRpkm.pl">FPKM</a>
+  <a href="searchDiffEx.pl">Differential expression</a>
+  <a href="searchDiffPeak.pl">Differential peak callling</a>
+|;
+}
+print qq|
+  <div class="subnav">Help</div>
+  <a href="help.pl">Help</a>
+  <div class="subnav">Logout</div>
+  <a href="login.pl">Logout</a>
+|;
+if ($role eq "admin") {
+print qq|
+  <div class="subnav">Admin</div>
+  <a href="adminList.pl">List accounts</a>
+  <a href="admin.pl">New account</a>
+|;
+}
+print qq|
+</div>
+
+<!-- Use any element to open the sidenav -->
+<span style="padding:20px;font-size:24px;cursor:pointer" onclick="openNav()">&#9776; Menu</span>
+
+<!-- Add all page content inside this div if you want the side nav to push page content to the right (not used if you only want the sidenav to sit on top of the page -->
+<div id="main">
+
+|;
+
+}
+########################################################################
+# showMenu
+########################################################################
+
+sub showMenuOld {
 my $self                 = shift;
 my $menu                 = shift;
 my $search               = "menu";
@@ -21943,14 +21928,15 @@ my $footer = $out->fetchrow_array;
 print qq(
 <br><br>
 </div>
+</div>
 <div id="footer">
 <br>
 <div class="footertext ">
 $footer
 <br><br>
-</div>
-</div>
-</div>
+</div> 
+</div> 
+</div> 
 </body>
 </html>
 );

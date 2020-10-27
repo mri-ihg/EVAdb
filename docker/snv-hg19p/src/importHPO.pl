@@ -19,10 +19,10 @@ my ($dbh, $user, $csrfsalt) = $snv->loadSessionId();
 
 print qq(
 <script type="text/javascript">
-\$.getScript( "/gif/autocompletePhenotype.js" )	
+\$.getScript( "/EVAdb/evadb/autocompletePhenotype.js" )	
 </script>
 );
-print qq(<link rel="stylesheet" type="text/css" href="/gif/hpo_list.css">);
+print qq(<link rel="stylesheet" type="text/css" href="/EVAdb/evadb/hpo_list.css">);
 	
 $snv->showMenu("importHPO");
 print "<span class=\"big\">Import</span><br><br>" ;
