@@ -11269,7 +11269,7 @@ print qq(
 
         var options = {
           title: 'Fraction of reads carrying the alternative allele',
-	  backgroundColor: '#fffff3',
+	  backgroundColor: '#ffffff',
 	  vAxis: {title: 'Percent', minValue : 0, maxValue : 100, logScale: false, format:'#.###'},
 	  hAxis: {title: 'bp'},
 	  lineWidth: 0,
@@ -13151,7 +13151,7 @@ print qq(
 
         var options = {
           title:  '$name $chomosome Fraction of reads carrying the alternative allele',
-	  backgroundColor: '#fffff3',
+	  backgroundColor: '#ffffff',
 	  vAxis: {title: 'Percent', minValue : 0, maxValue : 100, logScale: false, format:'#.###'},
 	  hAxis: {title: 'bp'},
 	  lineWidth: 0,
@@ -17056,8 +17056,8 @@ while (@row = $out->fetchrow_array) {
 				<a href='searchGeneInd.pl?pedigree=$sname'>Autosomal recessive</a>
 				<a href='searchTrio.pl?pedigree=$sname'>De novo trio</a>
 				<a href='searchTumor.pl?pedigree=$sname'>Tumor/Control</a>
-				<a href='searchDiseaseGene.pl?sname=$sname'>Diseasegenes</a>
-				<a href='searchHGMD.pl?sname=$sname'>HGMD/ClinVar</a>
+				<a href='searchDiseaseGene.pl?sname=$sname'>Disease panels</a>
+				<a href='searchHGMD.pl?sname=$sname'>ClinVar/HGMD</a>
 				<a href='searchOmim.pl?sname=$sname'>OMIM</a>
 				<a href='searchDiagnostics.pl?sname=$sname'>Coverage lists</a>
 				<a href='searchHomo.pl?sname=$sname'>Homozygosity</a>
@@ -17541,8 +17541,8 @@ while (@row = $out->fetchrow_array) {
 				<a href='searchGeneInd.pl?pedigree=$sname'>Autosomal recessive</a>
 				<a href='searchTrio.pl?pedigree=$sname'>De novo trio</a>
 				<a href='searchTumor.pl?pedigree=$sname'>Tumor/Control</a>
-				<a href='searchDiseaseGene.pl?sname=$sname'>Diseasegenes</a>
-				<a href='searchHGMD.pl?sname=$sname'>HGMD/ClinVar</a>
+				<a href='searchDiseaseGene.pl?sname=$sname'>Disease panels</a>
+				<a href='searchHGMD.pl?sname=$sname'>ClinVar/HGMD</a>
 				<a href='searchOmim.pl?sname=$sname'>OMIM</a>
 				<a href='searchDiagnostics.pl?sname=$sname'>Coverage lists</a>
 				<a href='searchHomo.pl?sname=$sname'>Homozygosity</a>
@@ -18262,7 +18262,7 @@ print qq(
 
         var options = {
           title: 'Coverage',
-	  backgroundColor: '#fffff3',
+	  backgroundColor: '#ffffff',
 	  vAxis: {title: 'Coverage (log scale)', logScale: true, format:'#.###'},
 	  hAxis: {title: 'Exons'},
 	  pointSize: 4,
@@ -19328,8 +19328,8 @@ while (@row = $out->fetchrow_array) {
 				<a href='searchGeneInd.pl?pedigree=$sname'>Autosomal recessive</a>
 				<a href='searchTrio.pl?pedigree=$sname'>De novo trio</a>
 				<a href='searchTumor.pl?pedigree=$sname'>Tumor/Control</a>
-				<a href='searchDiseaseGene.pl?sname=$sname'>Diseasegenes</a>
-				<a href='searchHGMD.pl?sname=$sname'>HGMD/ClinVar</a>
+				<a href='searchDiseaseGene.pl?sname=$sname'>Disease panels</a>
+				<a href='searchHGMD.pl?sname=$sname'>ClinVar/HGMD</a>
 				<a href='searchOmim.pl?sname=$sname'>OMIM</a>
 				<a href='searchDiagnostics.pl?sname=$sname'>Coverage lists</a>
 				<a href='searchHomo.pl?sname=$sname'>Homozygosity</a>
@@ -21420,14 +21420,13 @@ print qq(
 <script language="JavaScript" src="/EVAdb/cal/calendar_db.js"></script>
 
 <meta name="viewport" content="width=device-width, height=device-height,  initial-scale=1, minimum-scale=1">
-
-<link rel="stylesheet" type="text/css" href="/EVAdb/evadb/EVAdb.css">
-<script type="text/javascript" src="/EVAdb/evadb/EVAdb.js"></script>
+<link rel="stylesheet" type="text/css" href="/EVAdb/evadb/EVAdbtest.css">
+<script type="text/javascript" src="/EVAdb/evadb/EVAdbtest.js"></script>
 </head>
 ) ;
 
 if ($background eq "white") {
-	print qq(<body bgcolor=\"#fffff3\">\n);
+	print qq(<body bgcolor=\"#ffffff\">\n);
 	print qq(<div id="wrapper">);
 	print qq(<div id="content">);
 }
@@ -21524,8 +21523,102 @@ sub htmlencodehash {
 ########################################################################
 # showMenu
 ########################################################################
-
 sub showMenu {
+
+
+print qq|
+  <div id="mySidenav" class="sidenav">
+  <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+  <div class="subnav">Sample searches</div>
+  <a href="searchStat.pl">Samples with quality</a>
+  <a href="searchSample.pl">Samples</a>
+  <div class="subnav">Variant searches</div>
+  <a href="search.pl">Autosomal dominant</a>
+  <a href="searchGeneInd.pl">Autosmal recessive</a>
+  <a href="searchTrio.pl">De novo trio</a>
+  <a href="searchDiseaseGene.pl">Disease panels</a>
+  <a href="searchGene.pl">Genes</a>
+  <a href="searchHGMD.pl">ClinVar/HGMD</a>
+  <a href="searchOmim.pl">OMIM</a>
+  <a href="searchHPO.pl">HPO</a>
+  <a href="searchTumor.pl">Tumor/Controls</a>
+  <a href="searchSameVariant.pl">Same Variant</a>
+  <a href="searchPosition.pl">Region</a>
+  <div class="subnav">CNV</div>
+  <a href="searchCnv.pl">CNV</a>
+  <div class="subnav">Coverage</div>
+  <a href="searchTranscriptstat.pl">Coverage of genes</a>
+  <a href="searchDiagnostics.pl">Coverage of panels</a>
+  <div class="subnav">Other</div>
+  <a href="searchHomo.pl">Homozygosity</a>
+  <a href="searchIbs.pl">IBS</a>
+  <a href="importHPO.pl">Import HPO</a>
+  <a href="searchVcfTrio.pl">GATK denovo</a>
+  <a href="searchVcf.pl">GATK Mutect2</a>
+|;
+if ($sv_menu) {
+print qq|
+  <div class="subnav">Structural variants</div>
+  <a href="searchSv.pl">Structural variants</a>
+|;
+}
+if ($translocation_menu) {
+print qq|
+  <div class="subnav">Translocations</div>
+  <a href="searchTrans.pl">Translocations</a>
+|;
+}
+print qq|
+  <div class="subnav">Annotations/Report</div>
+  <a href="searchComment.pl">Variant annotation</a>
+  <a href="searchConclusion.pl">Case conclusions</a>
+  <a href="report.pl">Report</a>
+|;
+if ($mtdna_menu) {
+print qq|
+  <div class="subnav">Mito</div>
+  <a href="searchMito.pl">Mito</a>
+|;
+}
+if ($rna_menu) {
+print qq|
+  <div class="subnav">RNA</div>
+  <a href="searchRnaStat.pl">RNA</a>
+  <a href="searchRpkm.pl">FPKM</a>
+  <a href="searchDiffEx.pl">Differential expression</a>
+  <a href="searchDiffPeak.pl">Differential peak callling</a>
+|;
+}
+print qq|
+  <div class="subnav">Help</div>
+  <a href="help.pl">Help</a>
+  <div class="subnav">Logout</div>
+  <a href="login.pl">Logout</a>
+|;
+if ($role eq "admin") {
+print qq|
+  <div class="subnav">Admin</div>
+  <a href="adminList.pl">List accounts</a>
+  <a href="admin.pl">New account</a>
+|;
+}
+print qq|
+</div>
+
+<!-- Use any element to open the sidenav -->
+<span style="padding:20px;font-size:24px;cursor:pointer" onclick="openNav()">&#9776; Menu</span>
+
+<!-- Add all page content inside this div if you want the side nav to push page content to the right (not used if you only want the sidenav to sit on top of the page -->
+<div id="main">
+
+|;
+
+}
+########################################################################
+# showMenu
+########################################################################
+
+sub showMenuOld {
 my $self                 = shift;
 my $menu                 = shift;
 my $search               = "menu";
@@ -21835,14 +21928,15 @@ my $footer = $out->fetchrow_array;
 print qq(
 <br><br>
 </div>
+</div>
 <div id="footer">
 <br>
 <div class="footertext ">
 $footer
 <br><br>
-</div>
-</div>
-</div>
+</div> 
+</div> 
+</div> 
 </body>
 </html>
 );
