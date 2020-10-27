@@ -6851,8 +6851,8 @@ foreach (@labels) {
 }
 print "</tr></thead><tbody>";
 foreach $project (sort keys %lanes) {
-	foreach $flowcellmode (sort keys $lanes{$project}) {
-	foreach $readlength (sort keys $lanes{$project}{$flowcellmode}) {
+	foreach $flowcellmode (sort keys %{$lanes{$project}}) {
+	foreach $readlength (sort keys %{$lanes{$project}{$flowcellmode}}) {
 		$tmp = sprintf("%.2f",$lanes{$project}{$flowcellmode}{$readlength});
 		$alllanes += $tmp;
 		print "<tr>";
