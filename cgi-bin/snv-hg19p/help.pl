@@ -45,7 +45,7 @@ print "<tr ><td class=\"outer\">";
 print "<hr id=\"two\" align=\"left\">";
 print "<h1>Analysis start</h1>";
 print "<hr align=\"left\">";
-print "<p>Start your analysis with the menu item 'Quality control' to display quality measures.
+print "<p>Start your analysis with the menu item 'Samples with quality' to display quality measures.
 Check whether the values are plausible (sex, contamination, sequencing amout, coverage, and number of variants).</p>";
 print "<img src=\"/EVAdb/evadb_images/ExomeStat.png\" width=\"200\" style=\"border-radius:10px\"><br>";
 print "</td></tr>";
@@ -54,9 +54,9 @@ print "<tr><td class=\"outer\">";
 print "<hr id=\"three\" align=\"left\">";
 print "<h1>Searches</h1>";
 print "<hr align=\"left\">";
-print "<p>Start your searches with a right click on the sample ID.
-The context menu provides links to the most frequently used queries
-and fills the search form with default values. The same context menu is available in the menu item 'Samples'.</p>";
+print "<p>Start your searches with a 'left click' on the drop down icon.
+The menu provides links to the most frequently used queries
+and fills the search form with default values. The same context drop down menu is available in the menu item 'Samples'.</p>";
 print "<img src=\"/EVAdb/evadb_images/PopUpMenu.png\" width=\"200\" style=\"border-radius:10px\"><br>";
 print "</td></tr>";
 
@@ -68,7 +68,7 @@ print "<p>Three external applications are integrated into EVAdb.<br><br>
 All sequencing reads can be displayed in the <b>Integrative Genomics Viewer (IGV)</b>
 by a 'left click' on the sample ID.
 IGV has to be installed on the local computer and to be started before sequencing reads can be displayed.
-A wrapper is used around IGV so that the same credential can be used as for EVAdb.
+A wrapper around IGV is used so that the same credential can be used as for EVAdb.
 </p>";
 print "<img src=\"/EVAdb/evadb_images/igv.png\" width=\"200\" style=\"border-radius:10px\"><br>";
 print "<p><b>Variant Effect Predictor (VEP)</b> as provided by Ensembl can be display by invoking the
@@ -81,9 +81,9 @@ print "<tr><td class=\"outer\">";
 print "<hr id=\"five\" align=\"left\">";
 print "<h1>Comments</h1>";
 print "<hr align=\"left\">";
-print "<p>A 'right click' on the sample ID displays a link to a 'Comment' page.
+print "<p>A 'left/middle click' on the 'browser window' icon opens the 'Variant annotation' page.
 One can annotate the variant according to inheritance, and pathogenicity.
-All annotated variants can be listed with the menu item 'Comments'.</p>";
+All annotated variants can be listed with the menu item 'Variant annotation'.</p>";
 print "<img src=\"/EVAdb/evadb_images/comment.png\" width=\"200\" style=\"border-radius:10px\"><br>";
 print "</td></tr>";
 
