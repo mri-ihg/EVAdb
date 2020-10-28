@@ -17387,12 +17387,14 @@ if ($ref->{libtype} ne "") {
 	$where .= " AND (l.libtype = ? OR ISNULL(e.idlibtype))";
 	push(@values2,$ref->{libtype});
 }
+
+#replace(replace(replace(replace (cl.solved,1,"solved"),2,"not_solved"),3,"candidate"),4,"pending")
 			
 $i=0;
 $query = qq#
 SELECT
 s.name,
-concat_ws(' ',cl.solved, group_concat(DISTINCT co.genesymbol SEPARATOR '')),
+concat_ws(' ',cl.solved, group_concat(DISTINCT co.genesymbol SEPARATOR ' ')),
 h.idsample,
 s.pedigree,s.sex,s.foreignid,s.externalseqid,e.sry,c.name,
 group_concat(DISTINCT l.lname),lt.ltlibtype,lp.lplibpair,a.name,
@@ -17456,7 +17458,7 @@ $out->execute(@values2) || die print "$DBI::errstr";
 @labels	= (
 	'n',
 	'ID Links',
-	'Con- clusion',
+	'<div class="tooltip">Con-<br>clusion<span class="tooltiptext">0 nothing_done<br>1 solved<br>2 not_solved<br>3 candidate<br>4 pending</span></div>',
 	'HPO',
 	'Pedigree',
 	'Sex',
@@ -19281,7 +19283,7 @@ $out->execute(@values2) || die print "$DBI::errstr";
 @labels	= (
 	'n',
 	'ID Links',
-	'Con-<br>clusion',
+	'<div class="tooltip">Con-<br>clusion<span class="tooltiptext">0 nothing_done<br>1 solved<br>2 not_solved<br>3 candidate<br>4 pending</span></div>',
 	'HPO',
 	'Foreign ID',
 	'External<br>SeqID',
