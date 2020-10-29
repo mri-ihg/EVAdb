@@ -15,7 +15,7 @@ $snv->printHeader();
 my ($dbh) = $snv->loadSessionId();
 	
 $snv->showMenu("searchStat");
-print "<span class=\"big\">Search for samples and quality checks</span><br><br>" ;
+print "<span class=\"big\">Samples with quality checks</span><br><br>" ;
 
 print "<form action=\"searchStatDo.pl\" method=\"post\" name=\"myform\">" ;
 

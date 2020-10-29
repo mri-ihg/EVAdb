@@ -19,7 +19,7 @@ my ($dbh) = $snv->loadSessionId();
 my $search      = $snv->initSearchHomozygosity($sname);
 
 $snv->showMenu("searchHomozygosity");
-print "<span class=\"big\">Search</span><br><br>" ;
+print "<span class=\"big\">Homozygosity</span><br><br>" ;
 
 print "<form action=\"searchHomoDo.pl\" method=\"post\">" ;
 

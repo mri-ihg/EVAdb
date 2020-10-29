@@ -21,7 +21,7 @@ my ($dbh) = $snv->loadSessionId();
 #$ref = $snv->htmlencodehash($ref);
 
 $snv->showMenu('searchHPO');
-print "<span class=\"big\">Search results</span><br><br>" ;
+print "<span class=\"big\">HPO</span><br><br>" ;
 
 $snv->searchResultsHPO($dbh,$ref);
 

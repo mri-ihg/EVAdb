@@ -22,7 +22,7 @@ my ($dbh) = $snv->loadSessionId();
 #$ref = $snv->htmlencodehash($ref);
 
 $snv->showMenu('searchTumor');
-print "<span class=\"big\">Search results</span><br><br>" ;
+print "<span class=\"big\">Tumor/Control</span><br><br>" ;
 
 $snv->searchResultsTumor($dbh,$ref);
 

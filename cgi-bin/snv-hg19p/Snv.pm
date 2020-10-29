@@ -17059,6 +17059,7 @@ while (@row = $out->fetchrow_array) {
 				<a href='searchDiseaseGene.pl?sname=$sname'>Disease panels</a>
 				<a href='searchHGMD.pl?sname=$sname'>ClinVar/HGMD</a>
 				<a href='searchOmim.pl?sname=$sname'>OMIM</a>
+				<a href='searchHPO.pl?sname=$sname'>HPO</a>
 				<a href='searchDiagnostics.pl?sname=$sname'>Coverage lists</a>
 				<a href='searchHomo.pl?sname=$sname'>Homozygosity</a>
 				<a href='searchCnv.pl?sname=$sname'>CNV</a>
@@ -17069,7 +17070,6 @@ while (@row = $out->fetchrow_array) {
 					#;
 				}
 				print qq#
-				<a href='searchHPO.pl?sname=$sname'>HPO</a>
 				<a href='searchSample.pl?pedigree=$pedigree'>Sample information</a>
 				<a href='conclusion.pl?idsample=$idsample'>Sample conclusions</a>
 				<a href='report.pl?sname=$sname'>Report</a>
@@ -17546,6 +17546,7 @@ while (@row = $out->fetchrow_array) {
 				<a href='searchDiseaseGene.pl?sname=$sname'>Disease panels</a>
 				<a href='searchHGMD.pl?sname=$sname'>ClinVar/HGMD</a>
 				<a href='searchOmim.pl?sname=$sname'>OMIM</a>
+				<a href='searchHPO.pl?sname=$sname'>HPO</a>
 				<a href='searchDiagnostics.pl?sname=$sname'>Coverage lists</a>
 				<a href='searchHomo.pl?sname=$sname'>Homozygosity</a>
 				<a href='searchCnv.pl?sname=$sname'>CNV</a>
@@ -17556,7 +17557,6 @@ while (@row = $out->fetchrow_array) {
 					#;
 				}
 				print qq#
-				<a href='searchHPO.pl?sname=$sname'>HPO</a>
 				<a href='searchSample.pl?pedigree=$pedigree'>Sample information</a>
 				<a href='conclusion.pl?idsample=$idsample'>Sample conclusions</a>
 				<a href='report.pl?sname=$sname'>Report</a>
@@ -19333,17 +19333,17 @@ while (@row = $out->fetchrow_array) {
 				<a href='searchDiseaseGene.pl?sname=$sname'>Disease panels</a>
 				<a href='searchHGMD.pl?sname=$sname'>ClinVar/HGMD</a>
 				<a href='searchOmim.pl?sname=$sname'>OMIM</a>
+				<a href='searchHPO.pl?sname=$sname'>HPO</a>
 				<a href='searchDiagnostics.pl?sname=$sname'>Coverage lists</a>
 				<a href='searchHomo.pl?sname=$sname'>Homozygosity</a>
 				<a href='searchCnv.pl?sname=$sname'>CNV</a>
 				#;
-				if ($contextM eq "contextM") { # is genome
+				if ($contextM eq "contextMg") { # is genome
 					print qq#
 					<a href='searchSv.pl?sname=$sname'>Structural variants</a>
 					#;
 				}
 				print qq#
-				<a href='searchHPO.pl?sname=$sname'>HPO</a>
 				<a href='searchSample.pl?pedigree=$pedigree'>Sample information</a>
 				<a href='conclusion.pl?idsample=$idsample'>Sample conclusions</a>
 				<a href='report.pl?sname=$sname'>Report</a>
@@ -21616,259 +21616,6 @@ print qq|
 |;
 
 }
-########################################################################
-# showMenu
-########################################################################
-
-sub showMenuOld {
-my $self                 = shift;
-my $menu                 = shift;
-my $search               = "menu";
-my $searchGeneInd        = "menu";
-my $searchPosition       = "menu";
-my $searchGene           = "menu";
-my $searchDiseaseGene    = "menu";
-my $searchSample         = "menu";
-my $listcooperation      = "menu";
-my $login                = "menu";
-my $searchstat           = "menu";
-my $searchTranscriptstat = "menu";
-my $searchDenovo         = "menu";
-my $searchTrio           = "menu";
-my $searchHom            = "menu";
-my $searchHGMD           = "menu";
-my $searchTumor          = "menu";
-my $searchComment        = "menu";
-my $searchDiagnostics    = "menu";
-my $searchCnv            = "menu";
-my $searchTrans          = "menu";
-my $searchSv             = "menu";
-my $searchHomozygosity   = "menu";
-my $searchIbs            = "menu";
-my $searchOmim           = "menu";
-my $searchHPO            = "menu";
-my $importHPO            = "menu";
-my $searchConclusion     = "menu";
-my $searchMito           = "menu";
-my $adminList            = "menu";
-my $admin                = "menu";
-my $searchRnaStat        = "menu";
-my $searchRpkm           = "menu";
-my $searchSameVariant    = "menu";
-my $searchDiffEx         = "menu";
-my $searchDiffPeak       = "menu";
-my $searchVcf            = "menu";
-my $searchVcfTrio        = "menu";
-my $report               = "menu";
-my $help                 = "menu";
-
-if (!defined($menu)) {$menu = "";}
-
-if ($menu eq "search") {
-	$search = "menuactive";
-}
-if ($menu eq "searchGeneInd") {
-	$searchGeneInd = "menuactive";
-}
-if ($menu eq "searchPosition") {
-	$searchPosition = "menuactive";
-}
-if ($menu eq "searchGene") {
-	$searchGene = "menuactive";
-}
-if ($menu eq "searchSample") {
-	$searchSample = "menuactive";
-}
-if ($menu eq "listCooperation") {
-	$listcooperation = "menuactive";
-}
-if ($menu eq "login") {
-	$login = "menuactive";
-}
-if ($menu eq "searchStat") {
-	$searchstat = "menuactive";
-}
-if ($menu eq "searchTranscriptstat") {
-	$searchTranscriptstat = "menuactive";
-}
-if ($menu eq "searchDenovo") {
-	$searchDenovo = "menuactive";
-}
-if ($menu eq "searchTrio") {
-	$searchTrio = "menuactive";
-}
-if ($menu eq "searchHom") {
-	$searchHom = "menuactive";
-}
-if ($menu eq "searchHGMD") {
-	$searchHGMD = "menuactive";
-}
-if ($menu eq "searchDiseaseGene") {
-	$searchDiseaseGene = "menuactive";
-}
-if ($menu eq "searchTumor") {
-	$searchTumor = "menuactive";
-}
-if ($menu eq "searchComment") {
-	$searchComment = "menuactive";
-}
-if ($menu eq "searchDiagnostics") {
-	$searchDiagnostics = "menuactive";
-}
-if ($menu eq "searchCnv") {
-	$searchCnv = "menuactive";
-}
-if ($menu eq "searchTrans") {
-	$searchTrans = "menuactive";
-}
-if ($menu eq "searchSv") {
-	$searchSv = "menuactive";
-}
-if ($menu eq "searchHomozygosity") {
-	$searchHomozygosity = "menuactive";
-}
-if ($menu eq "searchIbs") {
-	$searchIbs = "menuactive";
-}
-if ($menu eq "searchOmim") {
-	$searchOmim = "menuactive";
-}
-if ($menu eq "searchHPO") {
-	$searchHPO = "menuactive";
-}
-if ($menu eq "importHPO") {
-	$importHPO = "menuactive";
-}
-if ($menu eq "searchConclusion") {
-	$searchConclusion = "menuactive";
-}
-if ($menu eq "searchMito") {
-	$searchMito = "menuactive";
-}
-if ($menu eq "adminList") {
-	$adminList = "menuactive";
-}
-if ($menu eq "admin") {
-	$admin = "menuactive";
-}
-if ($menu eq "searchRnaStat") {
-	$searchRnaStat = "menuactive";
-}
-if ($menu eq "searchRpkm") {
-	$searchRpkm = "menuactive";
-}
-if ($menu eq "searchSameVariant") {
-	$searchSameVariant = "menuactive";
-}
-if ($menu eq "searchDiffEx") {
-	$searchDiffEx = "menuactive";
-}
-if ($menu eq "searchDiffPeak") {
-	$searchDiffPeak = "menuactive";
-}
-if ($menu eq "searchVcf") {
-	$searchVcf = "menuactive";
-}
-if ($menu eq "searchVcfTrio") {
-	$searchVcfTrio = "menuactive";
-}
-if ($menu eq "report") {
-	$report = "menuactive";
-}
-if ($menu eq "help") {
-	$help = "menuactive";
-}
-
-print qq(
-<table class="header" border="0" cellpadding="3" cellspacing="0" width="1000px">
-<tr>
-<td align="center" class="header"><a class="$search" href="search.pl">Autosomal dominant</a></td>
-<td align="center" class="header"><a class="$searchGeneInd" href="searchGeneInd.pl">Autosomal recessive</a></td>
-<td align="center" class="header"><a class="$searchSameVariant" href="searchSameVariant.pl">Same variants</a></td>
-<td align="center" class="header"><a class="$searchTrio" href="searchTrio.pl">De novo Trio</a></td>
-<td align="center" class="header"><a class="$searchTumor" href="searchTumor.pl">Tumor Controls</a></td>
-<td align="center" class="header"><a class="$searchGene" href="searchGene.pl">Genes</a></td>
-<td align="center" class="header"><a class="$searchDiseaseGene" href="searchDiseaseGene.pl">Disease genes</a></td>
-<td align="center" class="header"><a class="$searchTranscriptstat" href="searchTranscriptstat.pl">Coverage</a></td>
-<td align="center" class="header"><a class="$searchDiagnostics" href="searchDiagnostics.pl">Coverage lists</a></td>
-<td align="center" class="header"><a class="$searchPosition" href="searchPosition.pl">Region</a></td>
-<td align="center" class="header"><a class="$searchHomozygosity" href="searchHomo.pl">Homozygosity</a></td>
-<td align="center" class="header"><a class="$searchCnv" href="searchCnv.pl">CNVs</a></td>
-);
-
-if ($sv_menu) {
-print qq(
-<td align="center" class="header"><a class="$searchSv" href="searchSv.pl">Structural variants</a></td>
-);
-}
-
-
-if ($translocation_menu) {
-print qq(
-<td align="center" class="header"><a class="$searchTrans" href="searchTrans.pl">Translocations</a></td>
-);
-}
-
-print qq(
-<td align="center" class="header"><a class="$searchHGMD" href="searchHGMD.pl">HGMD ClinVar</a></td>
-<td align="center" class="header"><a class="$searchOmim" href="searchOmim.pl">OMIM</a></td>
-<td align="center" class="header"><a class="$searchHPO"  href="searchHPO.pl">Search HPO</a></td>
-<td align="center" class="header"><a class="$searchIbs"  href="searchIbs.pl">IBS</a></td>
-);
-
-if ($mtdna_menu) {
-print qq(
-<td align="center" class="header"><a class="$searchMito" href="searchMito.pl">Mito</a></td>
-);
-}
-
-print qq(
-<td align="center" class="header"><a class="$searchstat" href="searchStat.pl">Quality control</a></td>
-<td align="center" class="header"><a class="$searchSample" href="searchSample.pl">Samples</a></td>
-<td align="center" class="header"><a class="$searchComment" href="searchComment.pl">Comments</a></td>
-<td align="center" class="header"><a class="$searchConclusion" href="searchConclusion.pl">Conclusions</a></td>
-<td align="center" class="header"><a class="$report" href="report.pl">Report</a></td>
-<td align="center" class="header"><a class="$searchVcfTrio" href="searchVcfTrio.pl">VCF De novo Trio</a></td>
-<td align="center" class="header"><a class="$searchVcf" href="searchVcf.pl">VCF Tumor Controls</a></td>
-);
-
-if ($rna_menu) {
-print qq(
-<td align="center" class="header"><a class="$searchRpkm" href="searchRpkm.pl">FPKM</a></td>
-<td align="center" class="header"><a class="$searchRnaStat" href="searchRnaStat.pl">RNA</a></td>
-<td align="center" class="header"><a class="$searchDiffEx" href="searchDiffEx.pl">Differential Expression</a></td>
-<td align="center" class="header"><a class="$searchDiffPeak" href="searchDiffPeak.pl">Differential peak calling</a></td>
-);
-}
-
-print qq(
-<td align="center" class="header"><a class="$help" href="help.pl">Help</a></td>
-<td align="center" class="header"><a class="$login" href="login.pl">Login / Logout</a></td>
-<td align="center" class="header"><a class="$importHPO"  href="importHPO.pl">Import HPO</a></td>
-);
-
-if ($role eq "admin") {
-print qq(
-<td align="center" class="header"><a class="$adminList" href="adminList.pl">List accounts</a></td>
-<td align="center" class="header"><a class="$admin" href="admin.pl">New account</a></td>
-);
-}
-
-if ($test) {
-print qq(
-);
-}
-
-print qq(
-</tr>
-</table>
-<br>
-);
-#<td align="center" class="header"><a class="$searchDenovo" href="searchDenovo.pl">De novo variants</a></td>
-#<td align="center" class="header"><a class="$listcooperation" href="listCooperation.pl">Cooperations</a></td>
-
-}
-#<td align="center" class="header"><a class="$searchHom" href="searchHom.pl">Homozygous statistics</a></td>
 ########################################################################
 # login_message
 ########################################################################

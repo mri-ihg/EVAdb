@@ -18,7 +18,7 @@ my ($dbh) = $snv->loadSessionId();
 my $search      = $snv->initSearchDiagnostics($sname);
 	
 $snv->showMenu("searchDiagnostics");
-print "<span class=\"big\">Search</span><br><br>" ;
+print "<span class=\"big\">Coverage lists</span><br><br>" ;
 
 print "<form action=\"searchDiagnosticsDo.pl\" method=\"post\">" ;
 

@@ -21,7 +21,7 @@ my ($dbh) = $snv->loadSessionId();
 #$ref = $snv->htmlencodehash($ref);
 
 $snv->showMenu('searchOmim');
-print "<span class=\"big\">Search results</span><br><br>" ;
+print "<span class=\"big\">OMIM</span><br><br>" ;
 
 $snv->searchResultsOmim($dbh,$ref);
 

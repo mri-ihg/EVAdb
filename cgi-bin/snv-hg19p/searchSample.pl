@@ -18,7 +18,7 @@ my ($dbh) = $snv->loadSessionId();
 my $search      = $snv->initSearchSample($pedigree);
 	
 $snv->showMenu("searchSample");
-print "<span class=\"big\">Search</span><br><br>" ;
+print "<span class=\"big\">Samples</span><br><br>" ;
 
 print "<form action=\"searchSampleDo.pl\" method=\"post\" name=\"myform\">" ;
 

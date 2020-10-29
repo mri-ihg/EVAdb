@@ -21,7 +21,7 @@ if ($burdentest eq "0") {
 	$snv->printHeader();
 	my ($dbh) = $snv->loadSessionId(); 
 	$snv->showMenu('searchDiseaseGene');
-	print "<span class=\"big\">Search results</span><br><br>" ;
+	print "<span class=\"big\">Disease panels</span><br><br>" ;
 	$snv->searchResultsDiseaseGene($dbh,$ref);
 	$snv->printFooter($dbh);
 }

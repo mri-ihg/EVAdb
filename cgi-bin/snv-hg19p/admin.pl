@@ -20,7 +20,7 @@ my $mask        = $snv->initAdmin();
 #$id             = $snv->htmlencode($id);
 	
 $snv->showMenu("admin");
-print "<span class=\"big\">Admin</span><br><br>" ;
+print "<span class=\"big\">Admin new account</span><br><br>" ;
 
 print "<form action=\"adminDo.pl\" method=\"post\">" ;
 

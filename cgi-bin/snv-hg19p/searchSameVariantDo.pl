@@ -21,7 +21,7 @@ my ($dbh) = $snv->loadSessionId();
 #$ref = $snv->htmlencodehash($ref);
 
 $snv->showMenu('searchSameVariant');
-print "<span class=\"big\">Search results</span><br><br>" ;
+print "<span class=\"big\">Same variants</span><br><br>" ;
 
 $snv->searchResultsSameVariant($dbh,$ref);
 

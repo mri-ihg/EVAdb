@@ -19,7 +19,7 @@ $snv->printHeader();
 my ($dbh) = $snv->loadSessionId();
 
 $snv->showMenu("adminList");
-print "<span class=\"big\">Search results</span><br><br>" ;
+print "<span class=\"big\">Accounts</span><br><br>" ;
 
 #$ref = $snv->htmlencodehash($ref);
 

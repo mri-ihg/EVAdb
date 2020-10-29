@@ -21,7 +21,7 @@ my ($dbh) = $snv->loadSessionId();
 #$ref = $snv->htmlencodehash($ref);
 
 $snv->showMenu('searchDiagnostics');
-print "<span class=\"big\">Search results</span><br><br>" ;
+print "<span class=\"big\">Coverage lists</span><br><br>" ;
 
 $snv->searchResultsDiagnostics($dbh,$ref);
 

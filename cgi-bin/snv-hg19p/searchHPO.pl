@@ -18,7 +18,7 @@ my ($dbh) = $snv->loadSessionId();
 my $search      = $snv->initSearchHPO($sname, $dbh);
 	
 $snv->showMenu("searchHPO");
-print "<span class=\"big\">Search</span><br><br>" ;
+print "<span class=\"big\">HPO</span><br><br>" ;
 
 print "<form action=\"searchHPODo.pl\" method=\"post\">" ;
 

@@ -21,7 +21,7 @@ my ($dbh) = $snv->loadSessionId();
 #$ref = $snv->htmlencodehash($ref);
 
 $snv->showMenu('search');
-print "<span class=\"big\">Search results</span><br><br>" ;
+print "<span class=\"big\">Autosomal dominant</span><br><br>" ;
 
 $snv->searchResults($dbh,$ref);
 

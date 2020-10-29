@@ -18,7 +18,7 @@ my ($dbh) = $snv->loadSessionId();
 my $search      = $snv->initSearchHGMD($sname);
 	
 $snv->showMenu("searchHGMD");
-print "<span class=\"big\">Search</span><br><br>" ;
+print "<span class=\"big\">ClinVar/HGMD</span><br><br>" ;
 
 print "<form action=\"searchHGMDDo.pl\" method=\"post\">" ;
 

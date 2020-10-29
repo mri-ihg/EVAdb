@@ -22,7 +22,7 @@ my ($dbh) = $snv->loadSessionId();
 #$ref = $snv->htmlencodehash($ref);
 
 $snv->showMenu('searchTrio');
-print "<span class=\"big\">Search results</span><br><br>" ;
+print "<span class=\"big\">De novo Trio</span><br><br>" ;
 
 $snv->searchResultsTrio($dbh,$ref);
 

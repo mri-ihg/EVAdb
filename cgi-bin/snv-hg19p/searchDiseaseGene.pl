@@ -18,7 +18,7 @@ my ($dbh) = $snv->loadSessionId();
 my $search      = $snv->initSearchDiseaseGene($sname,$dbh);
 	
 $snv->showMenu("searchDiseaseGene");
-print "<span class=\"big\">Search</span><br><br>" ;
+print "<span class=\"big\">Disease panels</span><br><br>" ;
 
 print "<form action=\"searchDiseaseGeneDo.pl\" method=\"post\" name=\"myform\">" ;
 

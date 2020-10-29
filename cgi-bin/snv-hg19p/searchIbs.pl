@@ -15,7 +15,7 @@ my $search      = $snv->initSearchIbs();
 
 	
 $snv->showMenu("searchIbs");
-print "<span class=\"big\">Search</span><br><br>" ;
+print "<span class=\"big\">IBS</span><br><br>" ;
 
 print "<form action=\"searchIbsDo.pl\" method=\"post\">" ;
 

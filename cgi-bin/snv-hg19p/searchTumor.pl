@@ -18,7 +18,7 @@ my ($dbh) = $snv->loadSessionId();
 my $search      = $snv->initSearchTumor($pedigree,$dbh);
 	
 $snv->showMenu("searchTumor");
-print "<span class=\"big\">Search Tumor</span><br><br>" ;
+print "<span class=\"big\">Tumor/Control</span><br><br>" ;
 
 print "<form action=\"searchTumorDo.pl\" method=\"post\">" ;
 

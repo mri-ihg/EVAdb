@@ -18,7 +18,7 @@ my ($dbh) = $snv->loadSessionId();
 my $search      = $snv->initSearchTrio($pedigree,$dbh);
 
 $snv->showMenu("searchTrio");
-print "<span class=\"big\">Search Trio</span><br><br>" ;
+print "<span class=\"big\">De novo Trio</span><br><br>" ;
 
 print "<form action=\"searchTrioDo.pl\" method=\"post\">" ;
 

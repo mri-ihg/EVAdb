@@ -21,7 +21,7 @@ my ($dbh) = $snv->loadSessionId();
 #$ref = $snv->htmlencodehash($ref);
 
 $snv->showMenu('searchHomozygosity');
-print "<span class=\"big\">Search results</span><br><br>" ;
+print "<span class=\"big\">Homozygosity</span><br><br>" ;
 
 $snv->searchResultsHomozygosity($dbh,$ref);
 
