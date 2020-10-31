@@ -21,7 +21,7 @@ my ($dbh) = $snv->loadSessionId();
 #$ref = $snv->htmlencodehash($ref);
 
 $snv->showMenu('searchConclusion');
-print "<span class=\"big\">Search results</span><br><br>" ;
+print "<span class=\"big\">Case conclusions</span><br><br>" ;
 
 $snv->searchConclusion($dbh,$ref);
 

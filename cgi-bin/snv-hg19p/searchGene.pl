@@ -18,7 +18,7 @@ my ($dbh) = $snv->loadSessionId();
 my $search      = $snv->initSearchGene($ref->{'g.genesymbol'});
 	
 $snv->showMenu("searchGene");
-print "<span class=\"big\">Search</span><br><br>" ;
+print "<span class=\"big\">Genes</span><br><br>" ;
 
 print "<form action=\"searchGeneDo.pl\" method=\"post\">" ;
 

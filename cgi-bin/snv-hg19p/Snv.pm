@@ -4091,6 +4091,10 @@ my $sname        = shift;
 my $ref          = "";
 my @AoH = ();
 
+if (($demo) and ($sname eq "")) {
+	$sname = "S0001";
+}
+
 
 @AoH = (
 	  {
@@ -4194,7 +4198,7 @@ my $genesymbol   = shift;
 my $ref          = "";
 
 if (($demo) and ($genesymbol eq "")) {
-	$genesymbol = "SETBP1";
+	$genesymbol = "IFT52";
 }
 
 my @AoH = (
@@ -4393,7 +4397,6 @@ if (!defined($sname)) {$sname = "";}
 
 if (($demo) and ($sname eq "")) {
 	$sname = "S0001";
-	$hpo   = "HP:0002187 HP:0001250 HP:0000248";
 }
 
 if ($sname ne "") {
@@ -14861,9 +14864,9 @@ if ($hpo ne "") {
 	}
 	$query = "
 	SELECT hg.gene,max(h.ic)
-	FROM exomehg19.hpoancestors ha
-	INNER JOIN exomehg19.hpo h ON ha.ancestor=h.id
-	INNER JOIN exomehg19.hpogene hg ON h.id=hg.id
+	FROM $sampledb.hpoancestors ha
+	INNER JOIN $sampledb.hpo h ON ha.ancestor=h.id
+	INNER JOIN $sampledb.hpogene hg ON h.id=hg.id
 	WHERE $hpowhere
 	GROUP BY hg.gene,ha.id
 	";
@@ -21572,7 +21575,7 @@ print qq|
 }
 print qq|
   <div class="subnav">Annotations/Report</div>
-  <a href="searchComment.pl">Variant annotation</a>
+  <a href="searchComment.pl">Variant annotations</a>
   <a href="searchConclusion.pl">Case conclusions</a>
   <a href="report.pl">Report</a>
 |;
