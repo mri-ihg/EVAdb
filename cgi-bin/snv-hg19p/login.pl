@@ -101,11 +101,11 @@ in single individuals.
 <br><br>
 Only part of the functionality is implemented in the demo version. 
 It uses simulated <b>SNVs</b> and <b>small indels</b> whereas regions of homozygosity
-and copy-number variations are missing. Also, external data sets of <b>ExAC</b>,
+and copy-number variations are missing. Also, external data sets of <b>gnomAD</b>,
 <b>OMIM</b>, <b>HGMD</b> and the functional predictions of <b>PolyPhen2</b>, 
 <b>SIFT</b> and <b>CADD</b> are not installed in the demo version.
 <br><br>
-The application is available on request. Permission to use this work is granted under the MIT <a href="http://opensource.org/licenses/MIT">MIT License</a>.
+The application is available on <a href='https://github.com/mri-ihg'>GitHub</a>. Permission to use this work is granted under the MIT <a href="http://opensource.org/licenses/MIT">MIT License</a>.
 <p style="text-align:center;"><img src="/gif/exome-database-help-figure.png" width="600px"></p>
 </td></tr>
 
@@ -150,7 +150,7 @@ Search for all variants in a single gene.
 </td></tr>
 
 <tr><td>
-<b>Disease genes</b>
+<b>Disease panels</b>
 </td>
 <td>
 Search for all variants in a list of disease genes. 
@@ -160,18 +160,18 @@ contains the DDG2P gene list.
 </td></tr>
 
 <tr><td>
-<b>Coverage</b>
+<b>Coverage of genes</b>
 </td>
 <td>
 Not implemented in the demo version. Shows the average sequence depth per exon.
 </td></tr>
 
 <tr><td>
-<b>Coverage list</b>
+<b>Coverage of panels</b>
 </td>
 <td>
 Not implemented in the demo version. Shows the average sequence depth per exon
-for all genes of a disease gene list.
+for all genes of a disease panel.
 </td></tr>
 
 <tr><td>
@@ -196,7 +196,7 @@ Not implemented in the demo version. Search for copy-number variations.
 </td></tr>
 
 <tr><td>
-<b>HGMD</b>
+<b>ClinVar/HGMD</b>
 </td>
 <td>
 Not implemented in the demo version. Search for variants contained in the Human Gene Mutation Database. 
@@ -217,7 +217,7 @@ Fuzzy search to find the proportion of shared rare variants between two individu
 </td></tr>
 
 <tr><td>
-<b>Comments</b>
+<b>Variant annotations</b>
 </td>
 <td>
 Single variants can be annotated by the user in respect of accuracy, allelic composition, inheritance and pathogenicity. 
@@ -225,7 +225,7 @@ Data cannot be entered in the demo version.
 </td></tr>
 
 <tr><td>
-<b>Conclusions</b>
+<b>Case conclusions</b>
 </td>
 <td>
 Exomes can be annotated in respect to analysis work flow.
@@ -233,7 +233,7 @@ Data cannot be entered in the demo version.
 </td></tr>
 
 <tr><td>
-<b>Exomes</b>
+<b>Samples with quality</b>
 </td>
 <td>
 List all exomes and displays quality control measures. Right click on the sample ID

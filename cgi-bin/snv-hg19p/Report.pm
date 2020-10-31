@@ -534,8 +534,8 @@ elsif (($genotype[0] eq "heterozygous") or ($genotype[0] eq "hemizygous")){ #de 
 }
 }
 
-print "<br><br><b>Copy the white area into your report</b><br><br>";
-print "<div style='width:$width;background-color:#FFFFFF'>";
+print "<br><br><b>Copy the grey area into your report</b><br><br>";
+print "<div style='width:$width;background-color:#EDEDED'>";
 print "<br><br>";
 
 &head;
