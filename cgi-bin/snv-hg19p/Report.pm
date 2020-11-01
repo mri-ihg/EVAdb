@@ -94,6 +94,7 @@ LEFT  JOIN $coredb.evs            evs ON v.chrom=evs.chrom and v.start=evs.start
 WHERE s.name=?
 AND $allowedprojects
 AND (co.causefor = "primary" OR cl.solved = 2)
+AND (hpo.active = 1 or ISNULL(hpo.active))
 GROUP BY v.idsnv
 #;
 #AND co.causefor = "primary"
