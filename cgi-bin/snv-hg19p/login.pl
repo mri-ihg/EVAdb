@@ -106,14 +106,31 @@ and copy-number variations are missing. Also, external data sets of <b>gnomAD</b
 <b>SIFT</b> and <b>CADD</b> are not installed in the demo version.
 <br><br>
 The application is available on <a href='https://github.com/mri-ihg'>GitHub</a>. Permission to use this work is granted under the MIT <a href="http://opensource.org/licenses/MIT">MIT License</a>.
-<p style="text-align:center;"><img src="/gif/exome-database-help-figure.png" width="600px"></p>
+<p style="text-align:center;"><img src="/EVAdb/evadb_images/exome-database-help-figure.png" width="600px"></p>
 </td></tr>
 
 <tr><td colspan="2">
 <br>
-<b><div class="big">Brief description of the 'Search buttons'</div></b>
+<b><div class="big">Brief description of the 'Search Menu'</div></b>
 <br>
 </td></tr>
+
+<tr><td>
+<b>Samples with quality</b>
+</td>
+<td>
+List all exomes and displays quality control measures. Right click on the sample ID
+provides a <b>short cut</b> to the different search pages. This page is the most convenient
+way to start an analysis.
+</td></tr>
+
+<tr><td>
+<b>Samples</b>
+</td>
+<td>
+List all sample information. Disease is a required feature.
+</td></tr>
+
 <tr><td>
 <b>Autosomal dominant</b>
 </td>
@@ -129,24 +146,10 @@ Search for homozygous and compound heterozygous variants.
 </td></tr>
 
 <tr><td>
-<b>Same variants</b>
-</td>
-<td>
-Search for the same variants in different individuals.
-</td></tr>
-
-<tr><td>
 <b>De novo trio</b>
 </td>
 <td>
 Search for de novo variants in trios of child and parents.
-</td></tr>
-
-<tr><td>
-<b>Genes</b>
-</td>
-<td>
-Search for all variants in a single gene.
 </td></tr>
 
 <tr><td>
@@ -157,6 +160,48 @@ Search for all variants in a list of disease genes.
 List of disease genes can be added by datatbase administrators
 and provide the functionality of in-silico panels. The demo version
 contains the DDG2P gene list.
+</td></tr>
+
+<tr><td>
+<b>Genes</b>
+</td>
+<td>
+Search for all variants in a single gene.
+</td></tr>
+
+<tr><td>
+<b>ClinVar/HGMD</b>
+</td>
+<td>
+Not implemented in the demo version. Search for variants contained in the Human Gene Mutation Database. 
+</td></tr>
+
+<tr><td>
+<b>OMIM</b>
+</td>
+<td>
+Not implemented in the demo version. Full-text search in order to select genes from the OMIM database by phenotypic features. 
+</td></tr>
+
+<tr><td>
+<b>Same variants</b>
+</td>
+<td>
+Search for the same variants in different individuals.
+</td></tr>
+
+<tr><td>
+<b>Region</b>
+</td>
+<td>
+Search for all variants in a genomic region. 
+</td></tr>
+
+<tr><td>
+<b>CNVs</b>
+</td>
+<td>
+Not implemented in the demo version. Search for copy-number variations. 
 </td></tr>
 
 <tr><td>
@@ -175,38 +220,10 @@ for all genes of a disease panel.
 </td></tr>
 
 <tr><td>
-<b>Region</b>
-</td>
-<td>
-Search for all variants in a genomic region. 
-</td></tr>
-
-<tr><td>
 <b>Homozygosity</b>
 </td>
 <td>
 Not implemented in the demo version. Regions of homozygosity.
-</td></tr>
-
-<tr><td>
-<b>CNVs</b>
-</td>
-<td>
-Not implemented in the demo version. Search for copy-number variations. 
-</td></tr>
-
-<tr><td>
-<b>ClinVar/HGMD</b>
-</td>
-<td>
-Not implemented in the demo version. Search for variants contained in the Human Gene Mutation Database. 
-</td></tr>
-
-<tr><td>
-<b>OMIM</b>
-</td>
-<td>
-Not implemented in the demo version. Full-text search in order to select genes from the OMIM database by phenotypic features. 
 </td></tr>
 
 <tr><td>
@@ -230,22 +247,6 @@ Data cannot be entered in the demo version.
 <td>
 Exomes can be annotated in respect to analysis work flow.
 Data cannot be entered in the demo version.  
-</td></tr>
-
-<tr><td>
-<b>Samples with quality</b>
-</td>
-<td>
-List all exomes and displays quality control measures. Right click on the sample ID
-provides a <b>short cut</b> to the different search pages. This page is the most convenient
-way to start an analysis.
-</td></tr>
-
-<tr><td>
-<b>Samples</b>
-</td>
-<td>
-List all sample information. Disease is a required feature.
 </td></tr>
 
 </tbody></table>

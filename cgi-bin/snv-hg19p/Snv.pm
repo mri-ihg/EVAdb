@@ -11486,8 +11486,7 @@ concat($rssnplink),
 concat( '<a href="http://localhost:$igvport/load?file=',$igvserver2,'" title="Open sample in IGV"','>',s.name,'</a>' ),
 s.pedigree,
 i.symbol,s.saffected,x.alleles,x.snvqual,x.gtqual,x.mapqual,x.coverage,x.percentvar,x.filter,
-group_concat(DISTINCT $exac_link separator '<br>'),
-group_concat(DISTINCT $exac_aa_link separator '<br>')
+group_concat(DISTINCT $exac_link separator '<br>')
 FROM
 snv v
 LEFT JOIN snvsample                 x ON v.idsnv = x.idsnv 
@@ -11497,7 +11496,6 @@ LEFT JOIN $sampledb.disease         i ON ds.iddisease = i.iddisease
 LEFT JOIN snvgene                   y ON v.idsnv = y.idsnv
 LEFT JOIN gene                      g ON g.idgene = y.idgene
 LEFT JOIN $coredb.evs             evs ON (v.chrom=evs.chrom and v.start=evs.start and v.refallele=evs.refallele and v.allele=evs.allele)
-LEFT JOIN $coredb.kaviar            k ON (v.chrom=k.chrom and v.start=k.start and v.refallele=k.refallele and v.allele=k.allele)
 LEFT JOIN $exomevcfe.comment        c ON (v.chrom=c.chrom and v.start=c.start and v.refallele=c.refallele and v.allele=c.altallele and s.idsample=c.idsample)
 WHERE
 $where
@@ -11536,7 +11534,6 @@ $out->execute(@prepare) || die print "$DBI::errstr";
 	'%Var',
 	'Filter',
 	'gnomAD',
-	'gnomAD aa',
 	);
 
 $i=0;
@@ -14983,6 +14980,7 @@ if ($ref->{'v.freq'} ne "") {
 ($function,$functionprint)=&function($ref->{'function'},$dbh);
 ($class,$classprint)=&class($ref->{'class'},$dbh);
 
+print "Maximal 100 variants<br>";
 print "Search phrase: $hpo<br>";
 &todaysdate;
 &numberofsamples($dbh);
@@ -15064,6 +15062,12 @@ LIMIT 5000
 #print "query = @prepare $idomim<br>";
 
 # foreach gene returned by hpo search
+my $ngenes=1;
+my $maxgenes=100;
+if ($demo == 1) {
+	$maxgenes=50;
+}
+my $checkedgenes=0;
 foreach $genesymbol (sort {$genesymbol{$b}<=>$genesymbol{$a}} sort keys %genesymbol) {
 	#print "asdf '$genesymbol' $genesymbol{$genesymbol}<br>";
 	$out = $dbh->prepare($query) || die print "$DBI::errstr";
@@ -15086,7 +15090,12 @@ foreach $genesymbol (sort {$genesymbol{$b}<=>$genesymbol{$a}} sort keys %genesym
 			# if ad gene are set to 2, the will be shown in any case because ($ar{$row[9]} >= $ar)
 			$ar{$row[9]} = 2; #variant allele=row[13]
 		}
+		$ngenes++;
 	}
+	if ($ngenes > $maxgenes) {
+		last;
+	}
+	$checkedgenes++;
 } 
 
 # Now print table
@@ -15199,6 +15208,7 @@ foreach (@labels) {
 }
 print "</tr></thead><tbody>";
 
+$ngenes=1;
 foreach $genesymbol (sort {$genesymbol{$b}<=>$genesymbol{$a}} keys %genesymbol) {
 	print "<tr>";
 	print "<td>$n</td>";
@@ -15208,6 +15218,10 @@ foreach $genesymbol (sort {$genesymbol{$b}<=>$genesymbol{$a}} keys %genesymbol) 
 	print "<td>$maxic{$genesymbol}</td>";
 	$n++;
 	print "</tr>";
+	if ($ngenes > $checkedgenes) {
+		last;
+	}
+	$ngenes++;
 }
 print "<table><br>";
 
