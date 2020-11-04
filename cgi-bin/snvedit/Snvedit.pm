@@ -1592,6 +1592,15 @@ my @AoH = (
 	  	bgcolor     => "formbg",
           },
 	  {
+	  	label       => "Trio information<br>in samplesheet version 10.2020",
+	  	labels      => "True, False",
+	  	type        => "radio",
+	  	name        => "trioinfoinsamplesheet",
+	  	value       => "F",
+	  	values      => "T, F",
+	  	bgcolor     => "formbg",
+          },
+	  {
 	  	label       => "External sequencing center ID in:",
 	  	labels      => "Samplesheet, Filename, Not applicable",
 	  	type        => "radio",
@@ -4986,6 +4995,7 @@ my $fileextension = $ref->{'fileextension'};
 my $allowexisting = ( $ref->{'allowexisting'} eq "T" ) ? 1 : 0;
 
 my $projcoopinsamplesheet = ( $ref->{'projcoopinsamplesheet'} eq "T" ) ? 1 : 0;
+my $trioinfoinsamplesheet = ( $ref->{'trioinfoinsamplesheet'} eq "T" ) ? 1 : 0;
 
 my $externalseqidlocation = ( $ref->{'externalseqidlocation'} );
 
@@ -5032,6 +5042,12 @@ if ( $projcoopinsamplesheet )
 	$assignment{"Project"}	   = "idproject";
 }
 
+if ( $trioinfoinsamplesheet )
+{
+	$assignment{'Foreign ID Father'} = "foreignidfather";
+	$assignment{'Foreign ID Mother'} = "foreignidmother"; 
+}
+
 if ( $externalseqidlocation eq "samplesheet" )
 {
 	$assignment{"External ID"} = "externalseqid";
@@ -5050,8 +5066,17 @@ elsif ( $externalseqidlocation eq "filename" )
 my $sql="START TRANSACTION;";
 $dbh->do($sql) || die print "$DBI::errstr";
 
+my %trioinfo;
+my $triocount=0;
+
+my %insertedsamples;
+my %gender;
+
 $i = 0;
 if ($file ne "") {
+
+	print "<br><br><b>Inserting samples</b>";
+	print "<table>";
 	while  (<$file>) {
 		s/\015\012|\015|\012/\n/g; #change operating system dependent newlines to \n
 		chomp;
@@ -5060,6 +5085,7 @@ if ($file ne "") {
 		$line = $_;
 		print "<tr>";
 		if ($i == 0) {
+			print "<td>#</td><td><b>Sample</b></td>";
 			(@labels)=quotewords(',', 1, $line);
 			for $j (0..$#labels) {
 				$labels[$j] =~ s/\"//g;
@@ -5073,21 +5099,33 @@ if ($file ne "") {
 			&check_labels_external;
 		}
 		else {	
-			print "<br>$line<br>";
+			print "<td>$i</td><td>";
+			#print "<br>$line<br>";
 			(@values) = quotewords(',', 1, $line);
 			for $j (0..$#values) {
 				$values[$j] =~ s/\"//g;
 				$values[$j] =~ s/^\s+|\s+$//g;
 			}
 			&intodb_external($i-1);
+			print "</td>";
 		}
 		$i++;
-		print "</tr>";
+		print "</td></tr>";
 	}
+
+	print "</table>";
+
+
+	if ( $trioinfoinsamplesheet )
+	{
+		&intodb_trio();
+	}
+
 }
 
 # If no exit event : commit transaction
-my $sql="commit;";
+#my $sql="commit;";
+$sql="commit;";
 
 $dbh->do($sql) || die print "$DBI::errstr";
 
@@ -5139,6 +5177,22 @@ $dbh->do($sql) || die print "$DBI::errstr";
 			exit(1);
 		}
 
+		print "<b>".$values{'name'}."</b><br>";
+		print "Foreign ID: ".$values{'foreignid'}."<br>";
+
+		my $father="";
+		my $mother="";
+
+		if ( $trioinfoinsamplesheet)
+		{			
+			$father=$values{'foreignidfather'};
+				$father=~s/\s+/\_/g;
+				delete $values{'foreignidfather'};
+
+			$mother=$values{'foreignidmother'};
+			$mother=~s/\s+/\_/g;
+				delete $values{'foreignidmother'};
+		}
 
 		# Analysis type (legacy value) - automatic recognition if selected:
 		if ($analysis eq "auto")
@@ -5361,13 +5415,13 @@ $dbh->do($sql) || die print "$DBI::errstr";
 			$sql = sprintf "INSERT INTO sample (%s) VALUES (%s)",
 			 join(",", @fields), join(",", ("?")x@fields);
 			$sth = $dbh->prepare($sql) || die print "$DBI::errstr";
-	                print "$sql<br>";
+	                #print "$sql<br>";
 
 			$sth->execute(@values) || die print "$DBI::errstr";
 			$idsample=$sth->{mysql_insertid};
 		}
 
-		print "Inserted into Project: $idproject, cooperation $idcooperation<br>";
+		print "Project ID: ".$values{'idproject'}." - Cooperation ID: ".$values{'idcooperation'}."<br>";
 
 		# Get disease
 		if ($diseasename ne "") {
@@ -5452,7 +5506,7 @@ $dbh->do($sql) || die print "$DBI::errstr";
 				my $tmpname="";
 				foreach my $tmp_bam ( @tmp_bams )
 				{
-					print "$tmp_bam || ";
+					#print "$tmp_bam || ";
 					$tmp_bam=basename($tmp_bam);
 
 					my @tmp_items = split("[_\.]", $tmp_bam);
@@ -5469,7 +5523,7 @@ $dbh->do($sql) || die print "$DBI::errstr";
 
 						$tmpname=$values{externalseqid};
 
-						print "&nbsp;&nbsp;$tmpname<br>";
+						#print "&nbsp;&nbsp;$tmpname<br>";
 
 					}
 					else
@@ -5478,6 +5532,13 @@ $dbh->do($sql) || die print "$DBI::errstr";
 						exit(1);
 					}
 				}
+			}
+
+			my @bamlist=split(",",$bams);
+			print "Files: <br>";
+			foreach my $bam ( @bamlist)
+			{
+				print "&nbsp;&nbsp;&nbsp;&nbsp;".$bam."<br>";
 			}
 		}
 
@@ -5489,8 +5550,9 @@ $dbh->do($sql) || die print "$DBI::errstr";
 			{
 				$sql = "UPDATE sample SET externalseqid=\"".$values{externalseqid}."\" where name=\"".$samplename."\"";
 				$sth = $dbh->prepare($sql) || die print "$DBI::errstr";
-	        	        print "$sql<br>";
+	        	        #print "$sql<br>";
 				$sth->execute() || die print "$DBI::errstr";
+				print "External sequencing center ID: ".$values{externalseqid}."<br>";
 			}
 		
 		}
@@ -5517,10 +5579,91 @@ $dbh->do($sql) || die print "$DBI::errstr";
                 $sth = $dbh->prepare($sql) || die print "$DBI::errstr";
                 $sth->execute() || die print "$DBI::errstr";
                 my @vals = $sth->fetchrow_array;
-		print "LIB: "; foreach my $val (@vals){ print $val." | "; };print "<br>";
+		#print "LIB: "; foreach my $val (@vals){ print $val." | "; };print "<br>";
+		print "Library name: ".$vals[1]."<br>";
 
 
 
+		# If trio information provided in samplesheet then collect it for later insertion
+		if ( $trioinfoinsamplesheet )
+		{
+			# Mother and father can be independently specified
+			if ( $father ne "" ){
+				$trioinfo{$values{'name'}}{'idsample'}=$idsample;
+				$trioinfo{$values{'name'}}{'father'}=$father;
+			}
+			if ( $mother ne "" ){
+				$trioinfo{$values{'name'}}{'idsample'}=$idsample;
+				$trioinfo{$values{'name'}}{'mother'}=$mother;
+			}
+		}
+
+		# Store idsample for trio insertion (both samplename and foreignid)
+		$insertedsamples{$samplename}=$idsample;
+			$gender{$samplename}=$values{'sex'};
+		$insertedsamples{$foreignid}=$idsample if ( $foreignid ne "" );
+			$gender{$foreignid}=$values{'sex'} if ( $foreignid ne "" );
+
+	}
+
+	sub intodb_trio { # Insert trio information
+
+		print "<br><br><br><b>Inserting trios</b>";
+		print "<table><tr><td><b>Index</b> (ID)</td><td>Father (ID)</td><td>Mother (ID)</td></tr>";
+
+		foreach my $samplename ( keys %trioinfo )
+		{
+
+			my $idsample = $trioinfo{$samplename}{'idsample'};
+			print "<tr>";
+			print "<td><b>".$samplename."</b> ($idsample)</td>";
+	
+			print "<td>";		
+			if ( defined $trioinfo{$samplename}{'father'} )
+			{
+				my $fathername = $trioinfo{$samplename}{'father'};
+				my $fatherid = "";
+					$fatherid = $insertedsamples{$trioinfo{$samplename}{'father'}} if defined $insertedsamples{$trioinfo{$samplename}{'father'}};
+				if ( $fatherid eq "" ){
+					print "</table><br>ERROR: check father data for sample $samplename<br>";
+					exit(-1);
+				}
+				if ( $gender{$fathername} ne "male" ){
+					print "</table><br>ERROR: father cannot be female for sample $samplename<br>";
+					exit(-1);
+				}
+
+				print "$fathername (ID: $fatherid )";
+
+				my $sql = "UPDATE sample SET father=".$fatherid." where idsample=".$idsample." and name='".$samplename."'";
+				my $sth = $dbh->prepare($sql) || die print "$DBI::errstr";
+                		$sth->execute() || die print "$DBI::errstr";
+			}
+
+			print "</td><td>";
+			if ( defined $trioinfo{$samplename}{'mother'} )
+			{
+				my $mothername = $trioinfo{$samplename}{'mother'};
+				my $motherid = "";
+					$motherid = $insertedsamples{$trioinfo{$samplename}{'mother'}} if defined $insertedsamples{$trioinfo{$samplename}{'mother'}};
+				if ( $motherid eq "" ){
+					print "</table><br>ERROR: check mother data for sample $samplename<br>";
+					exit(-1);
+				}
+				if ( $gender{$mothername} ne "female" ){
+					print "</table><br>ERROR: mother cannot be male for sample $samplename<br>";
+					exit(-1);
+				}
+
+				print "$mothername (ID: $motherid )";
+
+				my $sql = "UPDATE sample SET mother=".$motherid." where idsample=".$idsample." and name='".$samplename."'";
+				my $sth = $dbh->prepare($sql) || die print "$DBI::errstr";
+                		$sth->execute() || die print "$DBI::errstr";
+			}
+			print "</td></tr>";
+
+		}
 	}
 
 }
@@ -6362,109 +6505,6 @@ print qq|
 <div id="main">
 
 |;
-
-}
-########################################################################
-# showMenu
-########################################################################
-
-sub showMenuOld {
-my $self                  = shift;
-my $menu                  = shift;
-my $project               = "menu";
-my $overview              = "menu";
-my $sample                = "menu";
-my $searchsample          = "menu";
-my $importsamples         = "menu";
-my $importsamplesexternal = "menu";
-my $cooperation           = "menu";
-my $listcooperation       = "menu";
-my $invoice               = "menu";
-my $searchinvoice           = "menu";
-my $login                 = "menu";
-my $disease               = "menu";
-my $listdisease           = "menu";
-my $listproject           = "menu";
-my $createlibraries       = "menu";
-my $importmtdnasamples    ="menu";
-my $statistics            ="menu";
-
-if ($menu eq "project") {
-	$project = "menuactive";
-}
-if ($menu eq "overview") {
-	$overview = "menuactive";
-}
-if ($menu eq "sample") {
-	$sample = "menuactive";
-}
-if ($menu eq "searchsample") {
-	$searchsample = "menuactive";
-}
-if ($menu eq "importsamples") {
-	$importsamples = "menuactive";
-}
-if ($menu eq "importsamplesexternal") {
-	$importsamplesexternal = "menuactive";
-}
-if ($menu eq "cooperation") {
-	$cooperation = "menuactive";
-}
-if ($menu eq "listCooperation") {
-	$listcooperation = "menuactive";
-}
-if ($menu eq "invoice") {
-	$invoice = "menuactive";
-}
-if ($menu eq "searchInvoice") {
-	$searchinvoice = "menuactive";
-}
-if ($menu eq "listProject") {
-	$listproject = "menuactive";
-}
-if ($menu eq "login") {
-	$login = "menuactive";
-}
-if ($menu eq "disease") {
-	$disease = "menuactive";
-}
-if ($menu eq "listdisease") {
-	$listdisease = "menuactive";
-}
-if ($menu eq "createlibraries") {
-	$createlibraries = "menuactive";
-}
-if ($menu eq "importmtdnasamples") {
-	$importmtdnasamples = "menuactive";
-}
-if ($menu eq "statistics") {
-	$statistics = "menuactive";
-}
-
-print qq(
-<table class="header" border="0" cellpadding="3" cellspacing="0" width="1350px">
-<tr>
-<td align="center" class="header"><a class="$searchsample" href="searchSample.pl">Search samples</a></td>
-<td align="center" class="header"><a class="$overview" href="overview.pl">Overview</a></td>
-<td align="center" class="header"><a class="$sample" href="sample.pl">New sample</a></td>
-<td align="center" class="header"><a class="$importsamples" href="importSamples.pl">Import internal samples</a></td>
-<td align="center" class="header"><a class="$createlibraries" href="createLibraries.pl">Create libraries</a></td>
-<td align="center" class="header"><a class="$disease" href="disease.pl">New disease</a></td>
-<td align="center" class="header"><a class="$listdisease" href="listDisease.pl">List disease</a></td>
-<td align="center" class="header"><a class="$cooperation" href="cooperation.pl">New cooperation</a></td>
-<td align="center" class="header"><a class="$listcooperation" href="listCooperation.pl">List cooperation</a></td>
-<td align="center" class="header"><a class="$project" href="project.pl">New Project</a></td>
-<td align="center" class="header"><a class="$listproject" href="listProject.pl">List Project</a></td>
-<td align="center" class="header"><a class="$invoice" href="invoice.pl">New invoice</a></td>
-<td align="center" class="header"><a class="$searchinvoice" href="invoiceSearch.pl">Search invoice</a></td>
-<td align="center" class="header"><a class="$importsamplesexternal" href="importSamplesExternal.pl">Import external samples</a></td>
-<td align="center" class="header"><a class="$importmtdnasamples" href="importmtDNASamples.pl">Import mtDNA samples</a></td>
-<td align="center" class="header"><a class="$statistics" href="statistics.pl">Statistics</a></td>
-<td align="center" class="header"><a class="$login" href="login.pl">Login / Logout</a></td>
-</tr>
-</table>
-<br>
-);
 
 }
 ########################################################################
