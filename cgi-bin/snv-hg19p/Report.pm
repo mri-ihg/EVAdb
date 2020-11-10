@@ -610,19 +610,19 @@ if ($clinvar[$i] eq "nicht gelistet") {
 	$clinvar = "Die Variante ist in ClinVar nicht gelistet. ";
 }
 if ($vepconseq[$i] eq "frameshift") {
-$consequence .= "Aufgrund der Variante $vepHGVSc[$i] wird der vorzeitige Abbruch der Proteintranslation vorhergesagt. $clinvar";
+$consequence .= "Aufgrund der Variante $vepHGVSc[$i] werden die Verschiebung des Leserahmens und der vorzeitiger Abbruch der Proteintranslation vorhergesagt. $clinvar";
 }
 elsif ($vepconseq[$i] eq "nonsense") {
-$consequence .= "Aufgrund der Variante $vepHGVSc[$i] werden die Verschiebung des Leserahmens und der vorzeitiger Abbruch der Proteintranslation vorhergesagt. $clinvar";
+$consequence .= "Aufgrund der Variante $vepHGVSc[$i] wird der vorzeitige Abbruch der Proteintranslation vorhergesagt. $clinvar";
 }
 elsif ($vepconseq[$i] eq "missense") {
 $consequence .= "Aufgrund der Variante $vepHGVSc[$i] wird der Austausch einer hochkonservierten Aminos&auml;ureposition vorhergesagt. $clinvar";
 }
 elsif ($vepconseq[$i] eq "splice-acceptor") {
-$consequence .= "Aufgrund der Variante $vepHGVSc[$i] wird der Verlust der Splei&szlig;donorstelle von Exon $xxx vorhergesagt. $clinvar";
+$consequence .= "Aufgrund der Variante $vepHGVSc[$i] wird der Verlust der Splei&szlig;akzeptorstelle von Exon $xxx vorhergesagt vorhergesagt. $clinvar";
 }
 elsif ($vepconseq[$i] eq "splice-donor") {
-$consequence .= "Aufgrund der Variante $vepHGVSc[$i] wird der Verlust der Splei&szlig;akzeptorstelle von Exon $xxx vorhergesagt vorhergesagt. $clinvar";
+$consequence .= "Aufgrund der Variante $vepHGVSc[$i] wird der Verlust der Splei&szlig;donorstelle von Exon $xxx vorhergesagt. $clinvar";
 }
 else {
 $consequence = $xxx;
@@ -898,7 +898,7 @@ print qq#
 }
 elsif ($mode eq "possible_recessive") {
 print qq#
-<p $justify><b>Filter I - autosomal-rezessiv: Nachweis von zwei heterzygoten Varianten ($vepconseq[$i]/$vepconseq[$i+1]) in <i>$vepgene[$i]</i>.</b></p>
+<p $justify><b>Filter I - autosomal-rezessiv: Nachweis von zwei heterozygoten Varianten ($vepconseq[$i]/$vepconseq[$i+1]) in <i>$vepgene[$i]</i>.</b></p>
 <p $justify0>Filter II - autosomal-dominant (Ph&auml;notyp-basiert): Kein Nachweis (wahrscheinlich) pathogener Varianten.</p>
 <p $justify0>Filter III - X-chromosomal: Kein Nachweis (wahrscheinlich) pathogener Varianten.</p>
 #;
@@ -912,7 +912,7 @@ print qq#
 elsif ($mode eq "dominant") {
 print qq#
 <p $justify0>Filter I - autosomal-rezessiv: (Ph&auml;notyp-basiert): Kein Nachweis (wahrscheinlich) pathogener Varianten.</p>
-<p $justify><b>Filter II - autosomal-dominant: Nachweis einer heterzygoten Variante ($vepconseq[$i]) in <i>$vepgene[$i]</i>.</b></p>
+<p $justify><b>Filter II - autosomal-dominant: Nachweis einer heterozygoten Variante ($vepconseq[$i]) in <i>$vepgene[$i]</i>.</b></p>
 <p $justify0>Filter III - X-chromosomal: Kein Nachweis (wahrscheinlich) pathogener Varianten.</p>
 #;
 &de_novo_for_filter;

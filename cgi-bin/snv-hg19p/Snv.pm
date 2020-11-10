@@ -4813,6 +4813,9 @@ my $self         = shift;
 my $sname        = shift;
 my $ref          = "";
 
+if ($demo and $sname eq "") {
+	$sname = "S0001";
+}
 
 my @AoH = (
 	  {
@@ -13318,7 +13321,7 @@ $i=0;
 $query = qq#
 SELECT
 concat('<a href="listPosition.pl?idsnv=',v.idsnv,'" title="All carriers of this variant">',v.idsnv,'</a>',' '),
-group_concat(s.name separator '<br>'),
+group_concat(s.name separator ' '),
 group_concat(s.pedigree separator '<br>'),
 group_concat(s.sex separator ' <br>'),
 group_concat(d.symbol separator '<br>'),
@@ -13429,11 +13432,11 @@ while (@row = $out->fetchrow_array) {
 		if ($i == 0) { #edit project
 			print "<td align=\"center\">$n</td>";
 		}
-		#if ($i == 1) {
-		#	$tmp=&igvlink($dbh,$row[$i],$row[5]);
-		#	print "<td align=\"center\"> $tmp</td>";
-		#}
-		if ($i == 5) {
+		if ($i == 1) {
+			$tmp=&igvlink($dbh,$row[$i],$row[5]);
+			print "<td align=\"center\"> $tmp</td>";
+		}
+		elsif ($i == 5) {
 			$tmp=&ucsclink2($row[$i]);
 			print "<td> $tmp</td>";
 		}
