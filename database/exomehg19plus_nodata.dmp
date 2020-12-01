@@ -30,7 +30,7 @@ CREATE TABLE `additionalannotation` (
   PRIMARY KEY (`idadditionalannotation`),
   KEY `additionalannotationidsnv` (`idsnv`),
   CONSTRAINT `additionalannotationidsnv` FOREIGN KEY (`idsnv`) REFERENCES `snv` (`idsnv`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=1670995 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -52,7 +52,7 @@ CREATE TABLE `disease2gene` (
   KEY `d2gidgene` (`idgene`),
   CONSTRAINT `d2giddisease` FOREIGN KEY (`iddisease`) REFERENCES `exomehg19`.`disease` (`iddisease`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `d2gidgene` FOREIGN KEY (`idgene`) REFERENCES `gene` (`idgene`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=48295 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -67,7 +67,7 @@ CREATE TABLE `funcrank` (
   `func` varchar(50) DEFAULT NULL,
   `rank` smallint(5) unsigned DEFAULT NULL,
   PRIMARY KEY (`idfuncrank`)
-) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -94,7 +94,7 @@ CREATE TABLE `gene` (
   UNIQUE KEY `genesymbol` (`genesymbol`),
   KEY `omim` (`omim`),
   KEY `approved` (`approved`)
-) ENGINE=InnoDB AUTO_INCREMENT=3563767 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -117,7 +117,7 @@ CREATE TABLE `homozygosity` (
   KEY `idsamplehomo` (`idsample`),
   KEY `chromstarthomo` (`chrom`,`start`),
   CONSTRAINT `idsampleroh` FOREIGN KEY (`idsample`) REFERENCES `exomehg19`.`sample` (`idsample`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=340430 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -146,7 +146,7 @@ CREATE TABLE `snpeff` (
   CONSTRAINT `snpeff_gene` FOREIGN KEY (`idgene`) REFERENCES `gene` (`idgene`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `snpeff_snpeffeffect` FOREIGN KEY (`idsnpeffeffect`) REFERENCES `snpeffeffect` (`idsnpeffeffect`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `snpeff_snv` FOREIGN KEY (`idsnv`) REFERENCES `snv` (`idsnv`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=4294967296 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -161,7 +161,7 @@ CREATE TABLE `snpeffeffect` (
   `name` varchar(100) DEFAULT NULL,
   `rank` int(11) unsigned DEFAULT NULL,
   PRIMARY KEY (`idsnpeffeffect`)
-) ENGINE=InnoDB AUTO_INCREMENT=39 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -200,7 +200,7 @@ CREATE TABLE `snv` (
   KEY `class` (`class`),
   KEY `af` (`af`),
   KEY `avhet` (`avhet`)
-) ENGINE=InnoDB AUTO_INCREMENT=30498726 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -228,7 +228,7 @@ CREATE TABLE `snv2diseasegroup` (
   KEY `s2dcontrols` (`samplecontrols`),
   CONSTRAINT `s2diddiseasegroup` FOREIGN KEY (`fiddiseasegroup`) REFERENCES `exomehg19`.`diseasegroup` (`iddiseasegroup`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `s2didsnvgroup` FOREIGN KEY (`fidsnv`) REFERENCES `snv` (`idsnv`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=27197026 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -249,7 +249,7 @@ CREATE TABLE `snvgene` (
   KEY `snvgene2` (`idsnv`,`idgene`),
   CONSTRAINT `gene` FOREIGN KEY (`idgene`) REFERENCES `gene` (`idgene`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `snv` FOREIGN KEY (`idsnv`) REFERENCES `snv` (`idsnv`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=53361886 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -282,7 +282,7 @@ CREATE TABLE `snvsample` (
   KEY `filter3` (`idsnv`,`filter`,`gtqual`,`mapqual`),
   CONSTRAINT `idsample` FOREIGN KEY (`idsample`) REFERENCES `exomehg19`.`sample` (`idsample`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `idsnv` FOREIGN KEY (`idsnv`) REFERENCES `snv` (`idsnv`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=2016712483 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -304,7 +304,7 @@ CREATE TABLE `snvsampledenovo_old` (
   `denovoprobability` float unsigned DEFAULT '0',
   PRIMARY KEY (`idsnvsample`),
   CONSTRAINT `idsnvsample` FOREIGN KEY (`idsnvsample`) REFERENCES `snvsample` (`idsnvsample`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=252985539 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -338,7 +338,7 @@ CREATE TABLE `translocation` (
   CONSTRAINT `translocationidgene1` FOREIGN KEY (`idgene1`) REFERENCES `gene` (`idgene`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `translocationidgene2` FOREIGN KEY (`idgene2`) REFERENCES `gene` (`idgene`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `translocationidsample` FOREIGN KEY (`idsample`) REFERENCES `exomehg19`.`sample` (`idsample`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=1793 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
