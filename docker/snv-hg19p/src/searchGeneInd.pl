@@ -18,7 +18,7 @@ my ($dbh) = $snv->loadSessionId();
 my $search      = $snv->initSearchGeneInd($pedigree,$dbh);
 	
 $snv->showMenu("searchGeneInd");
-print "<span class=\"big\">Search</span><br><br>" ;
+print "<span class=\"big\">Autosomal recessive</span><br><br>" ;
 
 print "<form action=\"searchGeneIndDo.pl\" method=\"post\">" ;
 

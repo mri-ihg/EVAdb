@@ -12,7 +12,7 @@ my $cgi          = new CGI::Plus;
 $cgi->csrf(1);
 my $ref          = $cgi->Vars;
 my $snv          = new Snv;
-my %options = ('MaxAge' => 60); #for WWW::CSRF
+my %options = ('MaxAge' => 10800); #for WWW::CSRF 3 hours, same as session cookie
 #$ref = $snv->htmlencodehash($ref);
 my ($dbh) = "";
 

@@ -22,7 +22,7 @@ my ($dbh) = $snv->loadSessionId();
 #$ref = $snv->htmlencodehash($ref);
 
 $snv->showMenu('searchGeneInd');
-print "<span class=\"big\">Search results</span><br><br>" ;
+print "<span class=\"big\">Autosomal recessive</span><br><br>" ;
 
 $snv->searchResultsGeneInd($dbh,$ref);
 

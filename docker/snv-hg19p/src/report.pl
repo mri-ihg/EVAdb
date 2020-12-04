@@ -24,8 +24,7 @@ my $search      = $snv->initSearchReport($sname);
 $snv->showMenu("report");
 
 print "<span class=\"big\">Report</span><br><br>" ;
-print "The report requires the fields in the 'comment form' of the <br>
-variants to be filled in.<br><br>";
+print "The report requires the fields in the 'Variant annotation form' to be filled in.<br><br>";
 
 print "<form action=\"reportDo.pl\" method=\"post\">" ;
 

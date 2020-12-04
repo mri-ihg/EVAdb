@@ -18,7 +18,7 @@ my ($dbh) = $snv->loadSessionId();
 my $search      = $snv->initSearchOmim($sname,$dbh);
 	
 $snv->showMenu("searchOmim");
-print "<span class=\"big\">Search</span><br><br>" ;
+print "<span class=\"big\">OMIM</span><br><br>" ;
 
 print "<form action=\"searchOmimDo.pl\" method=\"post\">" ;
 

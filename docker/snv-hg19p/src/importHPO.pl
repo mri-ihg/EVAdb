@@ -25,7 +25,7 @@ print qq(
 print qq(<link rel="stylesheet" type="text/css" href="/EVAdb/evadb/hpo_list.css">);
 	
 $snv->showMenu("importHPO");
-print "<span class=\"big\">Import</span><br><br>" ;
+print "<span class=\"big\">Import HPO</span><br><br>" ;
 
 print "<div position: static;>";
 print "<form action=\"importHPODo.pl\" method=\"post\" name=\"hpoform\">\n" ;

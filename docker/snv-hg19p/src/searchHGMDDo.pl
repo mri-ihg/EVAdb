@@ -24,7 +24,7 @@ my ($dbh) = $snv->loadSessionId();
 #$ref = $snv->htmlencodehash($ref);
 
 $snv->showMenu('searchHGMD');
-print "<span class=\"big\">Search results</span><br><br>" ;
+print "<span class=\"big\">ClinVar/HGMD</span><br><br>" ;
 
 $snv->searchHGMD($dbh,$ref);
 

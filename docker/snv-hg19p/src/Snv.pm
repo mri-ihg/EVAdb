@@ -4091,6 +4091,10 @@ my $sname        = shift;
 my $ref          = "";
 my @AoH = ();
 
+if (($demo) and ($sname eq "")) {
+	$sname = "S0001";
+}
+
 
 @AoH = (
 	  {
@@ -4194,7 +4198,7 @@ my $genesymbol   = shift;
 my $ref          = "";
 
 if (($demo) and ($genesymbol eq "")) {
-	$genesymbol = "SETBP1";
+	$genesymbol = "IFT52";
 }
 
 my @AoH = (
@@ -4393,7 +4397,6 @@ if (!defined($sname)) {$sname = "";}
 
 if (($demo) and ($sname eq "")) {
 	$sname = "S0001";
-	$hpo   = "HP:0002187 HP:0001250 HP:0000248";
 }
 
 if ($sname ne "") {
@@ -4810,6 +4813,9 @@ my $self         = shift;
 my $sname        = shift;
 my $ref          = "";
 
+if ($demo and $sname eq "") {
+	$sname = "S0001";
+}
 
 my @AoH = (
 	  {
@@ -11483,8 +11489,7 @@ concat($rssnplink),
 concat( '<a href="http://localhost:$igvport/load?file=',$igvserver2,'" title="Open sample in IGV"','>',s.name,'</a>' ),
 s.pedigree,
 i.symbol,s.saffected,x.alleles,x.snvqual,x.gtqual,x.mapqual,x.coverage,x.percentvar,x.filter,
-group_concat(DISTINCT $exac_link separator '<br>'),
-group_concat(DISTINCT $exac_aa_link separator '<br>')
+group_concat(DISTINCT $exac_link separator '<br>')
 FROM
 snv v
 LEFT JOIN snvsample                 x ON v.idsnv = x.idsnv 
@@ -11494,7 +11499,6 @@ LEFT JOIN $sampledb.disease         i ON ds.iddisease = i.iddisease
 LEFT JOIN snvgene                   y ON v.idsnv = y.idsnv
 LEFT JOIN gene                      g ON g.idgene = y.idgene
 LEFT JOIN $coredb.evs             evs ON (v.chrom=evs.chrom and v.start=evs.start and v.refallele=evs.refallele and v.allele=evs.allele)
-LEFT JOIN $coredb.kaviar            k ON (v.chrom=k.chrom and v.start=k.start and v.refallele=k.refallele and v.allele=k.allele)
 LEFT JOIN $exomevcfe.comment        c ON (v.chrom=c.chrom and v.start=c.start and v.refallele=c.refallele and v.allele=c.altallele and s.idsample=c.idsample)
 WHERE
 $where
@@ -11533,7 +11537,6 @@ $out->execute(@prepare) || die print "$DBI::errstr";
 	'%Var',
 	'Filter',
 	'gnomAD',
-	'gnomAD aa',
 	);
 
 $i=0;
@@ -13318,7 +13321,7 @@ $i=0;
 $query = qq#
 SELECT
 concat('<a href="listPosition.pl?idsnv=',v.idsnv,'" title="All carriers of this variant">',v.idsnv,'</a>',' '),
-group_concat(s.name separator '<br>'),
+group_concat(s.name separator ' '),
 group_concat(s.pedigree separator '<br>'),
 group_concat(s.sex separator ' <br>'),
 group_concat(d.symbol separator '<br>'),
@@ -13429,11 +13432,11 @@ while (@row = $out->fetchrow_array) {
 		if ($i == 0) { #edit project
 			print "<td align=\"center\">$n</td>";
 		}
-		#if ($i == 1) {
-		#	$tmp=&igvlink($dbh,$row[$i],$row[5]);
-		#	print "<td align=\"center\"> $tmp</td>";
-		#}
-		if ($i == 5) {
+		if ($i == 1) {
+			$tmp=&igvlink($dbh,$row[$i],$row[5]);
+			print "<td align=\"center\"> $tmp</td>";
+		}
+		elsif ($i == 5) {
 			$tmp=&ucsclink2($row[$i]);
 			print "<td> $tmp</td>";
 		}
@@ -14861,9 +14864,9 @@ if ($hpo ne "") {
 	}
 	$query = "
 	SELECT hg.gene,max(h.ic)
-	FROM exomehg19.hpoancestors ha
-	INNER JOIN exomehg19.hpo h ON ha.ancestor=h.id
-	INNER JOIN exomehg19.hpogene hg ON h.id=hg.id
+	FROM $sampledb.hpoancestors ha
+	INNER JOIN $sampledb.hpo h ON ha.ancestor=h.id
+	INNER JOIN $sampledb.hpogene hg ON h.id=hg.id
 	WHERE $hpowhere
 	GROUP BY hg.gene,ha.id
 	";
@@ -14980,6 +14983,7 @@ if ($ref->{'v.freq'} ne "") {
 ($function,$functionprint)=&function($ref->{'function'},$dbh);
 ($class,$classprint)=&class($ref->{'class'},$dbh);
 
+print "Maximal 100 variants<br>";
 print "Search phrase: $hpo<br>";
 &todaysdate;
 &numberofsamples($dbh);
@@ -15061,6 +15065,12 @@ LIMIT 5000
 #print "query = @prepare $idomim<br>";
 
 # foreach gene returned by hpo search
+my $ngenes=1;
+my $maxgenes=100;
+if ($demo == 1) {
+	$maxgenes=50;
+}
+my $checkedgenes=0;
 foreach $genesymbol (sort {$genesymbol{$b}<=>$genesymbol{$a}} sort keys %genesymbol) {
 	#print "asdf '$genesymbol' $genesymbol{$genesymbol}<br>";
 	$out = $dbh->prepare($query) || die print "$DBI::errstr";
@@ -15083,7 +15093,12 @@ foreach $genesymbol (sort {$genesymbol{$b}<=>$genesymbol{$a}} sort keys %genesym
 			# if ad gene are set to 2, the will be shown in any case because ($ar{$row[9]} >= $ar)
 			$ar{$row[9]} = 2; #variant allele=row[13]
 		}
+		$ngenes++;
 	}
+	if ($ngenes > $maxgenes) {
+		last;
+	}
+	$checkedgenes++;
 } 
 
 # Now print table
@@ -15196,6 +15211,7 @@ foreach (@labels) {
 }
 print "</tr></thead><tbody>";
 
+$ngenes=1;
 foreach $genesymbol (sort {$genesymbol{$b}<=>$genesymbol{$a}} keys %genesymbol) {
 	print "<tr>";
 	print "<td>$n</td>";
@@ -15205,6 +15221,10 @@ foreach $genesymbol (sort {$genesymbol{$b}<=>$genesymbol{$a}} keys %genesymbol) 
 	print "<td>$maxic{$genesymbol}</td>";
 	$n++;
 	print "</tr>";
+	if ($ngenes > $checkedgenes) {
+		last;
+	}
+	$ngenes++;
 }
 print "<table><br>";
 
@@ -17059,6 +17079,7 @@ while (@row = $out->fetchrow_array) {
 				<a href='searchDiseaseGene.pl?sname=$sname'>Disease panels</a>
 				<a href='searchHGMD.pl?sname=$sname'>ClinVar/HGMD</a>
 				<a href='searchOmim.pl?sname=$sname'>OMIM</a>
+				<a href='searchHPO.pl?sname=$sname'>HPO</a>
 				<a href='searchDiagnostics.pl?sname=$sname'>Coverage lists</a>
 				<a href='searchHomo.pl?sname=$sname'>Homozygosity</a>
 				<a href='searchCnv.pl?sname=$sname'>CNV</a>
@@ -17069,7 +17090,6 @@ while (@row = $out->fetchrow_array) {
 					#;
 				}
 				print qq#
-				<a href='searchHPO.pl?sname=$sname'>HPO</a>
 				<a href='searchSample.pl?pedigree=$pedigree'>Sample information</a>
 				<a href='conclusion.pl?idsample=$idsample'>Sample conclusions</a>
 				<a href='report.pl?sname=$sname'>Report</a>
@@ -17387,12 +17407,14 @@ if ($ref->{libtype} ne "") {
 	$where .= " AND (l.libtype = ? OR ISNULL(e.idlibtype))";
 	push(@values2,$ref->{libtype});
 }
+
+#replace(replace(replace(replace (cl.solved,1,"solved"),2,"not_solved"),3,"candidate"),4,"pending")
 			
 $i=0;
 $query = qq#
 SELECT
 s.name,
-concat_ws(' ',cl.solved, group_concat(DISTINCT co.genesymbol SEPARATOR '')),
+concat_ws(' ',cl.solved, group_concat(DISTINCT co.genesymbol SEPARATOR ' ')),
 h.idsample,
 s.pedigree,s.sex,s.foreignid,s.externalseqid,e.sry,c.name,
 group_concat(DISTINCT l.lname),lt.ltlibtype,lp.lplibpair,a.name,
@@ -17456,7 +17478,7 @@ $out->execute(@values2) || die print "$DBI::errstr";
 @labels	= (
 	'n',
 	'ID Links',
-	'Con- clusion',
+	'<div class="tooltip">Con-<br>clusion<span class="tooltiptext">0 nothing_done<br>1 solved<br>2 not_solved<br>3 candidate<br>4 pending</span></div>',
 	'HPO',
 	'Pedigree',
 	'Sex',
@@ -17544,6 +17566,7 @@ while (@row = $out->fetchrow_array) {
 				<a href='searchDiseaseGene.pl?sname=$sname'>Disease panels</a>
 				<a href='searchHGMD.pl?sname=$sname'>ClinVar/HGMD</a>
 				<a href='searchOmim.pl?sname=$sname'>OMIM</a>
+				<a href='searchHPO.pl?sname=$sname'>HPO</a>
 				<a href='searchDiagnostics.pl?sname=$sname'>Coverage lists</a>
 				<a href='searchHomo.pl?sname=$sname'>Homozygosity</a>
 				<a href='searchCnv.pl?sname=$sname'>CNV</a>
@@ -17554,7 +17577,6 @@ while (@row = $out->fetchrow_array) {
 					#;
 				}
 				print qq#
-				<a href='searchHPO.pl?sname=$sname'>HPO</a>
 				<a href='searchSample.pl?pedigree=$pedigree'>Sample information</a>
 				<a href='conclusion.pl?idsample=$idsample'>Sample conclusions</a>
 				<a href='report.pl?sname=$sname'>Report</a>
@@ -19281,7 +19303,7 @@ $out->execute(@values2) || die print "$DBI::errstr";
 @labels	= (
 	'n',
 	'ID Links',
-	'Con-<br>clusion',
+	'<div class="tooltip">Con-<br>clusion<span class="tooltiptext">0 nothing_done<br>1 solved<br>2 not_solved<br>3 candidate<br>4 pending</span></div>',
 	'HPO',
 	'Foreign ID',
 	'External<br>SeqID',
@@ -19331,17 +19353,17 @@ while (@row = $out->fetchrow_array) {
 				<a href='searchDiseaseGene.pl?sname=$sname'>Disease panels</a>
 				<a href='searchHGMD.pl?sname=$sname'>ClinVar/HGMD</a>
 				<a href='searchOmim.pl?sname=$sname'>OMIM</a>
+				<a href='searchHPO.pl?sname=$sname'>HPO</a>
 				<a href='searchDiagnostics.pl?sname=$sname'>Coverage lists</a>
 				<a href='searchHomo.pl?sname=$sname'>Homozygosity</a>
 				<a href='searchCnv.pl?sname=$sname'>CNV</a>
 				#;
-				if ($contextM eq "contextM") { # is genome
+				if ($contextM eq "contextMg") { # is genome
 					print qq#
 					<a href='searchSv.pl?sname=$sname'>Structural variants</a>
 					#;
 				}
 				print qq#
-				<a href='searchHPO.pl?sname=$sname'>HPO</a>
 				<a href='searchSample.pl?pedigree=$pedigree'>Sample information</a>
 				<a href='conclusion.pl?idsample=$idsample'>Sample conclusions</a>
 				<a href='report.pl?sname=$sname'>Report</a>
@@ -21570,7 +21592,7 @@ print qq|
 }
 print qq|
   <div class="subnav">Annotations/Report</div>
-  <a href="searchComment.pl">Variant annotation</a>
+  <a href="searchComment.pl">Variant annotations</a>
   <a href="searchConclusion.pl">Case conclusions</a>
   <a href="report.pl">Report</a>
 |;
@@ -21614,259 +21636,6 @@ print qq|
 |;
 
 }
-########################################################################
-# showMenu
-########################################################################
-
-sub showMenuOld {
-my $self                 = shift;
-my $menu                 = shift;
-my $search               = "menu";
-my $searchGeneInd        = "menu";
-my $searchPosition       = "menu";
-my $searchGene           = "menu";
-my $searchDiseaseGene    = "menu";
-my $searchSample         = "menu";
-my $listcooperation      = "menu";
-my $login                = "menu";
-my $searchstat           = "menu";
-my $searchTranscriptstat = "menu";
-my $searchDenovo         = "menu";
-my $searchTrio           = "menu";
-my $searchHom            = "menu";
-my $searchHGMD           = "menu";
-my $searchTumor          = "menu";
-my $searchComment        = "menu";
-my $searchDiagnostics    = "menu";
-my $searchCnv            = "menu";
-my $searchTrans          = "menu";
-my $searchSv             = "menu";
-my $searchHomozygosity   = "menu";
-my $searchIbs            = "menu";
-my $searchOmim           = "menu";
-my $searchHPO            = "menu";
-my $importHPO            = "menu";
-my $searchConclusion     = "menu";
-my $searchMito           = "menu";
-my $adminList            = "menu";
-my $admin                = "menu";
-my $searchRnaStat        = "menu";
-my $searchRpkm           = "menu";
-my $searchSameVariant    = "menu";
-my $searchDiffEx         = "menu";
-my $searchDiffPeak       = "menu";
-my $searchVcf            = "menu";
-my $searchVcfTrio        = "menu";
-my $report               = "menu";
-my $help                 = "menu";
-
-if (!defined($menu)) {$menu = "";}
-
-if ($menu eq "search") {
-	$search = "menuactive";
-}
-if ($menu eq "searchGeneInd") {
-	$searchGeneInd = "menuactive";
-}
-if ($menu eq "searchPosition") {
-	$searchPosition = "menuactive";
-}
-if ($menu eq "searchGene") {
-	$searchGene = "menuactive";
-}
-if ($menu eq "searchSample") {
-	$searchSample = "menuactive";
-}
-if ($menu eq "listCooperation") {
-	$listcooperation = "menuactive";
-}
-if ($menu eq "login") {
-	$login = "menuactive";
-}
-if ($menu eq "searchStat") {
-	$searchstat = "menuactive";
-}
-if ($menu eq "searchTranscriptstat") {
-	$searchTranscriptstat = "menuactive";
-}
-if ($menu eq "searchDenovo") {
-	$searchDenovo = "menuactive";
-}
-if ($menu eq "searchTrio") {
-	$searchTrio = "menuactive";
-}
-if ($menu eq "searchHom") {
-	$searchHom = "menuactive";
-}
-if ($menu eq "searchHGMD") {
-	$searchHGMD = "menuactive";
-}
-if ($menu eq "searchDiseaseGene") {
-	$searchDiseaseGene = "menuactive";
-}
-if ($menu eq "searchTumor") {
-	$searchTumor = "menuactive";
-}
-if ($menu eq "searchComment") {
-	$searchComment = "menuactive";
-}
-if ($menu eq "searchDiagnostics") {
-	$searchDiagnostics = "menuactive";
-}
-if ($menu eq "searchCnv") {
-	$searchCnv = "menuactive";
-}
-if ($menu eq "searchTrans") {
-	$searchTrans = "menuactive";
-}
-if ($menu eq "searchSv") {
-	$searchSv = "menuactive";
-}
-if ($menu eq "searchHomozygosity") {
-	$searchHomozygosity = "menuactive";
-}
-if ($menu eq "searchIbs") {
-	$searchIbs = "menuactive";
-}
-if ($menu eq "searchOmim") {
-	$searchOmim = "menuactive";
-}
-if ($menu eq "searchHPO") {
-	$searchHPO = "menuactive";
-}
-if ($menu eq "importHPO") {
-	$importHPO = "menuactive";
-}
-if ($menu eq "searchConclusion") {
-	$searchConclusion = "menuactive";
-}
-if ($menu eq "searchMito") {
-	$searchMito = "menuactive";
-}
-if ($menu eq "adminList") {
-	$adminList = "menuactive";
-}
-if ($menu eq "admin") {
-	$admin = "menuactive";
-}
-if ($menu eq "searchRnaStat") {
-	$searchRnaStat = "menuactive";
-}
-if ($menu eq "searchRpkm") {
-	$searchRpkm = "menuactive";
-}
-if ($menu eq "searchSameVariant") {
-	$searchSameVariant = "menuactive";
-}
-if ($menu eq "searchDiffEx") {
-	$searchDiffEx = "menuactive";
-}
-if ($menu eq "searchDiffPeak") {
-	$searchDiffPeak = "menuactive";
-}
-if ($menu eq "searchVcf") {
-	$searchVcf = "menuactive";
-}
-if ($menu eq "searchVcfTrio") {
-	$searchVcfTrio = "menuactive";
-}
-if ($menu eq "report") {
-	$report = "menuactive";
-}
-if ($menu eq "help") {
-	$help = "menuactive";
-}
-
-print qq(
-<table class="header" border="0" cellpadding="3" cellspacing="0" width="1000px">
-<tr>
-<td align="center" class="header"><a class="$search" href="search.pl">Autosomal dominant</a></td>
-<td align="center" class="header"><a class="$searchGeneInd" href="searchGeneInd.pl">Autosomal recessive</a></td>
-<td align="center" class="header"><a class="$searchSameVariant" href="searchSameVariant.pl">Same variants</a></td>
-<td align="center" class="header"><a class="$searchTrio" href="searchTrio.pl">De novo Trio</a></td>
-<td align="center" class="header"><a class="$searchTumor" href="searchTumor.pl">Tumor Controls</a></td>
-<td align="center" class="header"><a class="$searchGene" href="searchGene.pl">Genes</a></td>
-<td align="center" class="header"><a class="$searchDiseaseGene" href="searchDiseaseGene.pl">Disease genes</a></td>
-<td align="center" class="header"><a class="$searchTranscriptstat" href="searchTranscriptstat.pl">Coverage</a></td>
-<td align="center" class="header"><a class="$searchDiagnostics" href="searchDiagnostics.pl">Coverage lists</a></td>
-<td align="center" class="header"><a class="$searchPosition" href="searchPosition.pl">Region</a></td>
-<td align="center" class="header"><a class="$searchHomozygosity" href="searchHomo.pl">Homozygosity</a></td>
-<td align="center" class="header"><a class="$searchCnv" href="searchCnv.pl">CNVs</a></td>
-);
-
-if ($sv_menu) {
-print qq(
-<td align="center" class="header"><a class="$searchSv" href="searchSv.pl">Structural variants</a></td>
-);
-}
-
-
-if ($translocation_menu) {
-print qq(
-<td align="center" class="header"><a class="$searchTrans" href="searchTrans.pl">Translocations</a></td>
-);
-}
-
-print qq(
-<td align="center" class="header"><a class="$searchHGMD" href="searchHGMD.pl">HGMD ClinVar</a></td>
-<td align="center" class="header"><a class="$searchOmim" href="searchOmim.pl">OMIM</a></td>
-<td align="center" class="header"><a class="$searchHPO"  href="searchHPO.pl">Search HPO</a></td>
-<td align="center" class="header"><a class="$searchIbs"  href="searchIbs.pl">IBS</a></td>
-);
-
-if ($mtdna_menu) {
-print qq(
-<td align="center" class="header"><a class="$searchMito" href="searchMito.pl">Mito</a></td>
-);
-}
-
-print qq(
-<td align="center" class="header"><a class="$searchstat" href="searchStat.pl">Quality control</a></td>
-<td align="center" class="header"><a class="$searchSample" href="searchSample.pl">Samples</a></td>
-<td align="center" class="header"><a class="$searchComment" href="searchComment.pl">Comments</a></td>
-<td align="center" class="header"><a class="$searchConclusion" href="searchConclusion.pl">Conclusions</a></td>
-<td align="center" class="header"><a class="$report" href="report.pl">Report</a></td>
-<td align="center" class="header"><a class="$searchVcfTrio" href="searchVcfTrio.pl">VCF De novo Trio</a></td>
-<td align="center" class="header"><a class="$searchVcf" href="searchVcf.pl">VCF Tumor Controls</a></td>
-);
-
-if ($rna_menu) {
-print qq(
-<td align="center" class="header"><a class="$searchRpkm" href="searchRpkm.pl">FPKM</a></td>
-<td align="center" class="header"><a class="$searchRnaStat" href="searchRnaStat.pl">RNA</a></td>
-<td align="center" class="header"><a class="$searchDiffEx" href="searchDiffEx.pl">Differential Expression</a></td>
-<td align="center" class="header"><a class="$searchDiffPeak" href="searchDiffPeak.pl">Differential peak calling</a></td>
-);
-}
-
-print qq(
-<td align="center" class="header"><a class="$help" href="help.pl">Help</a></td>
-<td align="center" class="header"><a class="$login" href="login.pl">Login / Logout</a></td>
-<td align="center" class="header"><a class="$importHPO"  href="importHPO.pl">Import HPO</a></td>
-);
-
-if ($role eq "admin") {
-print qq(
-<td align="center" class="header"><a class="$adminList" href="adminList.pl">List accounts</a></td>
-<td align="center" class="header"><a class="$admin" href="admin.pl">New account</a></td>
-);
-}
-
-if ($test) {
-print qq(
-);
-}
-
-print qq(
-</tr>
-</table>
-<br>
-);
-#<td align="center" class="header"><a class="$searchDenovo" href="searchDenovo.pl">De novo variants</a></td>
-#<td align="center" class="header"><a class="$listcooperation" href="listCooperation.pl">Cooperations</a></td>
-
-}
-#<td align="center" class="header"><a class="$searchHom" href="searchHom.pl">Homozygous statistics</a></td>
 ########################################################################
 # login_message
 ########################################################################

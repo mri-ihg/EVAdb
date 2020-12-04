@@ -18,7 +18,7 @@ my ($dbh) = $snv->loadSessionId();
 my $search      = $snv->initSearchSameVariant($name,$dbh);
 	
 $snv->showMenu("searchSameVariant");
-print "<span class=\"big\">Search</span><br><br>" ;
+print "<span class=\"big\">Same variants</span><br><br>" ;
 
 print "<form action=\"searchSameVariantDo.pl\" method=\"post\">" ;
 

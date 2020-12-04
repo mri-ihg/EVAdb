@@ -14,7 +14,7 @@ $snv->printHeader();
 my ($dbh) = $snv->loadSessionId();
 	
 $snv->showMenu("searchConclusion");
-print "<span class=\"big\">Search</span><br><br>" ;
+print "<span class=\"big\">Case conclusions</span><br><br>" ;
 
 print "<form action=\"searchConclusionDo.pl\" method=\"post\" name=\"myform\">" ;
 

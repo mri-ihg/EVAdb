@@ -21,7 +21,7 @@ my ($dbh) = $snv->loadSessionId();
 #$ref = $snv->htmlencodehash($ref);
 
 $snv->showMenu('searchGene');
-print "<span class=\"big\">Search results</span><br><br>" ;
+print "<span class=\"big\">Genes</span><br><br>" ;
 
 $snv->searchResultsGene($dbh,$ref);
 

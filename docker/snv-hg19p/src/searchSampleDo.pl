@@ -21,7 +21,7 @@ my ($dbh) = $snv->loadSessionId();
 #$ref = $snv->htmlencodehash($ref);
 
 $snv->showMenu('searchSample');
-print "<span class=\"big\">Search results</span><br><br>" ;
+print "<span class=\"big\">Samples</span><br><br>" ;
 
 $snv->searchSample($dbh,$ref);
 

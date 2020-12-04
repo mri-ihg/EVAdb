@@ -18,7 +18,7 @@ my ($dbh)       = $snv->loadSessionId();
 my $search      = $snv->initSearchFam($pedigree,$dbh);
 	
 $snv->showMenu("search");
-print "<span class=\"big\">Search</span><br><br>" ;
+print "<span class=\"big\">Autosomal dominant</span><br><br>" ;
 
 print "<form action=\"searchDo.pl\" method=\"post\">" ;
 

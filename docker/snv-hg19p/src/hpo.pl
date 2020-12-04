@@ -16,6 +16,7 @@ $term = "%". $term . "%";
 my @tmp        = ();
 my @res        = ();
 my $jres       = "";
+my $sampledb = $Snv::sampledb;
 
 #$snv->printHeader("","cgisessid");
 print "Content-type: text/html\n\n";
@@ -24,8 +25,8 @@ my ($dbh) = $snv->loadSessionId();
 my $query = "SELECT 
 DISTINCT h.id,h.name
 FROM
-exomehg19.hpo h
-LEFT JOIN exomehg19.hposynonym s ON h.id=s.id
+$sampledb.hpo h
+LEFT JOIN $sampledb.hposynonym s ON h.id=s.id
 WHERE h.name like ?
 OR s.synonym like ?
 OR h.id = ?

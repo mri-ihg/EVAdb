@@ -190,7 +190,7 @@ function contextCommentParents(counter,idsnv,idsample,reason,mother,father){
 
 
 $(document).ready( function () {
- var oTable = $('#default').DataTable({
+         var oTable = $('#default').DataTable({
  	"dom":           "Bfrtip",
  	"paginate":      true,
   	"lengthChange":  true,
@@ -206,7 +206,29 @@ $(document).ready( function () {
 					extend: 'pageLength',
 					fade: 0
 				},
-			'csv' ],
+				{
+	    				extend: 'csv',
+					exportOptions: {
+						format: {
+							body: function ( data, row, column, node ) {
+								// Strip $ from salary column to make it numeric
+								if (column === 1) {
+									//replace all html
+									data = data.replace(/(&nbsp;|<([^>]+)>)/ig, "");
+									data = data.replace(/\t|\n/g, "");
+									// replace everything except first word
+									data = data.replace(/^(\s*\w+)\s+.*$/, "$1");
+								}
+								else {
+									data = data.replace(/(&nbsp;|<([^>]+)>)/ig, "");
+								}
+								return data;
+								}
+						}
+					}
+					
+				}
+			],
 	"fixedHeader":    true,
 	"aoColumnDefs": [
 		{ "sType": "num",

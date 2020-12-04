@@ -18,7 +18,7 @@ my ($dbh)    = $snv->loadSessionId();
 my $search   = $snv->initSearchComment($pedigree,$dbh);
 
 $snv->showMenu("searchComment");
-print "<span class=\"big\">Search Comment</span><br><br>" ;
+print "<span class=\"big\">Variant annotations</span><br><br>" ;
 
 print "<form action=\"searchCommentDo.pl\" method=\"post\">" ;
 

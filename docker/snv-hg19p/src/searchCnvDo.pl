@@ -21,7 +21,7 @@ my ($dbh) = $snv->loadSessionId();
 #$ref = $snv->htmlencodehash($ref);
 
 $snv->showMenu('searchCnv');
-print "<span class=\"big\">Search results</span><br><br>" ;
+print "<span class=\"big\">CNVs</span><br><br>" ;
 
 $snv->searchResultsCnv($dbh,$ref);
 

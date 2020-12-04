@@ -36,6 +36,8 @@ my $user           = "";
 my $iduser         = ""; 
 my $role           = ""; #not used
 my $warningtdbg   = "class='warning'";
+my $extFilesBasePath = "/data/isilon/seq/analysis/external";
+my $extFilesBasePathStaging = "/data/isilon/seq/analysis/external/staging";
 
 if ($demo) {
 	$humanexomedb   = "database=exomecore;host=localhost";
@@ -1565,7 +1567,7 @@ my @AoH = (
 	  	bgcolor     => "formbg",
 	  },
 	  {
-	  	label       => "File Extension<br>(if no files, lib is created without looking for data)",
+	  	label       => "File Extension<br>If no files, lib is created without looking for data",
 		labels      => "no files, bam, fastq.gz",
 	  	type        => "radio",
 		name        => "fileextension",
@@ -1574,7 +1576,16 @@ my @AoH = (
 	  	bgcolor     => "formbg",
 	  },
 	  {
-	  	label       => "Allow existing samples<br>(for libraries prepared in-house)",
+	  	label       => "Look for files in staging area<br>They will need to be moved to the respective folders<br>String will be generated at the end.<br>Then reimport with option disabled.",
+		labels      => "True, False",
+	  	type        => "radio",
+		name        => "filesinstagingarea",
+	  	value       => "F",
+		values      => "T, F",
+	  	bgcolor     => "formbg",
+	  },
+	  {
+	  	label       => "Allow existing samples<br><br>For libraries prepared in-house<br>or already existing samples",
 	  	labels      => "True, False",
 	  	type        => "radio",
 	  	name        => "allowexisting",
@@ -1583,7 +1594,7 @@ my @AoH = (
 	  	bgcolor     => "formbg",
           },
 	  {
-	  	label       => "Project, and cooperation<br>in samplesheet version 09.2020",
+	  	label       => "Project and cooperation in samplesheet <br>version 09.2020",
 	  	labels      => "True, False",
 	  	type        => "radio",
 	  	name        => "projcoopinsamplesheet",
@@ -1592,14 +1603,32 @@ my @AoH = (
 	  	bgcolor     => "formbg",
           },
 	  {
-	  	label       => "External sequencing center ID in:",
+	  	label       => "Trio information<br>in samplesheet version 10.2020",
+	  	labels      => "True, False",
+	  	type        => "radio",
+	  	name        => "trioinfoinsamplesheet",
+	  	value       => "F",
+	  	values      => "T, F",
+	  	bgcolor     => "formbg",
+          },
+	  {
+	  	label       => "External sequencing center ID in",
 	  	labels      => "Samplesheet, Filename, Not applicable",
 	  	type        => "radio",
 	  	name        => "externalseqidlocation",
 	  	value       => "none",
 	  	values      => "samplesheet, filename, none",
 	  	bgcolor     => "formbg",
-          }
+          },
+	  {
+	  	label       => "Simulate import<br>To check samplesheet",
+		labels      => "True, False",
+	  	type        => "radio",
+		name        => "simulateimport",
+	  	value       => "F",
+		values      => "T, F",
+	  	bgcolor     => "formbg",
+	  },
 );
 
 $ref = \@AoH;
@@ -4983,14 +5012,21 @@ my $idcooperation = $ref->{'s.idcooperation'};
 my $idproject     = $ref->{'s.idproject'};
 my $createlibrary = 1; # ( $ref->{createlibrary} eq "yes" ? 1 : 0 );
 my $fileextension = $ref->{'fileextension'};
+my $filesinstagingarea = ( $ref->{'filesinstagingarea'} eq "T" ? 1 : 0 );
+	my $commandMoveOutOfStagingArea = ""; 
 my $allowexisting = ( $ref->{'allowexisting'} eq "T" ) ? 1 : 0;
 
 my $projcoopinsamplesheet = ( $ref->{'projcoopinsamplesheet'} eq "T" ) ? 1 : 0;
+my $trioinfoinsamplesheet = ( $ref->{'trioinfoinsamplesheet'} eq "T" ) ? 1 : 0;
 
 my $externalseqidlocation = ( $ref->{'externalseqidlocation'} );
 
+my $simulatedimport = ( $ref->{'simulateimport'} eq "T" ? "1" : 0 );
+   $simulatedimport = ( $filesinstagingarea ? "1" : $simulatedimport );
+
 
 print "Allow existing samples: $allowexisting<br>File extension: $fileextension<br>Project and Cooperation in Samplesheet: $projcoopinsamplesheet<br>External Sequencing Center ID: $externalseqidlocation<br>";
+print "<b>Simulated import</b>" if $simulatedimport;
 
 # Library creation auxiliaries
 my $libextens="LIB1";
@@ -5032,6 +5068,12 @@ if ( $projcoopinsamplesheet )
 	$assignment{"Project"}	   = "idproject";
 }
 
+if ( $trioinfoinsamplesheet )
+{
+	$assignment{'Foreign ID Father'} = "foreignidfather";
+	$assignment{'Foreign ID Mother'} = "foreignidmother"; 
+}
+
 if ( $externalseqidlocation eq "samplesheet" )
 {
 	$assignment{"External ID"} = "externalseqid";
@@ -5050,8 +5092,17 @@ elsif ( $externalseqidlocation eq "filename" )
 my $sql="START TRANSACTION;";
 $dbh->do($sql) || die print "$DBI::errstr";
 
+my %trioinfo;
+my $triocount=0;
+
+my %insertedsamples;
+my %gender;
+
 $i = 0;
 if ($file ne "") {
+
+	print "<br><br><b>Inserting samples</b>";
+	print "<table>";
 	while  (<$file>) {
 		s/\015\012|\015|\012/\n/g; #change operating system dependent newlines to \n
 		chomp;
@@ -5060,6 +5111,7 @@ if ($file ne "") {
 		$line = $_;
 		print "<tr>";
 		if ($i == 0) {
+			print "<td>#</td><td><b>Sample</b></td>";
 			(@labels)=quotewords(',', 1, $line);
 			for $j (0..$#labels) {
 				$labels[$j] =~ s/\"//g;
@@ -5073,23 +5125,43 @@ if ($file ne "") {
 			&check_labels_external;
 		}
 		else {	
-			print "<br>$line<br>";
+			print "<td>$i</td><td>";
+			#print "<br>$line<br>";
 			(@values) = quotewords(',', 1, $line);
 			for $j (0..$#values) {
 				$values[$j] =~ s/\"//g;
 				$values[$j] =~ s/^\s+|\s+$//g;
 			}
 			&intodb_external($i-1);
+			print "</td>";
 		}
 		$i++;
-		print "</tr>";
+		print "</td></tr>";
 	}
+
+	print "</table>";
+
+
+	if ( $trioinfoinsamplesheet )
+	{
+		&intodb_trio();
+	}
+
 }
 
 # If no exit event : commit transaction
-my $sql="commit;";
-
+#my $sql="commit;";
+$sql="commit;"; 
+$sql="rollback;" if ( $simulatedimport );
 $dbh->do($sql) || die print "$DBI::errstr";
+
+print "<br><b>Import successful!</b><br>" if (! $simulatedimport );
+
+if ( $filesinstagingarea )
+{
+	print "<br><br><b>Command lines to move files out of staging area</b><pre>$commandMoveOutOfStagingArea</pre>";
+	print "<br><b>ALL SETTLED:</b> You can proceed to import<br>" if ( $commandMoveOutOfStagingArea eq "" ); 
+}
 
 # If no error and library insertion is selected, give command
 
@@ -5139,6 +5211,22 @@ $dbh->do($sql) || die print "$DBI::errstr";
 			exit(1);
 		}
 
+		print "<b>".$values{'name'}."</b><br>";
+		print "Foreign ID: ".$values{'foreignid'}."<br>";
+
+		my $father="";
+		my $mother="";
+
+		if ( $trioinfoinsamplesheet)
+		{			
+			$father=$values{'foreignidfather'};
+				$father=~s/\s+/\_/g;
+				delete $values{'foreignidfather'};
+
+			$mother=$values{'foreignidmother'};
+			$mother=~s/\s+/\_/g;
+				delete $values{'foreignidmother'};
+		}
 
 		# Analysis type (legacy value) - automatic recognition if selected:
 		if ($analysis eq "auto")
@@ -5361,13 +5449,13 @@ $dbh->do($sql) || die print "$DBI::errstr";
 			$sql = sprintf "INSERT INTO sample (%s) VALUES (%s)",
 			 join(",", @fields), join(",", ("?")x@fields);
 			$sth = $dbh->prepare($sql) || die print "$DBI::errstr";
-	                print "$sql<br>";
+	                #print "$sql<br>";
 
 			$sth->execute(@values) || die print "$DBI::errstr";
 			$idsample=$sth->{mysql_insertid};
 		}
 
-		print "Inserted into Project: $idproject, cooperation $idcooperation<br>";
+		print "Project ID: ".$tmpprojectname." (".$values{'idproject'}.") - Cooperation ID: ".$values{'idcooperation'}."<br>";
 
 		# Get disease
 		if ($diseasename ne "") {
@@ -5403,11 +5491,11 @@ $dbh->do($sql) || die print "$DBI::errstr";
 		}
 
 		# Check if sample files have been placed correctly (here because i have to check anyway all the rest before and i have to get the project name)
-		my $analysisBasePath="/data/isilon/seq/analysis/external"; #TODO MOVE TO HEAD
+		# External base path: $extFilesBasePath    -  Staging Base Path  $extFilesBasePathStaging
 
 		my $samplename=$values{'name'};
 		my $foreignid=$values{'foreignid'};
-		my $externalSamplesDir="$analysisBasePath/$tmpprojectname"; 
+		my $externalSamplesDir="$extFilesBasePath/$tmpprojectname"; 
 		
 		#TW 30.03.2016: changed "glob" to find because fastq files can be in sub folders
 		
@@ -5419,64 +5507,113 @@ $dbh->do($sql) || die print "$DBI::errstr";
 			
 			my $foreignidsearch = $foreignid eq "" ? $samplename : $foreignid;
 
-			open IN,"find $externalSamplesDir -name \"*$foreignidsearch\_*$fileextension\" | sort |";
-			while(<IN>){
-				chomp;
-				$bams .= $_.",";
-			}
-			$bams =~ s/,$//;
-			$nameinfiles="$foreignidsearch";
+			# If files in Staging area they must be 
+			if ( $filesinstagingarea ){
 
-			if ( $bams eq "" ) 
+				my @bamsStaging;
+				my $fileDestinationBase = "$externalSamplesDir/$samplename/";
+
+				open IN,"find $extFilesBasePathStaging -name \"*$foreignidsearch\_*$fileextension\" | sort |";
+				while(<IN>){
+					chomp;
+					push(@bamsStaging, $_);
+				}
+	
+				if ( (scalar @bamsStaging ) == 0 ) 
 				{
-				my $tmp = $values{'name'};
-				open IN,"find $externalSamplesDir -name \"*$tmp\_*$fileextension\" | sort |";
+					my $tmp = $values{'name'};
+					open IN,"find $extFilesBasePathStaging -name \"*$tmp\_*$fileextension\" | sort |";
+					while(<IN>){
+						chomp;
+						push(@bamsStaging, $_);
+					}
+				}
+
+				my $command = "";
+				foreach my $bam ( @bamsStaging ){
+
+					$command .= "mv $bam $fileDestinationBase;\n";
+
+				}
+
+				if ( $command ne "" ){
+					# Execute: 
+					$command = "#Sample $samplename\nmkdir -p $fileDestinationBase;\n".$command;
+					print "Required to move files from staging area to $fileDestinationBase:<br>&nbsp;&nbsp;".join("<br>&nbsp;&nbsp;", @bamsStaging)."<br>";
+					#print "<br>$command<br>";
+					$commandMoveOutOfStagingArea.=$command;
+				}
+
+			}
+			else
+			{
+
+				open IN,"find $externalSamplesDir -name \"*$foreignidsearch\_*$fileextension\" | sort |";
 				while(<IN>){
 					chomp;
 					$bams .= $_.",";
 				}
 				$bams =~ s/,$//;
-				# 
-				$nameinfiles="$tmp";
-				
-				if ( $bams eq "" ) {
-					print "$foreignid files expected in path $externalSamplesDir\n";
-					exit(1);
-				}
-			}
+				$nameinfiles="$foreignidsearch";
 
-			# Extract external sequencing center ID from filenames: expected SAMPLEID_EXTERNALSEQID[._]* or FOREIGNID_EXTERNALSEQID[._]*
-			if ( $externalseqidlocation eq "filename" )
-			{
-				my @tmp_bams = split (",", $bams);
-				my $tmpname="";
-				foreach my $tmp_bam ( @tmp_bams )
-				{
-					print "$tmp_bam || ";
-					$tmp_bam=basename($tmp_bam);
-
-					my @tmp_items = split("[_\.]", $tmp_bam);
-					if ( defined $tmp_items[1] )
+				if ( $bams eq "" ) 
 					{
-						$values{externalseqid}=$tmp_items[1];
-
-						#Check that it's consistent
-						if ( $tmpname ne "" && ( $tmpname ne $values{externalseqid} ) )
-						{
-							print "<td>External Seq ID inconsistent across same sample $samplename</td>"; 
-							exit(1);
-						}
-
-						$tmpname=$values{externalseqid};
-
-						print "&nbsp;&nbsp;$tmpname<br>";
-
+					my $tmp = $values{'name'};
+					open IN,"find $externalSamplesDir -name \"*$tmp\_*$fileextension\" | sort |";
+					while(<IN>){
+						chomp;
+						$bams .= $_.",";
 					}
-					else
-					{
-						print "<td>Filename format unexpected, should contain SAMPLEID_EXTERNALSEQCENTERID_*</td>";
+					$bams =~ s/,$//;
+					# 
+					$nameinfiles="$tmp";
+				
+					if ( $bams eq "" ) {
+						print "$foreignid files expected in path $externalSamplesDir\n";
 						exit(1);
 					}
+				}
+
+				# Extract external sequencing center ID from filenames: expected SAMPLEID_EXTERNALSEQID[._]* or FOREIGNID_EXTERNALSEQID[._]*
+				if ( $externalseqidlocation eq "filename" )
+				{
+					my @tmp_bams = split (",", $bams);
+					my $tmpname="";
+					foreach my $tmp_bam ( @tmp_bams )
+					{
+						#print "$tmp_bam || ";
+						$tmp_bam=basename($tmp_bam);
+
+						my @tmp_items = split("[_\.]", $tmp_bam);
+						if ( defined $tmp_items[1] )
+						{
+							$values{externalseqid}=$tmp_items[1];
+
+							#Check that it's consistent
+							if ( $tmpname ne "" && ( $tmpname ne $values{externalseqid} ) )
+							{
+								print "<td>External Seq ID inconsistent across same sample $samplename</td>"; 
+								exit(1);
+							}
+
+							$tmpname=$values{externalseqid};
+
+							#print "&nbsp;&nbsp;$tmpname<br>";
+
+						}
+						else
+						{
+							print "<td>Filename format unexpected, should contain SAMPLEID_EXTERNALSEQCENTERID_*</td>";
+							exit(1);
+						}
+					}
+				}
+
+				my @bamlist=split(",",$bams);
+				print "Files: <br>";
+				foreach my $bam ( @bamlist)
+				{
+					print "&nbsp;&nbsp;&nbsp;&nbsp;".$bam."<br>";
 				}
 			}
 		}
@@ -5489,8 +5626,9 @@ $dbh->do($sql) || die print "$DBI::errstr";
 			{
 				$sql = "UPDATE sample SET externalseqid=\"".$values{externalseqid}."\" where name=\"".$samplename."\"";
 				$sth = $dbh->prepare($sql) || die print "$DBI::errstr";
-	        	        print "$sql<br>";
+	        	        #print "$sql<br>";
 				$sth->execute() || die print "$DBI::errstr";
+				print "External sequencing center ID: ".$values{externalseqid}."<br>";
 			}
 		
 		}
@@ -5517,10 +5655,93 @@ $dbh->do($sql) || die print "$DBI::errstr";
                 $sth = $dbh->prepare($sql) || die print "$DBI::errstr";
                 $sth->execute() || die print "$DBI::errstr";
                 my @vals = $sth->fetchrow_array;
-		print "LIB: "; foreach my $val (@vals){ print $val." | "; };print "<br>";
+		#print "LIB: "; foreach my $val (@vals){ print $val." | "; };print "<br>";
+		print "Library name: ".$vals[1]."<br>";
 
 
 
+		# If trio information provided in samplesheet then collect it for later insertion
+		if ( $trioinfoinsamplesheet )
+		{
+			# Mother and father can be independently specified
+			if ( $father ne "" ){
+				$trioinfo{$values{'name'}}{'idsample'}=$idsample;
+				$trioinfo{$values{'name'}}{'father'}=$father;
+			}
+			if ( $mother ne "" ){
+				$trioinfo{$values{'name'}}{'idsample'}=$idsample;
+				$trioinfo{$values{'name'}}{'mother'}=$mother;
+			}
+		}
+
+		# Store idsample for trio insertion (both samplename and foreignid)
+		$insertedsamples{$samplename}=$idsample;
+			$gender{$samplename}=$values{'sex'};
+		$insertedsamples{$foreignid}=$idsample if ( $foreignid ne "" );
+			$gender{$foreignid}=$values{'sex'} if ( $foreignid ne "" );
+
+	}
+
+	sub intodb_trio { # Insert trio information
+
+		print "<br><br><br><b>Inserting trios</b>";
+		print "<table><tr><td><b>Index</b> (ID)</td><td>Father (ID)</td><td>Mother (ID)</td></tr>";
+
+		foreach my $samplename ( keys %trioinfo )
+		{
+
+			my $idsample = $trioinfo{$samplename}{'idsample'};
+			print "<tr>";
+			print "<td><b>".$samplename."</b> ($idsample)</td>";
+	
+			print "<td>";		
+			if ( defined $trioinfo{$samplename}{'father'} )
+			{
+				my $fathername = $trioinfo{$samplename}{'father'};
+				my $fatherid = "";
+					$fatherid = $insertedsamples{$trioinfo{$samplename}{'father'}} if defined $insertedsamples{$trioinfo{$samplename}{'father'}};
+				if ( $fatherid eq "" ){
+					print "</table><br>ERROR: check father data for sample $samplename<br>";
+					exit(-1);
+				}
+				if ( $gender{$fathername} ne "male" ){
+					print "</table><br>ERROR: father cannot be female for sample $samplename<br>";
+					exit(-1);
+				}
+
+				print "$fathername (ID: $fatherid )";
+
+				my $sql = "UPDATE sample SET father=".$fatherid." where idsample=".$idsample." and name='".$samplename."'";
+				my $sth = $dbh->prepare($sql) || die print "$DBI::errstr";
+                		$sth->execute() || die print "$DBI::errstr";
+			}
+
+			print "</td><td>";
+			if ( defined $trioinfo{$samplename}{'mother'} )
+			{
+				my $mothername = $trioinfo{$samplename}{'mother'};
+				my $motherid = "";
+					$motherid = $insertedsamples{$trioinfo{$samplename}{'mother'}} if defined $insertedsamples{$trioinfo{$samplename}{'mother'}};
+				if ( $motherid eq "" ){
+					print "</table><br>ERROR: check mother data for sample $samplename<br>";
+					exit(-1);
+				}
+				if ( $gender{$mothername} ne "female" ){
+					print "</table><br>ERROR: mother cannot be male for sample $samplename<br>";
+					exit(-1);
+				}
+
+				print "$mothername (ID: $motherid )";
+
+				my $sql = "UPDATE sample SET mother=".$motherid." where idsample=".$idsample." and name='".$samplename."'";
+				my $sth = $dbh->prepare($sql) || die print "$DBI::errstr";
+                		$sth->execute() || die print "$DBI::errstr";
+			}
+			print "</td></tr>";
+
+		}
+
+		print "</table>";
 	}
 
 }
@@ -5611,7 +5832,7 @@ $(document).ready(function() {
 print q(
 <style type="text/css">
 table.dataTable tr.odd  { background-color: #f9f9f1; }
-table.dataTable tr.even { background-color: #fffff3; }
+table.dataTable tr.even { background-color: #ffffff; }
 table.dataTable tr.odd  td.sorting_1 { background-color: #efefef; }
 table.dataTable tr.even td.sorting_1 { background-color: #f9f9f5; }
 table.dataTable th { background-color: #efefef; }
@@ -6299,8 +6520,8 @@ print qq(
 
 <meta name="viewport" content="width=device-width, height=device-height,  initial-scale=1, minimum-scale=1">
 
-<link rel="stylesheet" type="text/css" href="/EVAdb/evadb/EVAdb.css">
-<script type="text/javascript" src="/EVAdb/evadb/EVAdb.js"></script>
+<link rel="stylesheet" type="text/css" href="/EVAdb/evadb/EVAdbtest.css">
+<script type="text/javascript" src="/EVAdb/evadb/EVAdbtest.js"></script>
 </head>
 ) ;
 
@@ -6324,102 +6545,44 @@ else {
 ########################################################################
 
 sub showMenu {
-my $self                  = shift;
-my $menu                  = shift;
-my $project               = "menu";
-my $overview              = "menu";
-my $sample                = "menu";
-my $searchsample          = "menu";
-my $importsamples         = "menu";
-my $importsamplesexternal = "menu";
-my $cooperation           = "menu";
-my $listcooperation       = "menu";
-my $invoice               = "menu";
-my $searchinvoice           = "menu";
-my $login                 = "menu";
-my $disease               = "menu";
-my $listdisease           = "menu";
-my $listproject           = "menu";
-my $createlibraries       = "menu";
-my $importmtdnasamples    ="menu";
-my $statistics            ="menu";
 
-if ($menu eq "project") {
-	$project = "menuactive";
-}
-if ($menu eq "overview") {
-	$overview = "menuactive";
-}
-if ($menu eq "sample") {
-	$sample = "menuactive";
-}
-if ($menu eq "searchsample") {
-	$searchsample = "menuactive";
-}
-if ($menu eq "importsamples") {
-	$importsamples = "menuactive";
-}
-if ($menu eq "importsamplesexternal") {
-	$importsamplesexternal = "menuactive";
-}
-if ($menu eq "cooperation") {
-	$cooperation = "menuactive";
-}
-if ($menu eq "listCooperation") {
-	$listcooperation = "menuactive";
-}
-if ($menu eq "invoice") {
-	$invoice = "menuactive";
-}
-if ($menu eq "searchInvoice") {
-	$searchinvoice = "menuactive";
-}
-if ($menu eq "listProject") {
-	$listproject = "menuactive";
-}
-if ($menu eq "login") {
-	$login = "menuactive";
-}
-if ($menu eq "disease") {
-	$disease = "menuactive";
-}
-if ($menu eq "listdisease") {
-	$listdisease = "menuactive";
-}
-if ($menu eq "createlibraries") {
-	$createlibraries = "menuactive";
-}
-if ($menu eq "importmtdnasamples") {
-	$importmtdnasamples = "menuactive";
-}
-if ($menu eq "statistics") {
-	$statistics = "menuactive";
-}
+print qq|
+<div id="mySidenav" class="sidenav">
+  <div class="subnav">Samples Libraries</div>
+  <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+  <a href="searchSample.pl">Sample search</a>
+  <a href="sample.pl">New sample</a>
+  <a href="createLibraries.pl">Create libraries</a>
+<div class="subnav">Diseases</div>
+  <a href="disease.pl">New disease</a>
+  <a href="listDisease.pl">List diseases</a>
+<div class="subnav">Cooperations</div>
+  <a href="cooperation.pl">New cooperation</a>
+  <a href="listCooperation.pl">List cooperations</a>
+<div class="subnav">Projects</div>
+  <a href="project.pl">New project</a>
+  <a href="listProject.pl">List projects</a>
+<div class="subnav">Invoices</div>
+  <a href="invoice.pl">New invoice</a>
+  <a href="invoiceSearch.pl">Search invoices</a>
+<div class="subnav">Sample sheet import</div>
+  <a href="importSamples.pl">Import internal samples</a>
+  <a href="importSamplesExternal.pl">Import external samples</a>
+  <a href="importmtDNASamples.pl">Import mtDNA samples</a>
+<div class="subnav">Statistics</div>
+  <a href="overview.pl">Overview</a>
+  <a href="statistics.pl">Statistics</a>
+<div class="subnav">Logout</div>
+  <a href="login.pl">Logout</a>
+</div>
 
-print qq(
-<table class="header" border="0" cellpadding="3" cellspacing="0" width="1350px">
-<tr>
-<td align="center" class="header"><a class="$searchsample" href="searchSample.pl">Search samples</a></td>
-<td align="center" class="header"><a class="$overview" href="overview.pl">Overview</a></td>
-<td align="center" class="header"><a class="$sample" href="sample.pl">New sample</a></td>
-<td align="center" class="header"><a class="$importsamples" href="importSamples.pl">Import internal samples</a></td>
-<td align="center" class="header"><a class="$createlibraries" href="createLibraries.pl">Create libraries</a></td>
-<td align="center" class="header"><a class="$disease" href="disease.pl">New disease</a></td>
-<td align="center" class="header"><a class="$listdisease" href="listDisease.pl">List disease</a></td>
-<td align="center" class="header"><a class="$cooperation" href="cooperation.pl">New cooperation</a></td>
-<td align="center" class="header"><a class="$listcooperation" href="listCooperation.pl">List cooperation</a></td>
-<td align="center" class="header"><a class="$project" href="project.pl">New Project</a></td>
-<td align="center" class="header"><a class="$listproject" href="listProject.pl">List Project</a></td>
-<td align="center" class="header"><a class="$invoice" href="invoice.pl">New invoice</a></td>
-<td align="center" class="header"><a class="$searchinvoice" href="invoiceSearch.pl">Search invoice</a></td>
-<td align="center" class="header"><a class="$importsamplesexternal" href="importSamplesExternal.pl">Import external samples</a></td>
-<td align="center" class="header"><a class="$importmtdnasamples" href="importmtDNASamples.pl">Import mtDNA samples</a></td>
-<td align="center" class="header"><a class="$statistics" href="statistics.pl">Statistics</a></td>
-<td align="center" class="header"><a class="$login" href="login.pl">Login / Logout</a></td>
-</tr>
-</table>
-<br>
-);
+<!-- Use any element to open the sidenav -->
+<span style="padding:20px;font-size:24px;cursor:pointer" onclick="openNav()">&#9776; Menu</span>
+
+<!-- Add all page content inside this div if you want the side nav to push page content to the right (not used if you only want the sidenav to sit on top of the page -->
+<div id="main">
+
+|;
 
 }
 ########################################################################
@@ -6455,9 +6618,10 @@ my $footer = $out->fetchrow_array;
 print qq(
 <br><br>
 </div>
+</div>
 <div id="footer">
 <br>
-<div style="position:relative; left:50px; ">
+<div style="position:relative; left:270px; ">
 $footer
 </div>
 </div>

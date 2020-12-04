@@ -18,7 +18,7 @@ my ($dbh) = $snv->loadSessionId();
 my $search      = $snv->initSearchCnv($sname);
 
 $snv->showMenu("searchCnv");
-print "<span class=\"big\">Search</span><br><br>" ;
+print "<span class=\"big\">CNVs</span><br><br>" ;
 
 print "<form action=\"searchCnvDo.pl\" method=\"post\" name=\"myform\">" ;
 

@@ -21,7 +21,7 @@ my ($dbh) = $snv->loadSessionId();
 #$ref = $snv->htmlencodehash($ref);
 
 $snv->showMenu('searchComment');
-print "<span class=\"big\">Search results</span><br><br>" ;
+print "<span class=\"big\">Variant annotations</span><br><br>" ;
 
 $snv->searchResultsComment($dbh,$ref);
 

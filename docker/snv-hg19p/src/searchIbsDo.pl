@@ -22,7 +22,7 @@ my ($dbh) = $snv->loadSessionId();
 #$ref = $snv->htmlencodehash($ref);
 
 $snv->showMenu('searchIbs');
-print "<span class=\"big\">Search results</span><br><br>" ;
+print "<span class=\"big\">IBS</span><br><br>" ;
 
 $snv->searchResultsIbs($dbh,$ref);
 

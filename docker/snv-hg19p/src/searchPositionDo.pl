@@ -22,7 +22,7 @@ my ($dbh) = $snv->loadSessionId();
 #$ref = $snv->htmlencodehash($ref);
 
 $snv->showMenu('searchPosition');
-print "<span class=\"big\">Search results</span><br><br>" ;
+print "<span class=\"big\">Region</span><br><br>" ;
 
 $snv->searchResultsPosition($dbh,$ref);
 
