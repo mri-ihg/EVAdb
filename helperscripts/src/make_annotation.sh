@@ -9,6 +9,19 @@ sed -ie "s/DBPORT/3306/g" /src/annotation/current.config.xml
 sed -ie "s/DBUSER/${DB_USER}/g" /src/annotation/current.config.xml
 sed -ie "s/DBPWD/${ESC_PWD}/g" /src/annotation/current.config.xml
 
+##
+# Download locations
+#
+BASE_URL="https://ihg4.helmholtz-muenchen.de/EVAdb_downloads/EVAdb_downloads/"
+SIFT="sift.txt.gz"
+PPH="pph3.txt.gz"
+CADD_URL="cadd.txt.gz"
+GNOMAD="evs.txt.gz"
+GNOMAD_LOF_URL"evsscores.txt.gz"
+
+##
+# Library files
+#
 DBNSFP="/library/dbNSFP${DBNSFP_VERSION}.zip"
 CADD="/library/whole_genome_SNVs.tsv.gz"
 GNOMAD_WES="/library/gnomad.exomes.r${GNOMAD_RELEASE}.sites.vcf.bgz"
@@ -17,50 +30,96 @@ GNOMAD_LOF="/library/gnomad.v${GNOMAD_RELEASE}.lof_metrics.by_gene.txt.bgz"
 UCSC_HG19="/library/ucsc_hg19.sql"
 UCSC_HG38="/library/ucsc_hg38.sql"
 
-if [[ $IMPORT_DBNSFP = "1" && -e "$DBNSFP" ]]; then
-  echo -e "Found $DBNSFP"
-  echo -e "Importing polyphen and sift for hg19"
+##
+# Functions
+#
+function import_db {
+  # $1 - gz file
+  if [[ -z "$1" ]]; then
+    echo "Error: No input provided."
+  fi
+  if [[ -e "$1" ]]; then
+    echo "Error: $1 does not exist."
+  fi
+  gzip -d "$1"
+  name=${1%.*}
+  mysqlimport -h $DB_HOST -p$DB_PASSWD -u $DB_USER $name
+  rm -f $name
+}
 
-  EXTRACT_DIR=$(mktemp -d)
-  unzip "$DBNSFP" -d $EXTRACT_DIR
-  time perl /src/annotation/fillAnnotationTables.pl -se hg19_plus -chrprefix -db $EXTRACT_DIR -p -s
-  rm -rf $EXTRACT_DIR
+##
+# Annotations Init script
+#
+if [[ $IMPORT_DBNSFP = "1" && -e "$DBNSFP" ]]; then
+  if [[ $BUILD_ANNOTATION = "1" ]]; then
+    echo -e "Found $DBNSFP"
+    echo -e "Importing polyphen and sift for hg19"
+
+    EXTRACT_DIR=$(mktemp -d)
+    unzip "$DBNSFP" -d $EXTRACT_DIR
+    time perl /src/annotation/fillAnnotationTables.pl -se hg19_plus -chrprefix -db $EXTRACT_DIR -p -s
+    rm -rf $EXTRACT_DIR
+  else
+    wget -c "${BASE_URL}/$SIFT"
+    wget -c "${BASE_URL}/$PPH"
+
+    import_db "$SIFT"
+    import_db "$PPH"
+  fi
 else
   echo -e "Could not find dbnsfp at $DBNSFP"
 fi
 
 if [[ $IMPORT_CADD = "1" && -e "$CADD" ]]; then
-  echo -e "Found $CADD"
-  echo -e "Importing $CADD"
+  if [[ $BUILD_ANNOTATION = "1" ]]; then
+    echo -e "Found $CADD"
+    echo -e "Importing $CADD"
 
-  time perl /src/annotation/fillAnnotationTables.pl -se hg19_plus -chrprefix -c "$CADD"
+    time perl /src/annotation/fillAnnotationTables.pl -se hg19_plus -chrprefix -c "$CADD"
+  else
+    wget -c "${BASE_URL}/$CADD_URL"
+    import_db "$CADD_URL"
+  fi
 else
   echo -e "Could not find cadd at $CADD"
 fi
 
 if [[ $IMPORT_GNOMAD = "1" && -e "$GNOMAD_WES" && -e "$GNOMAD_WGS" ]]; then
-  echo -e "Found gnomad files ($GNOMAD_WES, $GNOMAD_WGS)"
-  echo -e "Importing gnomad"
+  if [[ $BUILD_ANNOTATION = "1" ]]; then
+    echo -e "Found gnomad files ($GNOMAD_WES, $GNOMAD_WGS)"
+    echo -e "Importing gnomad"
 
-  time perl /src/annotation/fillAnnotationTables.pl -se hg19_plus -chrprefix -g "$(dirname $GNOMAD_WES)"
+    time perl /src/annotation/fillAnnotationTables.pl -se hg19_plus -chrprefix -g "$(dirname $GNOMAD_WES)"
+  else
+    wget -c "${BASE_URL}/$GNOMAD"
+    import_db "$GNOMAD"
+  fi
 else
   echo -e "Could not find gnomad data"
 fi
 
 if [[ $IMPORT_LOF_METRICS = "1" && -e "$GNOMAD_LOF" ]]; then
-  echo -e "Found gnomad lof_metrics ($GNOMAD_LOF)"
-  echo -e "Importing gnomad lof_metrics"
+  if [[ $BUILD_ANNOTATION = "1" ]]; then
+    echo -e "Found gnomad lof_metrics ($GNOMAD_LOF)"
+    echo -e "Importing gnomad lof_metrics"
 
-  REFERENCE=$(ls /library/*.fasta)
-  sed -ie "s:<reference>.*</reference>:<reference>$REFERENCE</reference>:g" /src/annotation/current.config.xml
+    REFERENCE=$(ls /library/*.fasta)
+    sed -ie "s:<reference>.*</reference>:<reference>$REFERENCE</reference>:g" /src/annotation/current.config.xml
 
-  time perl /src/annotation/fillAnnotationTables.pl -se hg19_plus -gc "$GNOMAD_LOF"
+    time perl /src/annotation/fillAnnotationTables.pl -se hg19_plus -gc "$GNOMAD_LOF"
+  else
+    wget -c "${BASE_URL}/$GNOMAD_LOF_URL"
+    import_db "$GNOMAD_LOF_URL"
+  fi
 elif [[ $IMPORT_LOF_METRICS = "1" ]]; then
   echo -e "Could not find gnomad lof_metrics data"
 else
   echo -e "Skipping gnomad lof_metrics import"
 fi
 
+##
+# Always build these, as there is no default table provided yet.
+#
 if [[ $IMPORT_DGV = "1" ]]; then
   echo -e "Importing dgv entries..."
   wget -c http://hgdownload.soe.ucsc.edu/goldenPath/hg19/database/dgvMerged.txt.gz
