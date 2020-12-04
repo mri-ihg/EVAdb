@@ -2,12 +2,16 @@
 
 echo "Importing annotation databases..."
 
+##
+# Configuration
+#
 ESC_PWD=$(echo "${DB_PASSWD}" | sed -e 's/[](&|$|\|{|}).*[\^]/\\&/g')  
 sed -ie "s/SERVER13/${DB_HOST}/g" /src/annotation/current.config.xml
 sed -ie "s:<host>localhost</host>:<host>${DB_HOST}</host>:g" /src/annotation/current.config.xml
 sed -ie "s/DBPORT/3306/g" /src/annotation/current.config.xml
 sed -ie "s/DBUSER/${DB_USER}/g" /src/annotation/current.config.xml
 sed -ie "s/DBPWD/${ESC_PWD}/g" /src/annotation/current.config.xml
+sed -ie 's/evsT/evs/g' /src/annotation/current.config.xml
 
 ##
 # Download locations
@@ -17,7 +21,7 @@ SIFT="sift.txt.gz"
 PPH="pph3.txt.gz"
 CADD_URL="cadd.txt.gz"
 GNOMAD="evs.txt.gz"
-GNOMAD_LOF_URL"evsscores.txt.gz"
+GNOMAD_LOF_URL="evsscores.txt.gz"
 
 ##
 # Library files
@@ -37,21 +41,23 @@ function import_db {
   # $1 - gz file
   if [[ -z "$1" ]]; then
     echo "Error: No input provided."
+    exit 1
   fi
-  if [[ -e "$1" ]]; then
+  if [[ ! -e "$1" ]]; then
     echo "Error: $1 does not exist."
+    exit 1
   fi
   gzip -d "$1"
   name=${1%.*}
-  mysqlimport -h $DB_HOST -p$DB_PASSWD -u $DB_USER $name
+  mysqlimport -L -h $DB_HOST -p$DB_PASSWD -u $DB_USER hg19 $name
   rm -f $name
 }
 
 ##
 # Annotations Init script
 #
-if [[ $IMPORT_DBNSFP = "1" && -e "$DBNSFP" ]]; then
-  if [[ $BUILD_ANNOTATION = "1" ]]; then
+if [[ $IMPORT_DBNSFP = "1" ]]; then
+  if [[ $BUILD_ANNOTATION = "1" && -e "$DBNSFP" ]]; then
     echo -e "Found $DBNSFP"
     echo -e "Importing polyphen and sift for hg19"
 
@@ -70,8 +76,8 @@ else
   echo -e "Could not find dbnsfp at $DBNSFP"
 fi
 
-if [[ $IMPORT_CADD = "1" && -e "$CADD" ]]; then
-  if [[ $BUILD_ANNOTATION = "1" ]]; then
+if [[ $IMPORT_CADD = "1" ]]; then
+  if [[ $BUILD_ANNOTATION = "1"  && -e "$CADD" ]]; then
     echo -e "Found $CADD"
     echo -e "Importing $CADD"
 
@@ -84,8 +90,8 @@ else
   echo -e "Could not find cadd at $CADD"
 fi
 
-if [[ $IMPORT_GNOMAD = "1" && -e "$GNOMAD_WES" && -e "$GNOMAD_WGS" ]]; then
-  if [[ $BUILD_ANNOTATION = "1" ]]; then
+if [[ $IMPORT_GNOMAD = "1" ]]; then
+  if [[ $BUILD_ANNOTATION = "1"  && -e "$GNOMAD_WES" && -e "$GNOMAD_WGS" ]]; then
     echo -e "Found gnomad files ($GNOMAD_WES, $GNOMAD_WGS)"
     echo -e "Importing gnomad"
 
@@ -98,8 +104,8 @@ else
   echo -e "Could not find gnomad data"
 fi
 
-if [[ $IMPORT_LOF_METRICS = "1" && -e "$GNOMAD_LOF" ]]; then
-  if [[ $BUILD_ANNOTATION = "1" ]]; then
+if [[ $IMPORT_LOF_METRICS = "1" ]]; then
+  if [[ $BUILD_ANNOTATION = "1" && -e "$GNOMAD_LOF" ]]; then
     echo -e "Found gnomad lof_metrics ($GNOMAD_LOF)"
     echo -e "Importing gnomad lof_metrics"
 
@@ -111,8 +117,6 @@ if [[ $IMPORT_LOF_METRICS = "1" && -e "$GNOMAD_LOF" ]]; then
     wget -c "${BASE_URL}/$GNOMAD_LOF_URL"
     import_db "$GNOMAD_LOF_URL"
   fi
-elif [[ $IMPORT_LOF_METRICS = "1" ]]; then
-  echo -e "Could not find gnomad lof_metrics data"
 else
   echo -e "Skipping gnomad lof_metrics import"
 fi
