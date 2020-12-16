@@ -1298,7 +1298,7 @@ push(@AoH,(
 	  	bgcolor     => "formbg",
 	  },
 	  {
-	  	label       => "gnomAD maximum minor allele frequency of all populations <= (%)",
+	  	label       => "gnomAD maximum minor allele frequency of all populations <= (ratio)",
 	  	type        => "text",
 		name        => "popmax_af",
 	  	value       => "$popmax_af",
@@ -1399,10 +1399,12 @@ my $where   = shift;
 my @prepare = @_;
 
 if ($ref->{'aa_het'} ne "") {
+	#$where .= " AND ((evs.aa_het+2*evs.aa_homalt) <= ? or ISNULL(evs.aa_het))";
 	$where .= " AND (evs.aa_het <= ? or ISNULL(evs.aa_het))";
 	push(@prepare,$ref->{'aa_het'});
 }
 if ($ref->{'het'} ne "") {
+	#$where .= " AND ((evs.het+2*evs.homalt) <= ? or ISNULL(evs.het))";
 	$where .= " AND (evs.het <= ? or ISNULL(evs.het))";
 	push(@prepare,$ref->{'het'});
 }
