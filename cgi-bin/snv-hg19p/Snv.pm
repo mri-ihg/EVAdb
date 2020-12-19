@@ -11438,6 +11438,38 @@ unlink($vep_input_file);
 ########################################################################
 # searchResultsPosition searchPosition2 to list all idsnv resultsregion
 ########################################################################
+sub external_links {
+my $dbh          = shift;
+my $idsnv        = shift;
+
+my $out = "";
+
+my $query = qq#
+SELECT
+v.chrom,
+v.start,
+v.end,
+v.class,
+v.refallele,
+v.allele
+FROM snv v
+WHERE v.idsnv=?
+#;
+$out = $dbh->prepare($query) || die print "$DBI::errstr";
+$out->execute($idsnv) || die print "$DBI::errstr";
+my ($chrom,$start,$end,$class,$refallele,$altallele) = $out->fetchrow_array;
+$chrom =~ s/chr//;
+
+
+print "<br>";
+print "<a href='https://varsome.com/variant/hg19/$chrom-$start-$refallele-$altallele'>Varsome</a><br>";
+print "<a href='https://franklin.genoox.com/clinical-db/variant/snp/$chrom-$start-$refallele-$altallele'>Franklin</a><br>";
+#print "<a href='https://varsome.com/security-validation/?next=/variant/hg19/$chrom-$start-$refallele-$altallele'>varsome</a><br>";
+
+}
+########################################################################
+# searchResultsPosition searchPosition2 to list all idsnv resultsregion
+########################################################################
 sub searchResultsPosition2 {
 my $self         = shift;
 my $dbh          = shift;
@@ -11455,6 +11487,10 @@ my @prepare   = ();
 
 &todaysdate;
 &numberofsamples($dbh);
+
+if ($ref->{"idsnv"} ne "") {
+	&external_links($dbh,$ref->{"idsnv"});
+}
 
 # Aufruf von searchPostionDo.pl mit chrom and start
 if (($ref->{"v.chrom"} ne "") and ($ref->{"v.start"} ne "")) {

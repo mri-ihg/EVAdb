@@ -3,8 +3,6 @@
 use strict;
 
 my @line         = ();
-my $i            = 0;
-my $j            = 0;
 my $chrom        = "";
 my $pos          = "";
 my $ref          = "";
@@ -12,10 +10,6 @@ my $alt          = "";
 my $posmod       = "";
 my $refmod       = "";
 my $altmod       = "";
-my @alt_comma    = ();
-my @clnacc_comma = ();
-my @clnsig_comma = ();
-my @clnsigconf_comma = ();
 my $info         = "";
 my @info         = ();
 my %info         = ();
@@ -23,11 +17,11 @@ my $tmp          = "";
 my $item         = "";
 my $value        = "";
 my $modified     = 0;
-my @clnacc       = ();
-my @clnsig       = ();
-my @clnsigconf   = ();
+my $clnacc       = "";
+my $clnsig       = "";
+my $clnsigconf   = "";
 my $clnsigout    = "";
-my $scriptdir    = "/home/tim/database/ClinVarForCron";
+my $scriptdir    = "ClinVarForCron";
 
 
 open(IN ,"$scriptdir/clinvar.vcf");
@@ -49,38 +43,22 @@ while (<IN>) {
 		($item,$value) = split(/\=/,$tmp);
 		$info{$item}   = $value;
 	}
-	@alt_comma     = split(/\,/,$alt);
-	@clnacc_comma  = split(/\,/,$info{ALLELEID});
-	@clnsig_comma  = split(/\,/,$info{CLNSIG});
-	@clnsigconf_comma = ();
-	@clnsigconf       = ();
-	@clnsigconf_comma  = split(/\,/,$info{CLNSIGCONF});
-	$i       = 0;
-	foreach $alt (@alt_comma) {
-		if ($clnacc_comma[$i] ne "") { # es gibt mehrere alt-Allele, aber nur ein RCV
-			@clnacc      = split(/\|/,$clnacc_comma[$i]);
-			@clnsig      = split(/\|/,$clnsig_comma[$i]);
-			@clnsigconf  = split(/\|/,$clnsigconf_comma[$i]);
-		}
-		$j       = 0;
-		foreach $tmp (@clnacc) {
-			#if ($info{CLNSIG} eq "") {print "$chrom,$pos,ERROR\n";}
-			($posmod, $refmod, $altmod)=getMinimalRepresentation($pos, $ref, $alt);
-			if ($clnsigconf[$j] ne "") {
-				$clnsigout = $clnsigconf[$j];
-				$clnsigout =~ s/\%3B/ /g;
-			}
-			else {
-			$clnsig[$j] =~ s/\_of\_pathogenicity//g;
-			#$clnsig[$j] =~ s/\_/ /g;
-			$clnsigout = $clnsig[$j];
-			}
-			print OUT "$chrom\t$posmod\t$refmod\t$altmod\t$tmp\t$clnsigout\n";
-			$j++;
-		}
-		$i++;
+	$clnacc      = $info{ALLELEID};
+	$clnsig      = $info{CLNSIG};
+	$clnsigconf  = $info{CLNSIGCONF};
+
+	#if ($info{CLNSIG} eq "") {print "$chrom,$pos,ERROR\n";}
+	($posmod, $refmod, $altmod)=getMinimalRepresentation($pos, $ref, $alt);
+	if ($clnsigconf ne "") {
+		$clnsigout = $clnsigconf;
+		$clnsigout =~ s/\,/ /g;
 	}
-	#if ($i==0) {print "$_\n"; exit;}
+	else {
+		$clnsig =~ s/\_of\_pathogenicity//g;
+		#$clnsig =~ s/\_/ /g;
+		$clnsigout = $clnsig;
+	}
+	print OUT "$chrom\t$posmod\t$refmod\t$altmod\t$clnacc\t$clnsigout\n";
 }
 print "modified $modified\n";
 
