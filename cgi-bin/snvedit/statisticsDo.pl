@@ -9,10 +9,10 @@ use CGI;
 BEGIN {require './Snvedit.pm';}
 use DBI;
 
-my $cgiquery    ()() = new CGI;
-my $ref         ()() = $cgiquery->Vars;
+my $cgiquery  = new CGI;
+my $ref       = $cgiquery->Vars;
 
-my $snv      ()() = new Snvedit;
+my $snv       = new Snvedit;
 
 ########################################################################
 # main

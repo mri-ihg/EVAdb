@@ -133,6 +133,12 @@ cpan Date::Calc
 cpan Data::Dumper
 cpan Text::ParseWords
 cpan Cwd
+cpan Log::Log4perl
+#Tests of the module XML:DOM::XPath fail because they use a deprecated syntax but the module is OK
+# Install with the following command
+perl -MCPAN -e "CPAN::Shell->notest('install', 'XML::DOM::XPath')"; 
+cpan Bio::DB::Fasta 
+cpan Log::Dispatch::File
 
 ################################################################
 # Apache
