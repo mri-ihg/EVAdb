@@ -11,7 +11,7 @@ BEGIN {require './Solexa.pm';}
 my $solexa      = new Solexa;
 my $cgiquery    = new CGI;
 my $ref         = $cgiquery->Vars;
-my @check_id    = $cgiquery->param('checkbox');
+my @check_id    = $cgiquery->multi_param('checkbox');
 my $checkboxref = \@check_id;
 
 $solexa->printHeader();

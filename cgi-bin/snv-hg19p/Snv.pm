@@ -14201,14 +14201,13 @@ foreach (@labels) {
 print "</tr></thead><tbody>";
 
 $n=1;
-my $damaging = 0;
-my $program  = "";
+my $program      = "";
 my $damaging     = "";
 my $omimmode     = "";
 my $omimdiseases = "";
-my $aref     = "";
-my $score    = "";
-my $idsnv    = "";
+my $aref         = "";
+my $score        = "";
+my $idsnv        = "";
 for  $aref (@row2) { 
 	@row=@{$aref};
 	$score    = $row[-1];
@@ -20341,48 +20340,6 @@ print "</tbody></table></div>";
 $out->finish;
 }
 
-########################################################################
-# tableheaderDefault
-########################################################################
-sub tableheaderDefault {
-my $width   = shift;
-my $numeric = shift;
-my $string  = shift;
-my $html    = shift;
-my $mode    = shift;  # for burden test
-my $buf     = "";
-
-if (!defined($width)) {$width = "";}
-$buf = "<br><br>";
-if ($width eq "650px") {
-	$width = "style='width:650px'";
-}
-elsif ($width eq "1000px") {
-	$width = "style='width:1000px'";
-}
-elsif ($width eq "1500px") {
-	$width = "style='width:1500px'";
-}
-elsif ($width eq "1750px") {
-	$width = "style='width:1750px'";
-}
-elsif ($width eq "2000px") {
-	$width = "style='width:2000px'";
-}
-
-$buf .= qq(
-<div id="container" $width>
-<table id="default" numeric="$numeric" string="$string" html="$html" cellspacing="0" class="display compact" width="100%"> 
-);
-
-if ($mode eq "") {
-	print $buf;
-}
-else {
-	return $buf;
-}
-
-}
 
 ########################################################################
 # tableheaderResults
@@ -21698,7 +21655,7 @@ my $dbh = DBI->connect("DBI:mysql:$maindb", "$logins{dblogin}", "$logins{dbpassw
 my $query = "SELECT module FROM $exomevcfe.textmodules WHERE name='login_message'";
 my $out = $dbh->prepare($query) || die print "$DBI::errstr";
 $out->execute() || die print "$DBI::errstr";
-my $login_message = $out->fetchrow_array;
+$login_message = $out->fetchrow_array;
 
 return($dbh,$login_message);
 }

@@ -18,8 +18,8 @@ my $snv          = new Snv;
 $snv->printHeader();
 my ($dbh) = $snv->loadSessionId();
 
-my @cases        = $cgi->param('cases');
-my @controls     = $cgi->param('controls');
+my @cases        = $cgi->multi_param('cases');
+my @controls     = $cgi->multi_param('controls');
 #$ref             = $snv->htmlencodehash($ref);
 #@cases           = $snv->htmlencodearray(@cases);
 #@controls        = $snv->htmlencodearray(@controls);
