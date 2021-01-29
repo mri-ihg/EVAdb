@@ -258,8 +258,8 @@ foreach (@patho) {
 	$vepconseq[$i]   = $tmp;
 	$vepfeature[$i]  = $vep[4];
 	$vepimpact[$i]   = $vep[13];
-	$vepHGVSc[$i]    = $vep[21];
-	$vepHGVSp[$i]    = $vep[22];
+	$vepHGVSc[$i]    = $vep[25];
+	$vepHGVSp[$i]    = $vep[26];
 	$vepgene[$i]     = $vep[17];
 	$i++;
 }
@@ -560,7 +560,7 @@ sub de_novo_for_filter {
 
 if (($mother ne "") and ($father ne "")) { 
 print qq#
-<p $justify0>Filter IV - de-novo-Varianten: Kein Nachweis (wahrscheinlich) pathogener Varianten.</p>
+<p $justify0>Filter V - de-novo-Varianten: Kein Nachweis (wahrscheinlich) pathogener Varianten.</p>
 #;
 }
 
@@ -583,9 +583,10 @@ Sollte im Rahmen unserer internen Analysen eine f&uuml;r diesen Fall relevante V
 <p $justify>wir bedanken uns f&uuml;r die Zusendung der Blutproben von <span style='color:red'>xxx</span> $eltern zur diagnostischen Exomsequenzierung.</p>
 <p $justify>Die in den Exomdaten des Patienten identifizierten Varianten wurden unter Ber&uuml;cksichtigung verschiedener Vererbungsformen und 
 Analyseverfahren ausgewertet.</p>
-<p $justify0>Filter I - autosomal-rezessiv: Kein Nachweis (wahrscheinlich) pathogener Varianten.</p>
+<p $justify>Filter I - autosomal-rezessiv: Kein Nachweis (wahrscheinlich) pathogener Varianten.</p>
 <p $justify0>Filter II - autosomal-dominant (Ph&auml;notyp-basiert): Kein Nachweis (wahrscheinlich) pathogener Varianten.</p>
-<p $justify>Filter III - X-chromosomal: Kein Nachweis (wahrscheinlich) pathogener Varianten.</i>.</p>
+<p $justify0>Filter III - X-chromosomal: Kein Nachweis (wahrscheinlich) pathogener Varianten.</p>
+<p $justify0>Filter IV - mtDNA: Kein Nachweis (wahrscheinlich) pathogener Varianten.</p>
 #;
 &de_novo_for_filter;
 if ($cnvfilter eq "yes") {
@@ -679,14 +680,14 @@ else {
 
 print qq#
 <table style='width:$width;border-collapse:collapse;border-right:0;'>
-<tr><td $td_left_t width="28%">Name,Vorname</td><td $td_left_t width="44%"><span $left8 class="name"></span></td><td $td_left_t width="12%">Material</td><td $td_left_t width="16%">EDTA-Blut</td></tr> 
+<tr><td $td_left_t width="28%">Name, Vorname</td><td $td_left_t width="44%"><span $left8 class="name"></span></td><td $td_left_t width="12%">Material</td><td $td_left_t width="16%">EDTA-Blut</td></tr> 
 <tr><td $td_left_wo>Geburtsdatum</td><td $td_left_wo><span $left8 class="birth"></span></td><td $td_left_wo>Eingang</td><td $td_left_wo><span $left8 class="received"></span></td></tr> 
 <tr><td $td_left_wo>Geschlecht</td><td $td_left_wo>$sex_g</td><td $td_left_wo>DNA-ID</td><td $td_left_wo>$samplename</td></tr> 
 <tr><td $td_left_b>Ph&auml;notyp</td><td $td_left_b>$affected (Index)</td><td $td_left_b>Alias-ID</td><td $td_left_b>$foreignid</td></tr> 
 #;
 if ($mother ne "") {
 print qq#
-<tr><td $td_left_t width="28%">Name,Vorname</td><td $td_left_t width="44%"><span $left8 class="mname"></span></td><td $td_left_t width="12%">Material</td><td $td_left_t width="16%">EDTA-Blut</td></tr> 
+<tr><td $td_left_t width="28%">Name, Vorname</td><td $td_left_t width="44%"><span $left8 class="mname"></span></td><td $td_left_t width="12%">Material</td><td $td_left_t width="16%">EDTA-Blut</td></tr> 
 <tr><td $td_left_wo>Geburtsdatum</td><td $td_left_wo><span $left8 class="mbirth"></span></td><td $td_left_wo>Eingang</td><td $td_left_wo><span $left8 class="mreceived"></span></td></tr> 
 <tr><td $td_left_wo>Geschlecht</td><td $td_left_wo>weiblich</td><td $td_left_wo>DNA-ID</td><td $td_left_wo>$mother</td></tr> 
 <tr><td $td_left_b>Ph&auml;notyp</td><td $td_left_b>$f_affected (Mutter)</td><td $td_left_b>Alias-ID</td><td $td_left_b>$f_foreignid</td></tr> 
@@ -694,7 +695,7 @@ print qq#
 }
 if ($father ne "") {
 print qq#
-<tr><td $td_left_t width="28%">Name,Vorname</td><td $td_left_t width="44%"><span $left8 class="fname"></span></td><td $td_left_t width="12%">Material</td><td $td_left_t width="16%">EDTA-Blut</td></tr> 
+<tr><td $td_left_t width="28%">Name, Vorname</td><td $td_left_t width="44%"><span $left8 class="fname"></span></td><td $td_left_t width="12%">Material</td><td $td_left_t width="16%">EDTA-Blut</td></tr> 
 <tr><td $td_left_wo>Geburtsdatum</td><td $td_left_wo><span $left8 class="fbirth"></span></td><td $td_left_wo>Eingang</td><td $td_left_wo><span $left8 class="freceived"></span></td></tr> 
 <tr><td $td_left_wo>Geschlecht</td><td $td_left_wo>m&auml;nnlich</td><td $td_left_wo>DNA-ID</td><td $td_left_wo>$father</td></tr> 
 <tr><td $td_left_b>Ph&auml;notyp</td><td $td_left_b>$m_affected (Vater)</td><td $td_left_b>Alias-ID</td><td $td_left_b>$m_foreignid</td></tr> 
@@ -846,10 +847,11 @@ Analyseverfahren ausgewertet.</p>
 #;
 if ($mode eq "X-chromosomal") {
 print qq#
-<p $justify0>Filter I - autosomal-rezessiv: Kein Nachweis (wahrscheinlich) pathogener Varianten.</p>
+<p $justify>Filter I - autosomal-rezessiv: Kein Nachweis (wahrscheinlich) pathogener Varianten.</p>
 <p $justify0>Filter II - autosomal-dominant (Ph&auml;notyp-basiert): Kein Nachweis (wahrscheinlich) pathogener Varianten.</p>
-<p $justify><b>Filter III - X-chromosomal: Nachweis einer $genotype_g[$i]en Variante ($vepconseq[$i]) in <i>$vepgene[$i]</i>.</b></p>
-<p $justify0>Filter IV - de-novo-Varianten: Kein Nachweis (wahrscheinlich) pathogener Varianten.</p>
+<p $justify0><b>Filter III - X-chromosomal: Nachweis einer $genotype_g[$i]en Variante ($vepconseq[$i]) in <i>$vepgene[$i]</i>.</b></p>
+<p $justify0>Filter IV - mtDNA: Kein Nachweis (wahrscheinlich) pathogener Varianten.</p>
+<p $justify0>Filter V - de-novo-Varianten: Kein Nachweis (wahrscheinlich) pathogener Varianten.</p>
 #;
 if ($cnvfilter eq "yes") {
 print qq#
@@ -862,7 +864,8 @@ print qq#
 <p $justify>Filter I - autosomal-rezessiv: Kein Nachweis (wahrscheinlich) pathogener Varianten.</p>
 <p $justify0>Filter II - autosomal-dominant (Ph&auml;notyp-basiert): Kein Nachweis (wahrscheinlich) pathogener Varianten.</p>
 <p $justify0>Filter III - X-chromosomal: Kein Nachweis (wahrscheinlich) pathogener Varianten.</p>
-<p $justify0><b>Filter IV - de-novo-Varianten: Nachweis einer $genotype_g[$i]en $vepconseq[$i]-Variante in <i>$vepgene[$i]</i>.</b></p>
+<p $justify0>Filter IV - mtDNA: Kein Nachweis (wahrscheinlich) pathogener Varianten.</p>
+<p $justify0><b>Filter V - de-novo-Varianten: Nachweis einer $genotype_g[$i]en $vepconseq[$i]-Variante in <i>$vepgene[$i]</i>.</b></p>
 #;
 if ($cnvfilter eq "yes") {
 print qq#
@@ -875,6 +878,7 @@ print qq#
 <p $justify><b>Filter I - autosomal-rezessiv: Nachweis einer homozygoten $vepconseq[$i]-Variante in <i>$vepgene[$i]</i>.</b></p>
 <p $justify0>Filter II - autosomal-dominant (Ph&auml;notyp-basiert): Kein Nachweis (wahrscheinlich) pathogener Varianten.</p>
 <p $justify0>Filter III - X-chromosomal: Kein Nachweis (wahrscheinlich) pathogener Varianten.</p>
+<p $justify0>Filter IV - mtDNA: Kein Nachweis (wahrscheinlich) pathogener Varianten.</p>
 #;
 &de_novo_for_filter;
 if ($cnvfilter eq "yes") {
@@ -888,6 +892,7 @@ print qq#
 <p $justify><b>Filter I - autosomal-rezessiv: Nachweis von zwei compound-heterozygoten Varianten ($vepconseq[$i]/$vepconseq[$i+1]) in <i>$vepgene[$i]</i>.</b></p>
 <p $justify0>Filter II - autosomal-dominant (Ph&auml;notyp-basiert): Kein Nachweis (wahrscheinlich) pathogener Varianten.</p>
 <p $justify0>Filter III - X-chromosomal: Kein Nachweis (wahrscheinlich) pathogener Varianten.</p>
+<p $justify0>Filter IV - mtDNA: Kein Nachweis (wahrscheinlich) pathogener Varianten.</p>
 #;
 &de_novo_for_filter;
 if ($cnvfilter eq "yes") {
@@ -901,6 +906,7 @@ print qq#
 <p $justify><b>Filter I - autosomal-rezessiv: Nachweis von zwei heterozygoten Varianten ($vepconseq[$i]/$vepconseq[$i+1]) in <i>$vepgene[$i]</i>.</b></p>
 <p $justify0>Filter II - autosomal-dominant (Ph&auml;notyp-basiert): Kein Nachweis (wahrscheinlich) pathogener Varianten.</p>
 <p $justify0>Filter III - X-chromosomal: Kein Nachweis (wahrscheinlich) pathogener Varianten.</p>
+<p $justify0>Filter IV - mtDNA: Kein Nachweis (wahrscheinlich) pathogener Varianten.</p>
 #;
 &de_novo_for_filter;
 if ($cnvfilter eq "yes") {
@@ -911,9 +917,10 @@ print qq#
 }
 elsif ($mode eq "dominant") {
 print qq#
-<p $justify0>Filter I - autosomal-rezessiv: (Ph&auml;notyp-basiert): Kein Nachweis (wahrscheinlich) pathogener Varianten.</p>
-<p $justify><b>Filter II - autosomal-dominant: Nachweis einer heterozygoten Variante ($vepconseq[$i]) in <i>$vepgene[$i]</i>.</b></p>
+<p $justify>Filter I - autosomal-rezessiv: (Ph&auml;notyp-basiert): Kein Nachweis (wahrscheinlich) pathogener Varianten.</p>
+<p $justify0><b>Filter II - autosomal-dominant: Nachweis einer heterozygoten Variante ($vepconseq[$i]) in <i>$vepgene[$i]</i>.</b></p>
 <p $justify0>Filter III - X-chromosomal: Kein Nachweis (wahrscheinlich) pathogener Varianten.</p>
+<p $justify0>Filter IV - mtDNA: Kein Nachweis (wahrscheinlich) pathogener Varianten.</p>
 #;
 &de_novo_for_filter;
 if ($cnvfilter eq "yes") {
@@ -1017,12 +1024,12 @@ print OUT "$vep_input";
 close OUT;
 
 my $cmd = "
-perl /usr/local/packages/seq/ensembl-tools-release-85/scripts/variant_effect_predictor/variant_effect_predictor.pl \\
+perl /usr/local/packages/seq/ensembl-tools-release-102/ensembl-vep/vep \\
 -i $vep_input_file \\
 -o STDOUT \\
 --cache \\
 --dir /data/mirror/vep \\
---fasta /data/mirror/vep/homo_sapiens/85_GRCh37/Homo_sapiens.GRCh37.75.dna.primary_assembly.fa.gz \\
+--fasta /data/mirror/vep/homo_sapiens/102_GRCh37/Homo_sapiens.GRCh37.75.dna_sm.primary_assembly.fa \\
 --offline \\
 --refseq \\
 --no_stats \\
@@ -1060,18 +1067,21 @@ foreach (@result) {
 		#print "<td>$_</td>";
 		if ($header) {print "<th>$_</th>"} else {print "<td>$_</td>"};
 	}
-	@oldline = @line;
 	if ($i == 1) {
 		@selected = @line;
 		$selected_line = $i;
 	}
 	else {
-		if ($line[9]>$oldline[9]) { #longer cds
+		# has to be immproved, order of feature
+		if ($line[9]>$oldline[9]) { #longer cds, protein change position
 			@selected = @line;
 			$selected_line = $i;
 		}
+		#print "<br>asdf @selected[9] $line[9] $oldline[9] $i<br>";
+		#print "@oldline<br>";
 	}
 	print "</tr>";
+	@oldline = @line;
 	$i++;
 
 }
