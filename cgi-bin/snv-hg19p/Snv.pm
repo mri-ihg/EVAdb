@@ -53,6 +53,9 @@ my $popmax_af      = "";
 my $solrurl        = "http://localhost:8983/solr/omim";
 my $maxFailedLogin = 6;
 my $vep            = 1; #use Variant Effect Predictor
+our $vep_cmd         = "/usr/local/packages/seq/ensembl-tools-release-102/ensembl-vep/vep";
+our $vep_fasta       = "/data/mirror/vep/homo_sapiens/102_GRCh37/Homo_sapiens.GRCh37.75.dna_sm.primary_assembly.fa";
+our $vep_genesplicer = "/usr/local/packages/seq/GeneSplicer";
 # should be changed only for demo data
 my $cookie_only_when_https = 1;
 my $libtype_default = 5; # initsearchfor exome,  select * from solexa.libtype
@@ -297,7 +300,7 @@ elsif ($fhcl) {
 	$rnadb      = "rnahg19";
 	$rnagenedb  = "exomevcf";
 	$mtdna_menu = 0;
-	$popmax_af  = 0.1;
+	$popmax_af  = 0.01;
 }
 else { ();
 	exit;
@@ -11324,12 +11327,12 @@ print OUT "$vep_input";
 close OUT;
 
 my $cmd = "
-perl /usr/local/packages/seq/ensembl-tools-release-85/scripts/variant_effect_predictor/variant_effect_predictor.pl \\
+perl $vep_cmd \\
 -i $vep_input_file \\
 -o STDOUT \\
 --cache \\
 --dir /data/mirror/vep \\
---fasta /data/mirror/vep/homo_sapiens/85_GRCh37/Homo_sapiens.GRCh37.75.dna.primary_assembly.fa.gz \\
+--fasta $vep_fasta \\
 --offline \\
 --refseq \\
 --no_stats \\
@@ -11340,7 +11343,7 @@ perl /usr/local/packages/seq/ensembl-tools-release-85/scripts/variant_effect_pre
 --symbol \\
 --tab \\
 --no_intergenic \\
---plugin GeneSplicer,/usr/local/packages/seq/GeneSplicer/bin/linux/genesplicer,/usr/local/packages/seq/GeneSplicer/human,context=200
+--plugin GeneSplicer,$vep_genesplicer/bin/linux/genesplicer,$vep_genesplicer/human,context=200
 ";
 
 delete $ENV{'PATH'};
@@ -11365,7 +11368,7 @@ foreach (@result) {
 }
 print "</table>";
 
-unlink($vep_input_file);
+#unlink($vep_input_file);
 
 }
 ########################################################################
@@ -11391,12 +11394,12 @@ close OUT;
 #-i $vep_input_file \\
 
 my $cmd = "
-perl /usr/local/packages/seq/ensembl-tools-release-85/scripts/variant_effect_predictor/variant_effect_predictor.pl \\
+perl $vep_cmd  \\
 -i $vep_input_file \\
 -o STDOUT \\
 --cache \\
 --dir /data/mirror/vep \\
---fasta /data/mirror/vep/homo_sapiens/85_GRCh37/Homo_sapiens.GRCh37.75.dna.primary_assembly.fa.gz \\
+--fasta $vep_fasta \\
 --offline \\
 --refseq \\
 --no_stats \\
@@ -11407,7 +11410,7 @@ perl /usr/local/packages/seq/ensembl-tools-release-85/scripts/variant_effect_pre
 --symbol \\
 --tab \\
 --no_intergenic \\
---plugin GeneSplicer,/usr/local/packages/seq/GeneSplicer/bin/linux/genesplicer,/usr/local/packages/seq/GeneSplicer/human,context=200
+--plugin GeneSplicer,$vep_genesplicer/bin/linux/genesplicer,$vep_genesplicer/human,context=200
 ";
 
 delete $ENV{'PATH'};

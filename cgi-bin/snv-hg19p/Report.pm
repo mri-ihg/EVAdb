@@ -8,9 +8,12 @@ use strict;
 package Report;
 #use warnings;
 
-my $sampledb = $Snv::sampledb;
-my $coredb = $Snv::coredb;
-my $exomevcfe = $Snv::exomevcfe;
+my $sampledb        = $Snv::sampledb;
+my $coredb          = $Snv::coredb;
+my $exomevcfe       = $Snv::exomevcfe;
+my $vep_cmd         = $Snv::vep_cmd;
+my $vep_fasta       = $Snv::vep_fasta;
+my $vep_genesplicer = $Snv::vep_genesplicer;
 
 sub new {
 	my $class = shift;
@@ -1024,12 +1027,12 @@ print OUT "$vep_input";
 close OUT;
 
 my $cmd = "
-perl /usr/local/packages/seq/ensembl-tools-release-102/ensembl-vep/vep \\
+perl $vep_cmd \\
 -i $vep_input_file \\
 -o STDOUT \\
 --cache \\
 --dir /data/mirror/vep \\
---fasta /data/mirror/vep/homo_sapiens/102_GRCh37/Homo_sapiens.GRCh37.75.dna_sm.primary_assembly.fa \\
+--fasta $vep_fasta \\
 --offline \\
 --refseq \\
 --no_stats \\
@@ -1040,7 +1043,7 @@ perl /usr/local/packages/seq/ensembl-tools-release-102/ensembl-vep/vep \\
 --symbol \\
 --tab \\
 --no_intergenic \\
---plugin GeneSplicer,/usr/local/packages/seq/GeneSplicer/bin/linux/genesplicer,/usr/local/packages/seq/GeneSplicer/human,context=200
+--plugin GeneSplicer,$vep_genesplicer/bin/linux/genesplicer,$vep_genesplicer/human,context=200
 ";
 
 delete $ENV{'PATH'};
