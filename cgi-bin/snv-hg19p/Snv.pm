@@ -4208,7 +4208,7 @@ if (($demo) and ($genesymbol eq "")) {
 
 my @AoH = (
 	  {
-	  	label       => "UCSC Gene Symbol",
+	  	label       => "UCSC Gene Symbol (comma separated list)",
 	  	type        => "text",
 		name        => "g.genesymbol",
 	  	value       => $genesymbol,
@@ -13296,30 +13296,48 @@ my %summary      = ();
 
 # Gene symbol exists?
 my $wheregenesymbol = " 1= 1 ";
+my $genesymboltmp = "";
+my @genesymboltmp = ();
+#my $genesymbolforsearch = ();
 if ($ref->{"g.genesymbol"} ne "") {
-$query = qq#
-SELECT
-genesymbol
-FROM
-gene
-WHERE
-genesymbol = ?
-#;
-$out = $dbh->prepare($query) || die print "$DBI::errstr";
-$out->execute($ref->{"g.genesymbol"}) || die print "$DBI::errstr";
-$genesymbol = $out->fetchrow_array;
-if ($genesymbol eq "") {
-	print "Gene symbol $genesymbol does not exist.";
-	exit;
-}
-$where = "g.genesymbol = ? ";
-push(@prepare,$ref->{'g.genesymbol'});
+	$genesymboltmp = $ref->{"g.genesymbol"};
+	$genesymboltmp =~ s/\s+//g;
+	(@genesymboltmp) = split (/\,/,$genesymboltmp);
+	foreach $genesymboltmp (@genesymboltmp) {
+		$query = qq#
+		SELECT
+		genesymbol
+		FROM
+		gene
+		WHERE
+		genesymbol = ?
+		#;
+		$out = $dbh->prepare($query) || die print "$DBI::errstr";
+		$out->execute($genesymboltmp) || die print "$DBI::errstr";
+		$genesymbol = $out->fetchrow_array;
+		if ($genesymbol eq "") {
+			print "Gene symbol $genesymboltmp does not exist.<br>";
+			exit;
+		}
+		else {
+			print "Gene symbol $genesymboltmp does exist.<br>";
+			if ($where eq "") {
+				$where = "(g.genesymbol = ? ";
+				push(@prepare,$genesymbol);
+			}	
+			else {
+				$where .= "or g.genesymbol = ? ";
+				push(@prepare,$genesymbol);
+			}
+		}
+	}
+	$where .= ")";
+	#print "where $where<br>";	
 }
 else {
 	print "Gene symbol missing.";
 	exit(1);
 }
-
 if ($ref->{'s.name'} ne "") {
 	$where1 .= " AND s.name = ? ";
 	push(@prepare1,$ref->{'s.name'});
@@ -13433,8 +13451,9 @@ v.start
 LIMIT 5000
 #;
 #print "query = $query<br>";
-#print "query = $where<br>";
-#print "query = @prepare<br>";
+#print "where = $where<br>";
+#print "where1 = $where1<br>";
+#print "prepare = @prepare<br>";
 
 $out = $dbh->prepare($query) || die print "$DBI::errstr";
 $out->execute(@prepare,@prepare1) || die print "$DBI::errstr";
