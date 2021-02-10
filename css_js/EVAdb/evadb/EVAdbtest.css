@@ -160,6 +160,8 @@ div.dataTables_length {
   overflow-x: hidden; /* Disable horizontal scroll */
   padding-top: 50px; /* Place content 60px from the top */
   transition: 0.1s; /* 0.5 second transition effect to slide in the sidenav */
+  max-height: calc(100% - 50px);
+  overflow-y: scroll;
 }
 
 /* The navigation menu links */
