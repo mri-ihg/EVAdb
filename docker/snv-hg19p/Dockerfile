@@ -37,6 +37,23 @@ RUN git clone https://github.com/samtools/tabix tabix \
   && cd ../.. \
   && rm -rf tabix
 
+
+## Install VEP here:
+
+RUN cd /opt \
+    && git clone https://github.com/Ensembl/ensembl-vep.git \
+    && cd ensembl-vep \
+    && perl INSTALL.pl --AUTO alp --PLUGINS all
+
+
+RUN cd /opt \
+    && apt install wget \
+    && wget ftp://ftp.ccb.jhu.edu/pub/software/genesplicer/GeneSplicer.tar.gz \
+    && tar -zxvf GeneSplicer.tar.gz \
+    && rm GeneSplicer.tar.gz
+
+RUN chmod -R 777 /root
+
 COPY ./htdocs/ /usr/local/apache2/htdocs/
 COPY ./src/ /usr/local/apache2/cgi-bin
 COPY ./conf/httpd.conf /usr/local/apache2/conf/httpd.conf
