@@ -24,6 +24,8 @@ services:
       - YUBIKEY_APIKEY=${YUBIKEY_APIKEY}
     volumes:
       - "${CERT_DIR}:/ssl:ro"
+      - "${FASTA}:/reference"
+      - "${VEP_CACHE}:/root/.vep"
     ports:
       - "443:443"
   evadb_admin:
