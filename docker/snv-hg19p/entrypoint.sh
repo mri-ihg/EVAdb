@@ -44,9 +44,9 @@ sed -ie "s:/usr/local/packages/seq/GeneSplicer:/opt/GeneSplicer:g" /usr/local/ap
 ## use fasta from outside (provide path in .env and docker-compose.yml), new
 sed -ie "s:/data/mirror/vep/homo_sapiens/102_GRCh37/Homo_sapiens.GRCh37.75.dna_sm.primary_assembly.fa:/reference/human_g1k_v37_decoy.fasta:g" /usr/local/apache2/cgi-bin/Snv.pm
 # old:
-sed -ie "s:/data/mirror/vep/homo_sapiens/85_GRCh37/Homo_sapiens.GRCh37.75.dna.primary_assembly.fa.gz:/reference/Homo_sapiens.GRCh37.dna.primary_assembly.fa:g" /usr/local/apache2/cgi-bin/Snv.pm
-sed -ie "s:/data/mirror/vep/homo_sapiens/85_GRCh37/Homo_sapiens.GRCh37.75.dna.primary_assembly.fa.gz:/reference/Homo_sapiens.GRCh37.dna.primary_assembly.fa:g" /usr/local/apache2/cgi-bin/Report.pm
-    
+sed -ie "s:/data/mirror/vep/homo_sapiens/85_GRCh37/Homo_sapiens.GRCh37.75.dna.primary_assembly.fa.gz:/reference/human_g1k_v37_decoy.fasta:g" /usr/local/apache2/cgi-bin/Snv.pm
+sed -ie "s:/data/mirror/vep/homo_sapiens/85_GRCh37/Homo_sapiens.GRCh37.75.dna.primary_assembly.fa.gz:/reference/human_g1k_v37_decoy.fasta:g" /usr/local/apache2/cgi-bin/Report.pm
+
 
 
 set +x

@@ -38,12 +38,12 @@ RUN git clone https://github.com/samtools/tabix tabix \
   && rm -rf tabix
 
 
-## Install VEP here:
+## Install VEP here: (instead of all, provide list of plugins to remove the ones that do not work)
 
 RUN cd /opt \
     && git clone https://github.com/Ensembl/ensembl-vep.git \
     && cd ensembl-vep \
-    && perl INSTALL.pl --AUTO alp --PLUGINS all
+    && perl INSTALL.pl --AUTO alp --PLUGINS "AncestralAllele,Blosum62,CADD,CSN,Carol,Condel,Conservation,DisGeNET,Downstream,Draw,ExAC,ExACpLI,FATHMM,FATHMM_MKL,FlagLRG,FunMotifs,G2P,GO,GeneSplicer,HGVSIntronOffset,LD,LOVD,LoF,LoFtool,LocalID,MPC,MTR,Mastermind,MaxEntScan,NearestExonJB,NearestGene,PON_P2,Phenotypes,PostGAP,ProteinSeqs,REVEL,ReferenceQuality,SameCodon,SingleLetterAA,SpliceAI,SpliceRegion,StructuralVariantOverlap,SubsetVCF,TSSDistance,dbNSFP,dbscSNV,gnomADc,miRNA,neXtProt,satMutMPRA"
 
 
 RUN cd /opt \
@@ -51,6 +51,10 @@ RUN cd /opt \
     && wget ftp://ftp.ccb.jhu.edu/pub/software/genesplicer/GeneSplicer.tar.gz \
     && tar -zxvf GeneSplicer.tar.gz \
     && rm GeneSplicer.tar.gz
+
+# If GeneSplicer could not be downloaded,
+# download somewhere else, untar, copy here (Dockerfile location), comment 49-53, uncomment below
+# COPY GeneSplicer /opt/GeneSplicer
 
 RUN chmod -R 777 /root
 
