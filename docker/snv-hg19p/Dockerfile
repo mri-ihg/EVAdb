@@ -52,6 +52,10 @@ RUN cd /opt \
     && tar -zxvf GeneSplicer.tar.gz \
     && rm GeneSplicer.tar.gz
 
+# If GeneSplicer could not be downloaded,
+# download somewhere else, untar, copy here (Dockerfile location), comment 49-53, uncomment below
+# COPY GeneSplicer /opt/GeneSplicer
+
 RUN chmod -R 777 /root
 
 COPY ./htdocs/ /usr/local/apache2/htdocs/
