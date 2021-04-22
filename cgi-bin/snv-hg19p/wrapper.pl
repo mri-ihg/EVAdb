@@ -156,6 +156,7 @@ open FOUT, "$filename" or die "$filename: $!";
 	$cgihead{'-Last-Modified'}='Wed, 15 Jul 2015 21:07:05 GMT';
 	$cgihead{'-Content-Length'}=$size;
 	$cgihead{'-type'}="$mime_type";
+	$cgihead{'-attachment'}=$cgi->param("file");
 
 # Send HTTP Header
 	print $cgi->header(%cgihead);
