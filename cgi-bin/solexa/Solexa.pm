@@ -7569,7 +7569,7 @@ for $i ( 0 .. $#barcode ) {
 		  CONCAT('<a href=\"pool.pl?id=',idpool,'&amp;mode=edit\">',oname,'</a>'),
 		  odescription,ocomment
 		  FROM pool 
-		  WHERE obarcode=$barcode";
+		  WHERE obarcode='$barcode'";
 	$out = $dbh->prepare($query) || die print "$DBI::errstr";
 	$out->execute() || die print "$DBI::errstr";
 	@row = $out->fetchrow_array;
@@ -7751,7 +7751,7 @@ for $i ( 0 .. $#barcode ) {
 		  FROM pool o
 		  INNER JOIN library2pool lp on o.idpool=lp.idpool
 		  INNER JOIN library l       on lp.lid=l.lid
-		  WHERE o.obarcode=$barcode";
+		  WHERE o.obarcode='$barcode'";
 	$out = $dbh->prepare($query) || die print "$DBI::errstr";
 	$out->execute() || die print "$DBI::errstr";
 	if ($out->rows == 0) {
@@ -12283,156 +12283,6 @@ print qq|
 <div id="main">
 
 |;
-
-}
-########################################################################
-# showMenu
-########################################################################
-
-sub showMenuOld {
-my $self            = shift;
-my $menu            = shift;
-my $project         = "menu";
-my $library         = "menu";
-my $pool            = "menu";
-my $run             = "menu";
-my $search          = "menu";
-my $stock           = "menu";
-my $searchstock     = "menu";
-my $kit             = "menu";
-my $listkit         = "menu";
-my $statistics      = "menu";
-my $yield           = "menu";
-my $listnewpools    = "menu";
-my $listtags        = "menu";
-my $tag             = "menu";
-my $checkBarcode    = "menu";
-my $makePool        = "menu";
-my $makePoolExtern  = "menu";
-my $shopping        = "menu";
-my $shoppingsearch  = "menu";
-my $listkits        = "menu";
-my $importLibInfo   = "menu";
-my $taqman          = "menu";
-my $importtaqman    = "menu";
-my $pooling         = "menu";
-my $sequencing      = "menu";
-my $login           = "menu";
-
-if ($menu eq "project") {
-	$project = "menuactive";
-}
-if ($menu eq "library") {
-	$library = "menuactive";
-}
-if ($menu eq "pool") {
-	$pool = "menuactive";
-}
-if ($menu eq "run") {
-	$run = "menuactive";
-}
-if ($menu eq "search") {
-	$search = "menuactive";
-}
-if ($menu eq "stock") {
-	$stock = "menuactive";
-}
-if ($menu eq "searchstock") {
-	$searchstock = "menuactive";
-}
-if ($menu eq "kit") {
-	$kit = "menuactive";
-}
-if ($menu eq "listkit") {
-	$listkit = "menuactive";
-}
-if ($menu eq "statistics") {
-	$statistics = "menuactive";
-}
-if ($menu eq "yield") {
-	$yield = "menuactive";
-}
-if ($menu eq "listnewpools") {
-	$listnewpools = "menuactive";
-}
-if ($menu eq "listtags") {
-	$listtags = "menuactive";
-}
-if ($menu eq "tag") {
-	$tag = "menuactive";
-}
-if ($menu eq "checkBarcode") {
-	$checkBarcode = "menuactive";
-}
-if ($menu eq "makePool") {
-	$makePool = "menuactive";
-}
-if ($menu eq "makePoolExtern") {
-	$makePoolExtern = "menuactive";
-}
-if ($menu eq "shopping") {
-	$shopping = "menuactive";
-}
-if ($menu eq "shoppingsearch") {
-	$shoppingsearch = "menuactive";
-}
-if ($menu eq "listkits") {
-	$listkits = "menuactive";
-}
-if ($menu eq "importLibInfo") {
-	$importLibInfo = "menuactive";
-}
-if ($menu eq "taqman") {
-	$taqman = "menuactive";
-}
-if ($menu eq "importtaqman") {
-	$importtaqman = "menuactive";
-}
-if ($menu eq "pooling") {
-	$pooling = "menuactive";
-}
-if ($menu eq "sequencing") {
-	$sequencing = "menuactive";
-}
-if ($menu eq "login") {
-	$login = "menuactive";
-}
-
-print qq(
-<table class="header" border="0" cellpadding="3" cellspacing="0" width="1400px">
-<tr>
-<td align="center" class="header"><a class="$search" href="search.pl">Search</a></td>
-<td align="center" class="header"><a class="$importLibInfo" href="importLibInfo.pl">Import Libsheet</a></td>
-<td align="center" class="header"><a class="$taqman" href="taqmanDo.pl">Taqman</a></td>
-<td align="center" class="header"><a class="$importtaqman" href="importTaqman.pl">Import Taqman</a></td>
-<td align="center" class="header"><a class="$pooling" href="pooling.pl">Pooling</a></td>
-<td align="center" class="header"><a class="$makePool" href="makePool.pl">Make Pool intern</a></td>
-<td align="center" class="header"><a class="$makePoolExtern" href="makePoolExtern.pl">Make Pool extern</a></td>
-<td align="center" class="header"><a class="$sequencing" href="sequencing.pl">Sequencing</a></td>
-<td align="center" class="header"><a class="$run" href="run.pl">New Run</a></td>
-<td align="center" class="header"><a class="$checkBarcode" href="checkBarcode.pl">Check Pool Barcode</a></td>
-<td align="center" class="header"><a class="$tag" href="tag.pl">New Index</a></td>
-<td align="center" class="header"><a class="$listtags" href="listTags.pl">List Indices</a></td>
-<td align="center" class="header"><a class="$stock" href="stock.pl">New Stock</a></td>
-<td align="center" class="header"><a class="$searchstock" href="searchStocks.pl">Search Stocks</a></td>
-<td align="center" class="header"><a class="$kit" href="kit.pl">New Kit</a></td>
-<td align="center" class="header"><a class="$listkit" href="kitList.pl">List Kits</a></td>
-<td align="center" class="header"><a class="$statistics" href="statistics.pl">Statistics</a></td>
-<td align="center" class="header"><a class="$yield" href="yield.pl">Yield</a></td>
-<td align="center" class="header"><a class="$listkits" href="listKits.pl">List Exome Kits</a></td>
-<td align="center" class="header"><a class="$shopping" href="shopping.pl">New Order</a></td>
-<td align="center" class="header"><a class="$shopping" href="searchShopping.pl">Search Order</a></td>
-<td align="center" class="header"><a class="$login" href="login.pl">Login / Logout</a></td>
-</tr>
-</table>
-<br>
-);
-
-#<td align="center" class="header"><a class="$listnewpools" href="listNewPools.pl">List Pools</a></td>
-#<td align="center" class="header"><a class="$project" href="project.pl">New Project</a></td>
-#<td align="center" class="header"><a class="$library" href="library.pl">New Library</a></td>
-#<td align="center" class="header"><a class="$pool" href="pool.pl">New Pool</a></td>
-#CONCAT('<a href=\"library.pl?pid=',p.pid,'&amp;mode=new\">new</a>'),
 
 }
 ########################################################################
