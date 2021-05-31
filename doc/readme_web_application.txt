@@ -16,10 +16,8 @@ Snv.pm file and can be modified.
 #stylesheet and javascript
 Copy the javascript and css folders into /srv/www/htdocs.
 
-cp -r css_js/cal /srv/www/htdocs/.
-cp -r css_js/DataTables /srv/www/htdocs/.
-cp -r css_js/gif /srv/www/htdocs/.
-cp -r css_js/medialize-jQuery-contextMenu-09dffab /srv/www/htdocs/.
+cp -r css_js/DataTables-1.10.22 /srv/www/htdocs/.
+cp -r css_js/EVAdb /srv/www/htdocs/.
 
 ################################################################
 #database user and password
