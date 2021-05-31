@@ -51,26 +51,26 @@ insert into mysql.db (Host,Db,User,Select_priv) VALUES ('localhost','hg19','sole
 flush privileges;
 
 
-# Create three password files in /usr/tools
+# Create three password files in /srv/tools
 # The password files should only be readable for the apache user.
 # That is usually wwwrun.
 # The files must contain the 3 following lines.
 # 'csrfsalt' should contain 6 random characters (lower and upper characters and numbers)
-# File for application 'user'/usr/tools/textreadonly.txt
-dblogin:exomereadonly
-dbpasswd:mysqlpassword
-csrfsalt:XXXXX
 
-# file for application 'managment' /usr/tools/text.txt
+# File /srv/tools/textreadonly.txt
+dblogin:exomereadonly
+dbpasswd:exomereadonly
+csrfsalt:XXXXXX
+
+# File /srv/tools/text.txt
 dblogin:exome
 dbpasswd:exome
-csrfsalt:XXXXX
+csrfsalt:XXXXXX
 
-# file for application 'solexa' /usr/tools/solexa.txt
+# File /srv/tools/solexa.txt
 dblogin:solexa
 dbpasswd:solexa
-csrfsalt:XXXXX
-
+csrfsalt:XXXXXX
 
 # create an admin user
 mysql  -u root -p exomevcfe
