@@ -26,10 +26,7 @@ cp -r css_js/EVAdb /srv/www/htdocs/.
 # Use strong passwords.
 
 mysql  -u root -p mysql
-create user 'exomereadonly' IDENTIFIED BY 'exomereadonly';
-update mysql.user set Host='localhost' where User='exomereadonly';
-drop user exomereadonly;
-insert into mysql.user (Host,User,Password) VALUES ('localhost','exomereadonly','exomereadonly');
+create user exomereadonly@localhost IDENTIFIED BY 'exomereadonly';
 insert into mysql.db (Host,Db,User,Select_priv) VALUES ('localhost','exomehg19','exomereadonly','Y');
 insert into mysql.db (Host,Db,User,Select_priv) VALUES ('localhost','exomehg19plus','exomereadonly','Y');
 insert into mysql.db (Host,Db,User,Select_priv) VALUES ('localhost','solexa','exomereadonly','Y');
@@ -37,8 +34,7 @@ insert into mysql.db (Host,Db,User,Select_priv) VALUES ('localhost','hgmd_pro','
 insert into mysql.db (Host,Db,User,Select_priv) VALUES ('localhost','hg19','exomereadonly','Y');
 insert into mysql.db (Host,Db,User,Select_priv,Insert_priv,Update_priv) VALUES ('localhost','exomevcfe','exomereadonly','Y','Y','Y');
 
-create user exome IDENTIFIED BY 'exome';
-update mysql.user set Host='localhost' where User='exome';
+create user exome@localhost IDENTIFIED BY 'exome';
 insert into mysql.db (Host,Db,User,Select_priv,Insert_priv,Update_priv) VALUES ('localhost','exomehg19','exome','Y','Y','Y');
 insert into mysql.db (Host,Db,User,Select_priv,Insert_priv,Update_priv) VALUES ('localhost','exomevcfe','exome','Y','Y','Y');
 insert into mysql.db (Host,Db,User,Select_priv,Insert_priv,Update_priv) VALUES ('localhost','solexa','exome','Y','Y','Y');
@@ -46,8 +42,7 @@ insert into mysql.db (Host,Db,User,Select_priv) VALUES ('localhost','exomehg19pl
 insert into mysql.db (Host,Db,User,Select_priv) VALUES ('localhost','hgmd_pro','exome','Y');
 insert into mysql.db (Host,Db,User,Select_priv) VALUES ('localhost','hg19','exome','Y');
 
-create user solexa IDENTIFIED BY 'solexa';
-update mysql.user set Host='localhost' where User='solexa';
+create user solexa@localhost IDENTIFIED BY 'solexa';
 insert into mysql.db (Host,Db,User,Select_priv,Insert_priv,Update_priv) VALUES ('localhost','solexa','solexa','Y','Y','Y');
 insert into mysql.db (Host,Db,User,Select_priv,Insert_priv,Update_priv) VALUES ('localhost','exomevcfe','solexa','Y','Y','Y');
 insert into mysql.db (Host,Db,User,Select_priv) VALUES ('localhost','exomehg19','solexa','Y');
