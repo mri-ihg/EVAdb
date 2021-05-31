@@ -20,8 +20,8 @@ ClinVar
 #############################################################################
 
 First, you have to install the Tabix module for Perl and some Perl modules from cpan.
-curl 'https://liquidtelecom.dl.sourceforge.net/project/samtools/tabix/tabix-0.2.5.tar.bz2' > tabix-0.2.5.tar.bz2
-tar -xvf tabix-0.2.5.tar.bz2
+wget https://liquidtelecom.dl.sourceforge.net/project/samtools/tabix/tabix-0.2.5.tar.bz2
+tar -xjvf tabix-0.2.5.tar.bz2
 cd tabix-0.2.5
 make
 cd perl
@@ -29,11 +29,12 @@ perl Makefile.PL
 make
 make install
 
-cpan install 	diagnostics		
-cpan install	Bio::DB::Fasta	
-cpan install	File::chmod::Recursive
+cpan install    diagnostics		
+cpan install    Bio::DB::Fasta	
+cpan install    File::chmod::Recursive
 # samtools-0.1.19 required	
-cpan install	Bio::DB::Sam	
+# https://sourceforge.net/projects/samtools/files/samtools/0.1.19/
+cpan install    Bio::DB::Sam	
 	
 #############################################################################
 Modification of current.config.xml
