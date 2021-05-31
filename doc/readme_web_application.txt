@@ -138,11 +138,10 @@ cpan Log::Dispatch::File
 
 Set up an Apache server with ssl enabled.
 Enable the following modules
-    enable session
-    session_cookie
-    rewrite
-    RewriteEngine
-    ssl
+    sudo a2enmod session
+    sudo a2enmod session_cookie
+    sudo a2enmod rewrite
+    sudo a2enmod ssl
 
 Generate a dummy certificate only for a test server.
 Call the script /usr/bin/gensslcert. 
