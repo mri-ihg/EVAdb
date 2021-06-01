@@ -58,10 +58,11 @@ sed -i 's/SERVER13/<host>/g' current.config.xml
 sed -i 's/DBPORT/<port>/g' current.config.xml
 sed -i 's/DBUSER/<myuser>/g' current.config.xml
 sed -i 's/DBPWD/<mypassword>/g' current.config.xml
-sed -i 's/\/PATHTO\/hg19_decoy\/chromosome\/noPAR.hg19_decoy.fa/<myreffasta>/g' current.config.xml
 
 You need the fasta file of the human reference sequence to annotate
 vcf-files before import into EVAdb (see below).
+
+sed -i 's/\/PATHTO\/hg19_decoy\/chromosome\/noPAR.hg19_decoy.fa/<myreffasta>/g' current.config.xml
 
 Modifiy the lines to find VCFtools
 
