@@ -35,6 +35,10 @@ cpan install    File::chmod::Recursive
 # samtools-0.1.19 required	
 # https://sourceforge.net/projects/samtools/files/samtools/0.1.19/
 cpan install    Bio::DB::Sam	
+
+# VCFtools required
+# https://github.com/vcftools/vcftools
+
 	
 #############################################################################
 Modification of current.config.xml
@@ -56,8 +60,18 @@ sed -i 's/DBUSER/<myuser>/g' current.config.xml
 sed -i 's/DBPWD/<mypassword>/g' current.config.xml
 sed -i 's/\/PATHTO\/hg19_decoy\/chromosome\/noPAR.hg19_decoy.fa/<myreffasta>/g' current.config.xml
 
-You neet the fasta file of the human reference sequence to annotate
+You need the fasta file of the human reference sequence to annotate
 vcf-files before import into EVAdb (see below).
+
+Modifiy the lines to find VCFtools
+
+sed -i 's|/PATHTO/VCFtools/bin/vcftools|/PATHTO/VCFtools/bin/vcftools|g' current.config.xml
+sed -i 's|/PATHTO/VCFtools/bin/vcftools \| grep VCFtools|/PATHTO/VCFtools/bin/vcftools \| grep VCFtools|g' current.config.xml
+sed -i 's|/PATHTO/VCFtools/lib/|/PATHTO/VCFtools/lib/|g' current.config.xml
+sed -i 's|/PATHTO/VCFtools/bin/vcf-sort|/PATHTO/VCFtools/bin/vcf-sort|g' current.config.xml
+sed -i 's|/PATHTO/VCFtools/bin/vcf-merge|/PATHTO/VCFtools/bin/vcf-merge|g' current.config.xml
+sed -i 's|/PATHTO/VCFtools/bin/vcf-concat|/PATHTO/VCFtools/bin/vcf-concat|g' current.config.xml
+sed -i 's|/PATHTO/VCFtools/perl/Vcf.pm|/PATHTO/VCFtools/lib/perl5/site_perl/5.32.1/Vcf.pm|g' current.config.xml
 
 #############################################################################
 # imports
@@ -73,7 +87,7 @@ or
 wget -c ftp://dbnsfp:dbnsfp@dbnsfp.softgenetics.com/dbNSFPv3.5a.zip
 Unzip the file. The folder then contains dbNSFP tables one per chromosome.
 
-./fillAnnotationTables.pl -se hg19_test -chrprefix -db ~/sift -p -s
+./fillAnnotationTables.pl -se hg19_plus -chrprefix -db ~/sift -p -s
 
 
 #############################################################################
@@ -84,7 +98,7 @@ wget -c https://krishna.gs.washington.edu/download/CADD/v1.6/GRCh37/whole_genome
 This is a single compressed file. Don't unpack the files.
 
 Start the import with:
-./fillAnnotationTables.pl -se hg19_test -chrprefix -c ~/cadd/whole_genome_SNVs.tsv.gz
+./fillAnnotationTables.pl -se hg19_plus -chrprefix -c ~/cadd/whole_genome_SNVs.tsv.gz
 
 
 #############################################################################
@@ -101,7 +115,7 @@ This is a single compressed file. Don't unpack the files.
 Both files have to be in the same folder.
 
 Start the import with:
-./fillAnnotationTables.pl -se hg19_test -chrprefix -g ~/gnomad_download
+./fillAnnotationTables.pl -se hg19_plus -chrprefix -g ~/gnomad_download
 
 #############################################################################
 # DGV for hg19
