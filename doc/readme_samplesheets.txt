@@ -44,7 +44,7 @@ Extract the file.
 gunzip S0001.sample.vcf.gz
 
 Annotate the file
-annotateVCF.pl -i S0001.sample.vcf -se hg19_test -w 5 -o S0001.sample.annotated.vcf
+annotateVCF.pl -i S0001.sample.vcf -se hg19_plus -w 5 -o S0001.sample.annotated.vcf
 
 Or use the annotated example file
 S0001.sample.annotated.vcf
@@ -52,5 +52,5 @@ S0001.sample.annotated.vcf
 Import the file
 The import requires that an external samplesheet for the same sample has been imported.
 The paths to vcftools have to be added to current.config.xml
-snvdbExomeInsert_vcf.pl -se hg19_test -i -c gatk S0001.sample.annotated.vcf
+snvdbExomeInsert_vcf.pl -se hg19_plus -c gatk -i S0001.sample.annotated.vcf
 
