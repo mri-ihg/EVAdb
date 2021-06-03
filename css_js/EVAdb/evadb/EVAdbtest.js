@@ -217,7 +217,7 @@ $(document).ready( function () {
 									data = data.replace(/(&nbsp;|<([^>]+)>)/ig, "");
 									data = data.replace(/\t|\n/g, "");
 									// replace everything except first word
-									data = data.replace(/^(\s*\w+)\s+.*$/, "$1");
+									data = data.replace(/^(\s*[A-Za-z0-9\_\-]+)\s+.*$/, "$1");
 								}
 								else {
 									data = data.replace(/(&nbsp;|<([^>]+)>)/ig, "");
