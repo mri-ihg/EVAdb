@@ -54,6 +54,7 @@ my $solrurl        = "http://localhost:8983/solr/omim";
 my $maxFailedLogin = 6;
 my $vep            = 1; #use Variant Effect Predictor
 our $vep_cmd         = "/usr/local/packages/seq/ensembl-tools-release-102/ensembl-vep/vep";
+our $vep_dir         = "/data/mirror/vep";
 our $vep_fasta       = "/data/mirror/vep/homo_sapiens/102_GRCh37/Homo_sapiens.GRCh37.75.dna_sm.primary_assembly.fa";
 our $vep_genesplicer = "/usr/local/packages/seq/GeneSplicer";
 # should be changed only for demo data
@@ -11331,7 +11332,7 @@ perl $vep_cmd \\
 -i $vep_input_file \\
 -o STDOUT \\
 --cache \\
---dir /data/mirror/vep \\
+--dir $vep_dir \\
 --fasta $vep_fasta \\
 --offline \\
 --refseq \\
@@ -11398,7 +11399,7 @@ perl $vep_cmd  \\
 -i $vep_input_file \\
 -o STDOUT \\
 --cache \\
---dir /data/mirror/vep \\
+--dir $vep_dir \\
 --fasta $vep_fasta \\
 --offline \\
 --refseq \\
