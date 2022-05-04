@@ -27,7 +27,7 @@ my $rnahg19            = 0;
 my $perspective        = 0;
 my $fhcl               = 0;
 
-my $rna_menu           = 0;
+my $rna_menu           = 1;
 
 ######################################
 my $translocation_menu = 0;
@@ -42,11 +42,11 @@ my $rnagenedb      = "";
 our $coredb         = "exomehg19";
 our $exomevcfe      = "";
 my $solexa         = "solexa";
-my $hgmdserver     = "ihgseq13.helmholtz-muenchen.de";
+my $hgmdserver     = "SERVERNAME";
 my $igvserver      = "";
 my $igvdir         = "";
-my $igvrnadir      = "/data/isilon/seq/analysis/exomehg19/";
-my $igvgenomedir   = "/data/isilon/seq/analysis/exomehg19plus/";
+my $igvrnadir      = "/path/to/seq/analysis/exomehg19/";
+my $igvgenomedir   = "/path/to/seq/analysis/exomehg19plus/";
 my $snvqual        = "";
 my $gtqual         = "";
 my $popmax_af      = "";
@@ -63,10 +63,16 @@ my $hg             = "hg19";
 my $contextM       = "contextM";
 my $giabradio      = 0;
 my $giabform       = "";
-my $performDEAnalysis = "/data/isilon/users/scripts/eclipse_workspace_wieland/Pipeline/performDEAnalysis.pl";
-my $performDiffPeakCalling = "/data/isilon/users/scripts/eclipse_workspace_wieland/Pipeline/performDiffPeakCalling.pl";
+my $performDEAnalysis = "/path/to/users/scripts/eclipse_workspace_wieland/Pipeline/performDEAnalysis.pl";
+my $performDiffPeakCalling = "/path/to/users/scripts/eclipse_workspace_wieland/Pipeline/performDiffPeakCalling.pl";
 my $wholegenome = "wholegenomehg19";
 
+my $bamFileName = "merged.rmdup.bam";
+my $bamIndexFileName = "merged.rmdup.bam.bai";
+my $vcfRawFileName = "gatk.ontarget.haplotypecaller.vcf";
+
+
+# Overload variables if necessary
 if ($vcf) {
 	$cgidir     = "/cgi-bin/mysql/snv-vcf";
 	$logindb    = "exomevcfe";
@@ -74,11 +80,12 @@ if ($vcf) {
 	$maindb     = "database=exomevcf;host=localhost";
 	$coredb     = "hg19";
 	$exomevcfe  = "exomevcfe";
-	$igvserver  = "https://ihgseq13.helmholtz-muenchen.de/cgi-bin/mysql/snv-vcf/wrapper.pl";
-	$igvdir     = "/data/isilon/seq/analysis/exomehg19/";
+	$igvserver  = "https://SERVERNAME/cgi-bin/mysql/snv-vcf/wrapper.pl";
+	$igvdir     = "/path/to/seq/analysis/exomehg19/";
 	$snvqual    = "30";
 	$rnadb      = "rnahg19";
 	$rnagenedb  = "exomevcf";
+	$vcfRawFileName = "ontarget.varfilter.vcf";
 }
 elsif ($hg19p) {
 	$cgidir     = "/cgi-bin/mysql/snv-hg19p";
@@ -87,8 +94,8 @@ elsif ($hg19p) {
 	$maindb     = "database=exomehg19plus;host=localhost";
 	$coredb     = "hg19";
 	$exomevcfe  = "exomevcfe";
-	$igvserver  = "https://ihgseq13.helmholtz-muenchen.de/cgi-bin/mysql/snv-hg19p/wrapper.pl";
-	$igvdir     = "/data/isilon/seq/analysis/exomehg19plus/";
+	$igvserver  = "https://SERVERNAME/cgi-bin/mysql/snv-hg19p/wrapper.pl";
+	$igvdir     = "/path/to/seq/analysis/exomehg19plus/";
 	$gtqual     = "30";
 	$rnadb      = "rnahg19";
 	$rnagenedb  = "exomevcf";
@@ -101,8 +108,8 @@ elsif ($genomegatk) {
 	$maindb     = "database=genomegatk;host=localhost";
 	$coredb     = "hg19";
 	$exomevcfe  = "exomevcfe";
-	$igvserver  = "https://ihgseq13.helmholtz-muenchen.de/cgi-bin/mysql/snv-genomegatk/wrapper.pl";
-	$igvdir     = "/data/isilon/seq/analysis/exomehg19plus/";
+	$igvserver  = "https://SERVERNAME/cgi-bin/mysql/snv-genomegatk/wrapper.pl";
+	$igvdir     = "/path/to/seq/analysis/exomehg19plus/";
 	$gtqual     = "30";
 	$rnadb      = "rnahg19";
 	$rnagenedb  = "exomevcf";
@@ -121,8 +128,8 @@ elsif ($multisampletest) {
 	$maindb     = "database=multisampletest;host=localhost";
 	$coredb     = "hg19";
 	$exomevcfe  = "exomevcfe";
-	$igvserver  = "https://ihgseq13.helmholtz-muenchen.de/cgi-bin/mysql/snv-multisampletest/wrapper.pl";
-	$igvdir     = "/data/isilon/seq/analysis/exomehg19plus/";
+	$igvserver  = "https://SERVERNAME/cgi-bin/mysql/snv-multisampletest/wrapper.pl";
+	$igvdir     = "/path/to/seq/analysis/exomehg19plus/";
 	$gtqual     = "30";
 	$rnadb      = "rnahg19";
 	$rnagenedb  = "exomevcf";
@@ -141,8 +148,8 @@ elsif ($multisampletesthardfilter) {
 	$maindb     = "database=multisampletesthardfilter;host=localhost";
 	$coredb     = "hg19";
 	$exomevcfe  = "exomevcfe";
-	$igvserver  = "https://ihgseq13.helmholtz-muenchen.de/cgi-bin/mysql/snv-multisampletesthardfilter/wrapper.pl";
-	$igvdir     = "/data/isilon/seq/analysis/exomehg19plus/";
+	$igvserver  = "https://SERVERNAME/cgi-bin/mysql/snv-multisampletesthardfilter/wrapper.pl";
+	$igvdir     = "/path/to/seq/analysis/exomehg19plus/";
 	$gtqual     = "30";
 	$rnadb      = "rnahg19";
 	$rnagenedb  = "exomevcf";
@@ -161,8 +168,8 @@ elsif ($mtdnagatk) {
 	$maindb     = "database=mtdnagatk;host=localhost";
 	$coredb     = "hg19";
 	$exomevcfe  = "exomevcfe";
-	$igvserver  = "https://ihgseq13.helmholtz-muenchen.de/cgi-bin/mysql/snv-mtdnagatk/wrapper.pl";
-	$igvdir     = "/data/isilon/seq/analysis/mtdnagatk/";
+	$igvserver  = "https://SERVERNAME/cgi-bin/mysql/snv-mtdnagatk/wrapper.pl";
+	$igvdir     = "/path/to/seq/analysis/mtdnagatk/";
 	$gtqual     = "30";
 	$rnadb      = "rnahg19";
 	$rnagenedb  = "exomevcf";
@@ -176,8 +183,8 @@ elsif ($mm10) {
 	$maindb     = "database=exomemm10;host=localhost";
 	$coredb     = "mm10";
 	$exomevcfe  = "exomevcfe";
-	$igvserver  = "https://ihgseq13.helmholtz-muenchen.de/cgi-bin/mysql/snv-hg19p/wrapper.pl";
-	$igvdir     = "/data/isilon/seq/analysis/exomehg19plus/";
+	$igvserver  = "https://SERVERNAME/cgi-bin/mysql/snv-hg19p/wrapper.pl";
+	$igvdir     = "/path/to/seq/analysis/exomehg19plus/";
 	$gtqual     = "30";
 	$hg         = "mm10";
 	$vep        = 0;
@@ -192,8 +199,8 @@ elsif ($genomemm10) {
 	$maindb     = "database=mm10genomegatk;host=localhost";
 	$coredb     = "mm10";
 	$exomevcfe  = "exomevcfe";
-	$igvserver  = "https://ihgseq13.helmholtz-muenchen.de/cgi-bin/mysql/snv-genomemm10/wrapper.pl";
-	$igvdir     = "/data/isilon/seq/analysis/exomehg19plus/";
+	$igvserver  = "https://SERVERNAME/cgi-bin/mysql/snv-genomemm10/wrapper.pl";
+	$igvdir     = "/path/to/seq/analysis/exomehg19plus/";
 	$gtqual     = "30";
 	$hg         = "mm10";
 	$vep        = 0;
@@ -208,12 +215,13 @@ elsif ($test) {
 	$maindb     = "database=exomevcf;host=localhost";
 	$coredb     = "hg19";
 	$exomevcfe  = "exomevcfe";
-	$igvserver  = "https://ihgseq13.helmholtz-muenchen.de/cgi-bin/mysql/test/wrapper.pl";
-	$igvdir     = "/data/isilon/seq/analysis/exomehg19/";
+	$igvserver  = "https://SERVERNAME/cgi-bin/mysql/test/wrapper.pl";
+	$igvdir     = "/path/to/seq/analysis/exomehg19/";
 	$snvqual    = "30";
 	$rnadb      = "rnahg19";
 	$rnagenedb  = "exomevcf";
 	$mtdna_menu = 0;
+	$vcfRawFileName = "ontarget.varfilter.vcf";
 }
 elsif ($demo) {
 	$cgidir     = "/cgi-bin/mysql/snv-vcf";
@@ -222,7 +230,7 @@ elsif ($demo) {
 	$maindb     = "database=exomevariant;host=localhost";
 	$exomevcfe  = "exomewrite";
 	$coredb     = "hg19";
-	$igvserver  = "https://ihgseq13.helmholtz-muenchen.de/cgi-bin/mysql/snv-vcf/wrapper.pl";
+	$igvserver  = "https://SERVERNAME/cgi-bin/mysql/snv-vcf/wrapper.pl";
 	$gtqual     = "30";
 	$rnadb      = "rnahg19";
 	$rnagenedb  = "exomevariant";
@@ -238,8 +246,8 @@ elsif ($mip) {
 	$maindb     = "database=MIP_RLS;host=localhost";
 	$coredb     = "hg19";
 	$exomevcfe  = "exomevcfe";
-	$igvserver  = "https://ihgseq13.helmholtz-muenchen.de/cgi-bin/mysql/snv-mip/wrapper.pl";
-	$igvdir     = "/data/isilon/seq/analysis/exomehg19plus/";
+	$igvserver  = "https://SERVERNAME/cgi-bin/mysql/snv-mip/wrapper.pl";
+	$igvdir     = "/path/to/seq/analysis/exomehg19plus/";
 	$gtqual     = "30";
 	$rnadb      = "rnahg19";
 	$rnagenedb  = "exomevcf";
@@ -252,8 +260,8 @@ elsif ($mipcad) {
 	$maindb     = "database=MIP_CAD;host=localhost";
 	$coredb     = "hg19";
 	$exomevcfe  = "exomevcfe";
-	$igvserver  = "https://ihgseq13.helmholtz-muenchen.de/cgi-bin/mysql/snv-mipcad/wrapper.pl";
-	$igvdir     = "/data/isilon/seq/analysis/exomehg19plus/";
+	$igvserver  = "https://SERVERNAME/cgi-bin/mysql/snv-mipcad/wrapper.pl";
+	$igvdir     = "/path/to/seq/analysis/exomehg19plus/";
 	$gtqual     = "30";
 	$rnadb      = "rnahg19";
 	$rnagenedb  = "exomevcf";
@@ -266,8 +274,8 @@ elsif ($rnahg19) {
 	$maindb     = "database=rnahg19;host=localhost";
 	$coredb     = "hg19";
 	$exomevcfe  = "exomevcfe";
-	$igvserver  = "https://ihgseq13.helmholtz-muenchen.de/cgi-bin/mysql/snv-rnahg19/wrapper.pl";
-	$igvdir     = "/data/isilon/seq/analysis/exomehg19/";
+	$igvserver  = "https://SERVERNAME/cgi-bin/mysql/snv-rnahg19/wrapper.pl";
+	$igvdir     = "/path/to/seq/analysis/exomehg19/";
 	$gtqual     = "30";
 	$rnadb      = "rnahg19";
 	$rnagenedb  = "exomevcf";
@@ -280,8 +288,8 @@ elsif ($perspective) {
 	$maindb     = "database=PERSPECTIVE;host=localhost";
 	$coredb     = "hg19";
 	$exomevcfe  = "exomevcfe";
-	$igvserver  = "https://ihgseq13.helmholtz-muenchen.de/cgi-bin/mysql/snv-perspective/wrapper.pl";
-	$igvdir     = "/data/isilon/seq/analysis/exomehg19plus/";
+	$igvserver  = "https://SERVERNAME/cgi-bin/mysql/snv-perspective/wrapper.pl";
+	$igvdir     = "/path/to/seq/analysis/exomehg19plus/";
 	$gtqual     = "30";
 	$rnadb      = "rnahg19";
 	$rnagenedb  = "exomevcf";
@@ -294,8 +302,8 @@ elsif ($fhcl) {
 	$maindb     = "database=fhcl;host=localhost";
 	$coredb     = "hg19";
 	$exomevcfe  = "exomevcfe";
-	$igvserver  = "https://ihgseq13.helmholtz-muenchen.de/cgi-bin/mysql/snv-fhcl/wrapper.pl";
-	$igvdir     = "/data/isilon/seq/analysis/exomehg19plus/";
+	$igvserver  = "https://SERVERNAME/cgi-bin/mysql/snv-fhcl/wrapper.pl";
+	$igvdir     = "/path/to/seq/analysis/exomehg19plus/";
 	$gtqual     = "30";
 	$rnadb      = "rnahg19";
 	$rnagenedb  = "exomevcf";
@@ -330,6 +338,7 @@ my $text2         = "/srv/tools/textreadonly2.txt"; #yubikey id and api
 my $user          = "";
 my $role          = "";
 my $burdentests   = "";
+my $dbedit        = 0;
 my $csrfsalt      = "";
 my %options = ('MaxAge' => 10800); #for WWW::CSRF 3 hours, same as session cookie
 
@@ -972,10 +981,10 @@ my $nonce     = "";
 my $dbh = DBI->connect("DBI:mysql:$maindb", "$logins{dblogin}", "$logins{dbpasswd}") || die print "$DBI::errstr";
 #$dbh->{Profile} = 4;
 #$dbh->{LongTruncOk} = 1;
-my $query = "SELECT password,yubikey,igvport,role,burdentests FROM $logindb.user WHERE name=?";
+my $query = "SELECT password,yubikey,igvport,role,edit,burdentests FROM $logindb.user WHERE name=?";
 my $out = $dbh->prepare($query) || die print "$DBI::errstr";
 $out->execute($user) || die print "$DBI::errstr";
-($password_stored,$yubikey_stored,$igvport_stored,$role,$burdentests) = $out->fetchrow_array;
+($password_stored,$yubikey_stored,$igvport_stored,$role,$dbedit,$burdentests) = $out->fetchrow_array;
 
 # user darf nicht leer sein, passiert wenn man loginDo.pl direkt aufruft
 # password_stored is empty when no entry in database
@@ -1137,10 +1146,10 @@ my $session     = CGI::Session->load($sess_id) or die CGI::Session->errstr;
 	my $out = $dbh->prepare($query) || die print "$DBI::errstr";
 	$out->execute() || die print "$DBI::errstr";
 	
-	$query = "SELECT cooperations,projects,role,burdentests FROM $logindb.user WHERE name=?";
+	$query = "SELECT cooperations,projects,role,edit,burdentests FROM $logindb.user WHERE name=?";
 	$out = $dbh->prepare($query) || die print "$DBI::errstr";
 	$out->execute($user) || die print "$DBI::errstr";
-	($cooperations,$projects,$role,$burdentests) = $out->fetchrow_array;
+	($cooperations,$projects,$role,$dbedit,$burdentests) = $out->fetchrow_array;
 	
 	# search for allowed projects with cooperation
 	(@tmp)=split(/::/,$cooperations);
@@ -3685,6 +3694,13 @@ return($ref);
 ########################################################################
 sub initSearchStatistics {
 my $self         = shift;
+my $sample       = shift;
+my $pedigree     = shift;
+my $autosearch   = shift;
+
+if (!defined($sample)) {$sample = ""};
+if (!defined($pedigree)) {$pedigree = ""};
+if (defined($autosearch)){$libtype_default = ""};
 
 my $ref          = "";
 
@@ -3729,7 +3745,7 @@ my @AoH = (
 	  	label       => "DNA ID",
 	  	type        => "text",
 		name        => "s.name",
-	  	value       => "",
+	  	value       => "$sample",
 		size        => "30",
 		maxlength   => "30",
 	  	bgcolor     => "formbg",
@@ -3752,7 +3768,7 @@ my @AoH = (
 	  	label       => "Pedigree",
 	  	type        => "text",
 		name        => "pedigree",
-	  	value       =>  "",
+	  	value       =>  "$pedigree",
 		size        => "30",
 		maxlength   => "30",
 	  	bgcolor     => "formbg",
@@ -4122,7 +4138,7 @@ if (($demo) and ($sname eq "")) {
 	  },
 	  {
 	  	label       => "AGMD",
-	  	labels      => "All, ACMG (59 genes)",
+	  	labels      => "All, ACMG (73 genes)",
 	  	type        => "radio",
 		name        => "agmd",
 	  	value       => "",
@@ -11529,7 +11545,7 @@ v.class,v.func,
 concat($rssnplink),
 concat( '<a href="http://localhost:$igvport/load?file=',$igvserver2,'" title="Open sample in IGV"','>',s.name,'</a>' ),
 s.pedigree,
-i.symbol,s.saffected,x.alleles,x.snvqual,x.gtqual,x.mapqual,x.coverage,x.percentvar,x.filter,
+i.name,s.saffected,x.alleles,x.snvqual,x.gtqual,x.mapqual,x.coverage,x.percentvar,x.filter,
 group_concat(DISTINCT $exac_link separator '<br>')
 FROM
 snv v
@@ -17152,6 +17168,13 @@ while (@row = $out->fetchrow_array) {
 				<a href='searchSample.pl?pedigree=$pedigree'>Sample information</a>
 				<a href='conclusion.pl?idsample=$idsample'>Sample conclusions</a>
 				<a href='report.pl?sname=$sname'>Report</a>
+				#;
+				if ($role eq "admin" || $role eq "manager" ){
+                                        print qq#
+                                        <a href='wrapper.pl?sname=$sname&file=merged.rmdup.bam'>Download BAM</a>
+                                        #;
+                                }
+                                print qq#
 			</div>
 			</div>
 			</td>
@@ -17453,6 +17476,24 @@ foreach $field (@fields) {
 			$where .= " e.datelast <= ? ";
 			push(@values2,$values[$i]);
 		}
+		elsif ($field eq "idproject" ) {
+			$where .= " s.idproject = ? ";
+			push(@values2,$values[$i]);
+		}
+		elsif ($field eq "s.name" ) {
+			my @names=split(" ", $values[$i]);
+			my $namesquery="(";
+			foreach my $samplename (@names){
+				if ($namesquery ne "(" ) {
+					$namesquery .= " OR ";
+				}
+				$namesquery .= " s.name = ? ";
+				push(@values2, $samplename);
+			}
+			$namesquery.=")";
+			
+			$where .= $namesquery. " " if $namesquery ne "()";
+		}
 		else {
 			$where .= $field . " like ? ";
 			push(@values2,$values[$i]);
@@ -17467,6 +17508,14 @@ if ($ref->{libtype} ne "") {
 	push(@values2,$ref->{libtype});
 }
 
+my $libname = "l.lname";
+
+if ( isEdit() == 1 ){
+	$libname = "concat('<a href=\"../solexa/library.pl?id=',l.lid,'&amp;mode=edit\">',l.lname,'</a>')";
+}else{
+	$libname = "l.lname";
+}
+
 #replace(replace(replace(replace (cl.solved,1,"solved"),2,"not_solved"),3,"candidate"),4,"pending")
 			
 $i=0;
@@ -17475,8 +17524,8 @@ SELECT
 s.name,
 concat_ws(' ',cl.solved, group_concat(DISTINCT co.genesymbol SEPARATOR ' ')),
 h.idsample,
-s.pedigree,s.sex,s.foreignid,s.externalseqid,e.sry,c.name,
-group_concat(DISTINCT l.lname),lt.ltlibtype,lp.lplibpair,a.name,
+s.pedigree,s.sex,s.foreignid,s.externalseqid,e.sry,p.pdescription,c.name,group_concat( DISTINCT D.name ), s.saffected,
+group_concat( DISTINCT $libname ),lt.ltlibtype,lp.lplibpair,a.name,
 e.mix,
 e.duplicates*100,e.opticalduplicates*100,e.reads,e.mapped,e.percentm,e.properlyp,e.seq,
 round(e.seq/e.mapped*1000000000),
@@ -17505,13 +17554,15 @@ AND soa.aread1failed = 'F'
 AND soa.aread2failed = 'F'
 AND sol.lfailed = 0  
 ), mismatchrate, avgqual, avgquallast5, libcomplexity, q30fraction, avgdiffdepth,
-s.idsample
+s.idsample, dw.iduser is not null download
 FROM
 $sampledb.sample s 
 LEFT  JOIN $sampledb.disease2sample ds ON s.idsample = ds.idsample
+LEFT  JOIN $sampledb.disease         D ON ds.iddisease = D.iddisease
 LEFT  JOIN $solexa.sample2library   sl ON s.idsample = sl.idsample
 LEFT  JOIN $solexa.library           l ON sl.lid = l.lid
 INNER JOIN $sampledb.cooperation     c ON s.idcooperation = c.idcooperation
+INNER JOIN $sampledb.project         p ON s.idproject = p.idproject
 LEFT  JOIN $solexa.libtype          lt on l.libtype = lt.ltid 
 LEFT  JOIN $solexa.libpair          lp on l.libpair = lp.lpid 
 LEFT  JOIN $sampledb.exomestat       e ON (s.idsample = e.idsample AND e.idlibtype=l.libtype AND e.idlibpair=l.libpair)
@@ -17520,6 +17571,7 @@ LEFT  JOIN $exomevcfe.conclusion    cl ON s.idsample = cl.idsample
 LEFT  JOIN $solexa.assay             a ON e.idassay = a.idassay
 LEFT  JOIN $exomevcfe.hpo            h ON s.idsample = h.idsample
 LEFT  JOIN $exomevcfe.comment       co ON s.idsample = co.idsample
+LEFT  JOIN $exomevcfe.download      dw ON ( s.idsample = dw.idsample OR s.idproject = dw.idproject and NOW()>=dw.startdate and NOW()<=dw.enddate and dw.iduser=(select iduser FROM $exomevcfe.user where name='$user' ))
 $where
 AND $allowedprojects
 AND l.lfailed = 0
@@ -17544,7 +17596,10 @@ $out->execute(@values2) || die print "$DBI::errstr";
 	'Foreign ID',
 	'External<br>SeqID',
 	'SRY',
+	'Project',
 	'Cooperation',
+	'Disease',
+	'Affected',
 	'Libraries',
 	'libtype',
 	'libpair',
@@ -17599,6 +17654,10 @@ my $pedigree = "";
 # https://api.jquery.com/contextmenu/
 
 while (@row = $out->fetchrow_array) {
+
+	my $canDownload = ( $row[-1] || $role eq "admin" || $role eq "manager" );
+	pop(@row);
+
 	$idsample = $row[-1];
 	$sname    = $row[0];
 	$pedigree = $row[3];
@@ -17615,7 +17674,7 @@ while (@row = $out->fetchrow_array) {
 			print qq#
 			<td style='white-space:nowrap;'>
 			<div class="dropdown">
-			$tmp&nbsp;&nbsp;
+			$tmp&nbsp;&nbsp; 
 			<img style='width:14pt;height:14pt;' src="/EVAdb/evadb_images/down-squared.png" title="Links to analysis functions" onclick="myFunction($n)" class="dropbtn" />
 			<div id="myDropdown$n" class="dropdown-content">
 			        <a href='search.pl?pedigree=$pedigree'>Autosomal dominant</a>
@@ -17636,9 +17695,17 @@ while (@row = $out->fetchrow_array) {
 					#;
 				}
 				print qq#
-				<a href='searchSample.pl?pedigree=$pedigree'>Sample information</a>
+				<a href='searchSample.pl?pedigree=$pedigree&autosearch=1'>Sample information</a>
 				<a href='conclusion.pl?idsample=$idsample'>Sample conclusions</a>
 				<a href='report.pl?sname=$sname'>Report</a>
+				#;
+				if ( $canDownload ){
+                                        print qq#
+					 <a href='wrapper.pl?sname=$sname&file=$vcfRawFileName'>Download Raw VCF</a>
+                                        <a href='wrapper.pl?sname=$sname&file=$bamFileName'>Download BAM</a>
+                                        #;
+                                }
+                                print qq#
 			</div>
 			</div>
 			</td>
@@ -17653,24 +17720,29 @@ while (@row = $out->fetchrow_array) {
 				print "<td><a href='importHPO.pl?sname=$sname'>New</a></td>";
 			}
 		}
-		elsif ($i == 7) { # SRY
-			if ( ($row[$i] ne '') and ($row[$i] < 100 ) and ($row[$i-2] eq "male") and ($row[8] eq 'exomic')) {
+		elsif ($i == 3 ){
+			print qq#
+				<td><a href='searchStat.pl?pedigree=$pedigree&autosearch=1'>$pedigree</a></td>
+			#;
+		}
+		elsif ($i == 7){ # SRY
+			if ( ($row[$i] ne '') and ($row[$i] < 100 ) and ($row[$i-3] eq "male") and ($row[10] eq 'exomic')) {
 				print "<td $warningtdbg>$row[$i]</td>";
 			}
-			elsif ( ($row[$i] ne '') and ($row[$i] > 25 ) and ($row[$i-2] eq "female") and ($row[8] eq 'exomic')) {
+			elsif ( ($row[$i] ne '') and ($row[$i] > 25 ) and ($row[$i-3] eq "female") and ($row[10] eq 'exomic')) {
 				print "<td $warningtdbg>$row[$i]</td>";
 			}
-			elsif ( ($row[$i] ne '') and ($row[$i] < 12 ) and ($row[$i-2] eq "male") and ($row[8] eq 'genomic')) {
+			elsif ( ($row[$i] ne '') and ($row[$i] < 12 ) and ($row[$i-3] eq "male") and ($row[10] eq 'genomic')) {
 				print "<td $warningtdbg>$row[$i]</td>";
 			}
-			elsif ( ($row[$i] ne '') and ($row[$i] > 3 ) and ($row[$i-2] eq "female") and ($row[8] eq 'genomic')) {
+			elsif ( ($row[$i] ne '') and ($row[$i] > 3 ) and ($row[$i-3] eq "female") and ($row[10] eq 'genomic')) {
 				print "<td $warningtdbg>$row[$i]</td>";
 			}
 			else {
 				print "<td>$row[$i]</td>";
 			}
 		}
-		elsif ($i == 13) { # Contamination
+		elsif ($i == 16) { # Contamination
 			if ( ($row[$i] ne '') and ($row[$i] >= 0.03) ) {
 				print "<td $warningtdbg>$row[$i]</td>";
 			}
@@ -17678,7 +17750,7 @@ while (@row = $out->fetchrow_array) {
 				print "<td> $row[$i]</td>";
 			}
 		}
-		elsif ($i == 20) { # Seq (GB)
+		elsif ($i == 23) { # Seq (GB)
 			if ( ($row[$i] ne '') and ($row[$i] < 8) ) {
 				print "<td class='textred'>$row[$i]</td>";
 			}
@@ -17686,8 +17758,12 @@ while (@row = $out->fetchrow_array) {
 				print "<td> $row[$i]</td>";
 			}
 		}
-		elsif ($i == 38) { 
+		elsif ($i == 41) { 
 			print "<td class='width230'>$row[$i]</td>";
+		}
+		elsif ($i == 48) {
+			#Service field
+			print "";print "<td>$row[46]</td>";
 		}
 		else {
 			print "<td>$row[$i]</td>";
@@ -19377,7 +19453,7 @@ $out->execute(@values2) || die print "$DBI::errstr";
 	'Cooperation',
 	'Comment',
 	'Entered',
-	'Interal ID'
+	'Internal ID'
 	);
 
 &tableheaderDefault("1500px");
@@ -19426,6 +19502,13 @@ while (@row = $out->fetchrow_array) {
 				<a href='searchSample.pl?pedigree=$pedigree'>Sample information</a>
 				<a href='conclusion.pl?idsample=$idsample'>Sample conclusions</a>
 				<a href='report.pl?sname=$sname'>Report</a>
+				#;
+				if ($role eq "admin" || $role eq "manager" ){
+                                        print qq#
+                                        <a href='wrapper.pl?sname=$sname&file=merged.rmdup.bam'>Download BAM</a>
+                                        #;
+                                }
+                                print qq#
 			</div>
 			</div>
 			</td>
@@ -19438,6 +19521,11 @@ while (@row = $out->fetchrow_array) {
 			else {
 				print "<td><a href='importHPO.pl?sname=$sname'>New</a></td>";
 			}
+		}
+		elsif ($i == 5 ){
+			print qq#
+				<td><a href='searchSample.pl?pedigree=$pedigree'>$pedigree</a></td>
+			#;
 		}
 		else {
 			print "<td> $row[$i] </td>";
@@ -19587,7 +19675,7 @@ $out->execute(@values2) || die print "$DBI::errstr";
 	'Cooperation',
 	'Comment',
 	'Entered',
-	'Interal ID'
+	'Internal ID'
 	);
 
 &tableheaderDefault("1500px");
@@ -19763,7 +19851,7 @@ $out->execute(@values2) || die print "$DBI::errstr";
 	'Cooperation',
 	'Comment',
 	'Entered',
-	'Interal ID'
+	'Internal ID'
 	);
 
 &tableheaderDefault("1500px");
@@ -19804,6 +19892,47 @@ print "</tbody></table></div>";
 
 
 $out->finish;
+}
+########################################################################
+# getRole
+########################################################################
+sub getRole {
+	return $role;
+}
+########################################################################
+# isEdit
+########################################################################
+sub isEdit {
+	return $dbedit;
+}
+########################################################################
+#  canDownload
+########################################################################
+sub canDownload {
+my $self         = shift;
+my $sname        = shift;
+my $dbh          = shift;
+my $canDownload  = 0;
+my $out;
+
+
+my $query = qq#
+SELECT dw.iduser is not null download
+FROM $sampledb.sample s
+LEFT JOIN $exomevcfe.download  dw ON ( s.idsample = dw.idsample OR s.idproject = dw.idproject and NOW()>=dw.startdate and NOW()<=dw.enddate and dw.iduser=(select iduser FROM $exomevcfe.user where name='$user' ))
+WHERE s.name = ?
+#;
+
+
+#print "<br>query $query $idsample<br>";
+$out = $dbh->prepare($query) || die print "$DBI::errstr";
+$out->execute($sname) || die print "$DBI::errstr";
+$canDownload = $out->fetchrow_array;
+
+$canDownload = 1 if ( getRole() eq "admin" || getRole() eq "manager" );
+
+return($canDownload);
+
 }
 ########################################################################
 # allowedSampleName
@@ -20291,7 +20420,7 @@ print "snvqual >= $ref->{'snvqual'}<br>";
 print "gtqual  >= $ref->{'gtqual'}<br>";
 print "mapqual >= $ref->{'mapqual'}<br>";
 print "percentvar >= $ref->{'percentvar'}<br>";
-
+print "<br><br>$query<br>Params<br>".join(" - ", @prepare)." - $idsample1<br>" if ($role eq "admin");
 $query = qq#
 SELECT 
 CONCAT('<a href="listPosition.pl?idsnv=',v.idsnv,'" title="All carriers of this variant">',v.idsnv,'</a>'),
@@ -21632,7 +21761,7 @@ print qq|
   <div class="subnav">Help</div>
   <a href="help.pl">Help</a>
   <div class="subnav">Logout</div>
-  <a href="login.pl">Logout</a>
+  <a href="login.pl">Logout $user</a>
 |;
 if ($role eq "admin") {
 print qq|

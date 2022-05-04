@@ -53,4 +53,8 @@ print $cgiquery->hidden(-name=>'mode',-default=>$mode);
 
 print "</form>" ;
 
+if ($mode eq 'edit') {
+	$solexa->showRunPF($dbh,$id);
+}
+
 $solexa->printFooter($dbh);

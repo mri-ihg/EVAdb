@@ -84,7 +84,7 @@ print qq(
 <tr><td colspan="2">
 <b><div class="big">Login</div></b>
 <br>
-Use <b>TestUser1</b> for name and password 
+Use <b>TestUser1</b> as name and password 
 to log into the demo version.
 <br>
 Leave the 'Yubikey' field blank. It can be
@@ -105,7 +105,8 @@ and copy-number variations are missing. Also, external data sets of <b>gnomAD</b
 <b>OMIM</b>, <b>HGMD</b> and the functional predictions of <b>PolyPhen2</b>, 
 <b>SIFT</b> and <b>CADD</b> are not installed in the demo version.
 <br><br>
-The application is available on <a href='https://github.com/mri-ihg'>GitHub</a>. Permission to use this work is granted under the MIT <a href="http://opensource.org/licenses/MIT">MIT License</a>.
+The application is available at <a href='https://github.com/mri-ihg'>GitHub</a>. Permission to use this work is granted under the
+<a href="http://opensource.org/licenses/MIT">MIT License</a>.
 <p style="text-align:center;"><img src="/EVAdb/evadb_images/exome-database-help-figure.png" width="600px"></p>
 </td></tr>
 

@@ -148,7 +148,18 @@ open FOUT, "$filename" or die "$filename: $!";
 		# Calculating data transfer size
 		$size=( $end - $start +1);
 		seek FOUT, $start, 0;
-}
+	}else{
+		if ( 
+			( $cgi->param("file") eq "merged.rmdup.bam" || $cgi->param("file") =~ /.*vcf/ ) 
+			&&
+			( $snv->getRole() ne "admin" && $snv->getRole() ne "manager" && ! $snv->canDownload($sname, $dbh) )
+		)
+		{
+			print $cgi->header( -status => "403" );
+			print "Not authorized\n";
+                	exit;
+		}
+	}
 
 # Complete header information
 	$cgihead{'-ETag'}=$etag; #@$if_range; #$etag;
@@ -162,6 +173,7 @@ open FOUT, "$filename" or die "$filename: $!";
 	print $cgi->header(%cgihead);
 
 # Send file
+	$|++;
 	my $buf_size = 4096;
 	#my $buf_size = 8192;
 	#my $buf_size = 1024;
@@ -184,7 +196,7 @@ open FOUT, "$filename" or die "$filename: $!";
 
 		$total=$total+$buf_size; 
 
-		if ( $total > 512*1024*1024 )
+		if ( $total > 512*1024*1024*1024 )
 		{
 			exit;
 		}

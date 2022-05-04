@@ -8,12 +8,17 @@ use strict;
 package Report;
 #use warnings;
 
+my $defaultmaterial     = "genome"; 
+	$defaultmaterial = ( $Snv::defaultmaterial ) if ( defined $Snv::defaultmaterial );
+		
+
 my $sampledb        = $Snv::sampledb;
 my $coredb          = $Snv::coredb;
 my $exomevcfe       = $Snv::exomevcfe;
 my $vep_cmd         = $Snv::vep_cmd;
 my $vep_fasta       = $Snv::vep_fasta;
 my $vep_genesplicer = $Snv::vep_genesplicer;
+
 
 sub new {
 	my $class = shift;
@@ -84,7 +89,8 @@ evs.homalt,
 x.coverage,
 (select count(xx.idsample) from snvsample xx where (xx.idsnv=x.idsnv and xx.alleles=1)),
 (select count(xx.idsample) from snvsample xx where (xx.idsnv=x.idsnv and xx.alleles=2)),
-(select count(distinct idsample) from snvsample)
+(select count(distinct idsample) from snvsample),
+co.causefor
 FROM $sampledb.sample s
 INNER JOIN $exomevcfe.conclusion   cl ON s.idsample=cl.idsample
 LEFT  JOIN $exomevcfe.comment      co ON s.idsample=co.idsample AND (co.patho like "%pathogenic" OR co.patho like "unknown significance")
@@ -96,7 +102,7 @@ LEFT  JOIN $exomevcfe.hpo         hpo ON s.name=hpo.samplename
 LEFT  JOIN $coredb.evs            evs ON v.chrom=evs.chrom and v.start=evs.start and v.refallele=evs.refallele and v.allele=evs.allele
 WHERE s.name=?
 AND $allowedprojects
-AND (co.causefor = "primary" OR cl.solved = 2)
+AND (co.causefor = "primary" OR cl.solved = 2 OR co.causefor = "incidental" )
 AND (hpo.active = 1 or ISNULL(hpo.active))
 GROUP BY v.idsnv
 #;
@@ -152,6 +158,7 @@ my @coverage    = ();
 my @inhouse_het = ();
 my @inhouse_hom = ();
 my $inhouse_exomes = "";
+my $causefor = "";
 while (@row = $out->fetchrow_array) {
 	#print "@row\n";
 	$samplename=$row[0];
@@ -237,6 +244,7 @@ while (@row = $out->fetchrow_array) {
 	push(@inhouse_het,$row[31]);
 	push(@inhouse_hom,$row[32]);
 	$inhouse_exomes = $row[33];
+	$causefor = $row[34];
 }
 # get_vep_for_report
 $i=0;
@@ -334,14 +342,17 @@ my $help = qq#
 "Prename"             : "Vorname",
 "Name"                : "Nachname",
 "Birth"               : "Geburtstag",
+"Taken"               : "Entnahme",
 "Received"            : "Eingang",
 "Mother_Name"         : "Mutter",
 "Mother_Prename"      : "Muttervorname",
 "Mother_Birth"        : "Geburtstag",
+"Mother_Taken"        : "Entnahme",
 "Mother_Received"     : "Eingang",
 "Father_Name"         : "Vater",
 "Father_Prename"      : "Vatervorname",
 "Father_Birth"        : "Geburtstag",
+"Father_Taken"        : "Entnahme",
 "Father_Received"     : "Eingang",
 "Synopsis"            : "Synopse",
 "Casehistory"         : "Anamnese",
@@ -407,6 +418,7 @@ print qq#
 	}
 	document.querySelector(".name").innerHTML      = newArr.Name.concat(', ', newArr.Prename);
 	document.querySelector(".birth").innerHTML     = newArr.Birth;
+	document.querySelector(".taken").innerHTML     = newArr.Taken;
 	document.querySelector(".received").innerHTML  = newArr.Received;
 	if (document.querySelector(".mname") !== null) {
 		if (newArr.Mother_Name === undefined) {
@@ -419,6 +431,9 @@ print qq#
 	}
 	if (document.querySelector(".mbirth") !== null) {
 		document.querySelector(".mbirth").innerHTML    = newArr.Mother_Birth;
+	}
+	if (document.querySelector(".mtaken") !== null) {
+		document.querySelector(".mtaken").innerHTML = newArr.Mother_Taken;
 	}
 	if (document.querySelector(".mreceived") !== null) {
 		document.querySelector(".mreceived").innerHTML = newArr.Mother_Received;
@@ -434,6 +449,9 @@ print qq#
 	}
 	if (document.querySelector(".fbirth") !== null) {
 		document.querySelector(".fbirth").innerHTML    = newArr.Father_Birth;
+	}
+	if (document.querySelector(".ftaken") !== null) {
+		document.querySelector(".ftaken").innerHTML = newArr.Father_Taken;
 	}
 	if (document.querySelector(".freceived") !== null) {
 		document.querySelector(".freceived").innerHTML = newArr.Father_Received;
@@ -531,10 +549,10 @@ else {
 my $recommendation = "";
 if (($mother eq "") and ($father eq "")) {
 if ((($genotype[0] eq "heterozygous") and ($genotype[1] eq "heterozygous")) or ($genotype[0] eq "homozygous")) {
-	$recommendation = "Wir empfehlen eine Testung der Anlagetr&auml;gerschaft zum Nachweis der biallelischen Lokalisation der Varianten."
+	$recommendation = "Wir empfehlen eine Testung der Anlagetr&auml;gerschaft der Eltern zum Nachweis der biallelischen Lokalisation der Varianten."
 }
 elsif (($genotype[0] eq "heterozygous") or ($genotype[0] eq "hemizygous")){ #de novo
-	$recommendation = "Wir empfehlen eine Testung der Anlagetr&auml;gerschaft zum m&ouml;glichen Nachweis der de novo Entstehung der Variante."
+	$recommendation = "Wir empfehlen eine Testung der Anlagetr&auml;gerschaft der Eltern zum m&ouml;glichen Nachweis der de novo Entstehung der Variante."
 }
 }
 
@@ -543,7 +561,7 @@ print "<div style='width:$width;background-color:#EDEDED'>";
 print "<br><br>";
 
 &head;
-if ($solved == 2) {
+if ($solved == 2 && $causefor ne "incidental"  ) {
 	&unsolved;
 }
 else {
@@ -574,17 +592,19 @@ my $eltern = "";
 $eltern = "und seiner Eltern" if (($sex eq "male") and ($mother ne ""));
 $eltern = "und ihrer Eltern" if (($sex eq "female") and ($mother ne ""));
 
+
+
 print qq#
 <p $left><b>Zusammenfassung</p>
 <ul $justify>
 <li>Ergebnis: unauff&auml;lliger Befund</li>
 <li>Kein Nachweis (wahrscheinlich) pathogener Varianten im Kontext der Symptomatik.</li>
-<li>Auf Anfrage kann eine Reanalyse der Exomdaten erfolgen. Ohne konkreten Anlass empfehlen wir dies fr&uuml;hestens nach einem Jahr. 
+<li>Auf Anfrage kann eine Reanalyse der Sequenzdaten erfolgen. Ohne konkreten Anlass empfehlen wir dies fr&uuml;hestens nach einem Jahr. 
 Sollte im Rahmen unserer internen Analysen eine f&uuml;r diesen Fall relevante Variante identifiziert werden, werden wir Sie hiervon in Kenntnis setzen.</li>
 </ul></b>
 <p $left><br>$salutation,</p>
-<p $justify>wir bedanken uns f&uuml;r die Zusendung der Blutproben von <span style='color:red'>xxx</span> $eltern zur diagnostischen Exomsequenzierung.</p>
-<p $justify>Die in den Exomdaten des Patienten identifizierten Varianten wurden unter Ber&uuml;cksichtigung verschiedener Vererbungsformen und 
+<p $justify>wir bedanken uns f&uuml;r die Zusendung der Blutproben von <span style='color:red'>xxx</span> $eltern zur diagnostischen Sequenzierung.</p>
+<p $justify>Die in den Sequenzdaten des Patienten identifizierten Varianten wurden unter Ber&uuml;cksichtigung verschiedener Vererbungsformen und 
 Analyseverfahren ausgewertet.</p>
 <p $justify>Filter I - autosomal-rezessiv: Kein Nachweis (wahrscheinlich) pathogener Varianten.</p>
 <p $justify0>Filter II - autosomal-dominant (Ph&auml;notyp-basiert): Kein Nachweis (wahrscheinlich) pathogener Varianten.</p>
@@ -649,6 +669,19 @@ my $conclusion = qq#Klinische Ph&auml;notypen beschriebener Patienten stimmen mi
 In Zusammenschau der Befunde ist nach unserer Einsch&auml;tzung eine urs&auml;chliche Assoziation der identifizierten Variante/n mit der Erkrankung 
 von <span class="prename3"></span> $xxx $probability2. $probability1#;
 
+my $extraremarks = "";
+if ($inheritance[$i] eq "de novo" && $mother ne "" && $father ne "" ) {
+	$extraremarks .= "Mit einer Wahrscheinlichkeit von 50&percnt; wird ".( $sex eq "female" ? "die Patientin" :  $sex eq "male" ? "der Patient" : "die Patientin/der Patient" )." die Variante an Nachkommen weiter vererben. Bei weiteren gemeinsamen Nachkommen der Eltern ".( $sex eq "female" ? "der Patientin" :  $sex eq "male" ? "des Patienten" : "der Patientin/des Patienten" )." betr&auml;gt die Wiederholungswahrscheinlichkeit aufgrund der M&ouml;glichkeit eines elterlichen Keimzellmosaiks 1-2&percnt;.&nbsp;"
+}
+if ( $genotype[$i] eq "heterozygous" && ($mother eq "" || $father eq "") ) {
+	$extraremarks .= "Mit einer Wahrscheinlichkeit von 50&percnt; wird ".( $sex eq "female" ? "die Patientin" :  $sex eq "male" ? "der Patient" : "die Patientin/der Patient" )." die Variante an Nachkommen weiter vererben.";
+}
+
+if ( $genotype[$i] eq "homozygous" || $genotype[$i] eq "compound_heterozygous" ) {
+	$extraremarks .= "Bei weiteren gemeinsamen Nachkommen der Eltern ".( $sex eq "female" ? "der Patientin" :  $sex eq "male" ? "des Patienten" : "der Patientin/des Patienten" )." betr&auml;gt die Wiederholungswahrscheinlichkeit aufgrund der nachgewiesenen Anlagetr&auml;agerschaften 25&percnt;.&nbsp;";
+}
+
+
 print qq#
 <p $left><b>Beurteilung</b></p>
 <p $justify>
@@ -657,6 +690,7 @@ $genefunction
 $diagnosis 
 $conclusion 
 $recommendation
+$extraremarks
 </p>
 #;
 
@@ -675,33 +709,37 @@ print qq#
 
 print "<p $left><b>MOLEKULARGENETISCHER BEFUND";
 if (($mother ne "") and ($father ne "")) {
-	print " - Trio-Exomsequenzierung</b><br><br></p>";
+	print " - Trio-Sequenzierung</b><br><br></p>";
 }
 else {
-	print " - Single-Exomsequenzierung</b><br><br></p>";
+	print " - Single-Sequenzierung</b><br><br></p>";
 }
 
 print qq#
 <table style='width:$width;border-collapse:collapse;border-right:0;'>
 <tr><td $td_left_t width="28%">Name, Vorname</td><td $td_left_t width="44%"><span $left8 class="name"></span></td><td $td_left_t width="12%">Material</td><td $td_left_t width="16%">EDTA-Blut</td></tr> 
-<tr><td $td_left_wo>Geburtsdatum</td><td $td_left_wo><span $left8 class="birth"></span></td><td $td_left_wo>Eingang</td><td $td_left_wo><span $left8 class="received"></span></td></tr> 
-<tr><td $td_left_wo>Geschlecht</td><td $td_left_wo>$sex_g</td><td $td_left_wo>DNA-ID</td><td $td_left_wo>$samplename</td></tr> 
-<tr><td $td_left_b>Ph&auml;notyp</td><td $td_left_b>$affected (Index)</td><td $td_left_b>Alias-ID</td><td $td_left_b>$foreignid</td></tr> 
+<tr><td $td_left_wo>Geburtsdatum</td><td $td_left_wo><span $left8 class="birth"></span></td><td $td_left_wo>Entnahme</td><td $td_left_wo><span $left8 class="taken"></span></td></tr> 
+<tr><td $td_left_wo>Geschlecht</td><td $td_left_wo>$sex_g</td><td $td_left_wo>Eingang</td><td $td_left_wo><span $left8 class="received"></span></td></tr>
+<tr><td $td_left_wo>Ph&auml;notyp</td><td $td_left_wo>$affected (Index)</td><td $td_left_wo>DNA-ID</td><td $td_left_wo>$samplename</td></tr> 
+<tr><td $td_left_b></td><td $td_left_b></td><td $td_left_b>Alias-ID</td><td $td_left_b>$foreignid</td></tr> 
+
 #;
 if ($mother ne "") {
 print qq#
 <tr><td $td_left_t width="28%">Name, Vorname</td><td $td_left_t width="44%"><span $left8 class="mname"></span></td><td $td_left_t width="12%">Material</td><td $td_left_t width="16%">EDTA-Blut</td></tr> 
-<tr><td $td_left_wo>Geburtsdatum</td><td $td_left_wo><span $left8 class="mbirth"></span></td><td $td_left_wo>Eingang</td><td $td_left_wo><span $left8 class="mreceived"></span></td></tr> 
-<tr><td $td_left_wo>Geschlecht</td><td $td_left_wo>weiblich</td><td $td_left_wo>DNA-ID</td><td $td_left_wo>$mother</td></tr> 
-<tr><td $td_left_b>Ph&auml;notyp</td><td $td_left_b>$f_affected (Mutter)</td><td $td_left_b>Alias-ID</td><td $td_left_b>$f_foreignid</td></tr> 
+<tr><td $td_left_wo>Geburtsdatum</td><td $td_left_wo><span $left8 class="mbirth"></span></td><td $td_left_wo>Entnahme</td><td $td_left_wo><span $left8 class="mtaken"></span></td></tr> 
+<tr><td $td_left_wo>Geschlecht</td><td $td_left_wo>weiblich</td><td $td_left_wo>Eingang</td><td $td_left_wo><span $left8 class="mreceived"></span></td></tr> 
+<tr><td $td_left_wo>Ph&auml;notyp</td><td $td_left_wo>$m_affected (Mutter)</td><td $td_left_wo>DNA-ID</td><td $td_left_wo>$mother</td></tr>
+<tr><td $td_left_b></td><td $td_left_b></td><td $td_left_b>Alias-ID</td><td $td_left_b>$m_foreignid</td></tr> 
 #;
 }
 if ($father ne "") {
 print qq#
 <tr><td $td_left_t width="28%">Name, Vorname</td><td $td_left_t width="44%"><span $left8 class="fname"></span></td><td $td_left_t width="12%">Material</td><td $td_left_t width="16%">EDTA-Blut</td></tr> 
-<tr><td $td_left_wo>Geburtsdatum</td><td $td_left_wo><span $left8 class="fbirth"></span></td><td $td_left_wo>Eingang</td><td $td_left_wo><span $left8 class="freceived"></span></td></tr> 
-<tr><td $td_left_wo>Geschlecht</td><td $td_left_wo>m&auml;nnlich</td><td $td_left_wo>DNA-ID</td><td $td_left_wo>$father</td></tr> 
-<tr><td $td_left_b>Ph&auml;notyp</td><td $td_left_b>$m_affected (Vater)</td><td $td_left_b>Alias-ID</td><td $td_left_b>$m_foreignid</td></tr> 
+<tr><td $td_left_wo>Geburtsdatum</td><td $td_left_wo><span $left8 class="fbirth"></span></td><td $td_left_wo>Entnahme</td><td $td_left_wo><span $left8 class="ftaken"></span></td></tr> 
+<tr><td $td_left_wo>Geschlecht</td><td $td_left_wo>m&auml;nnlich</td><td $td_left_wo>Eingang</td><td $td_left_wo><span $left8 class="freceived"></span></td></tr>
+<tr><td $td_left_wo>Ph&auml;notyp</td><td $td_left_wo>$f_affected (Vater)</td><td $td_left_wo>DNA-ID</td><td $td_left_wo>$father</td></tr> 
+<tr><td $td_left_b></td><td $td_left_b></td><td $td_left_b>Alias-ID</td><td $td_left_b>$f_foreignid</td></tr> 
 #;
 }
 print qq#
@@ -721,12 +759,16 @@ print "</table>";
 sub summary {
 my $i = shift;
 my $diagnosis = "";
+
+# If incidental finding it should be remarked
+my $diagnosetext = ( $causefor eq "incidental" ? "Zusatzbefund" : "Diagnose" );
+
 if ($omimnumber[$i] ne "") {
 	if ($probability2 eq "unklar") {
 		$diagnosis = "Unklarer Befund: Verdacht auf \"$omimdisease[$i]\" (OMIM \#$omimnumber[$i])";
 	}
 	else {
-		$diagnosis = "Diagnose: \"$omimdisease[$i]\" (OMIM \#$omimnumber[$i])";
+		$diagnosis = "$diagnosetext: \"$omimdisease[$i]\" (OMIM \#$omimnumber[$i])";
 	}
 }
 else {
@@ -734,7 +776,7 @@ else {
 		$diagnosis = "Unklarer Befund: Verdacht auf \"<i>$vepgene[0]</i>-assoziierte Erkrankung\" (nicht in OMIM gelistet)";
 	}
 	else {
-		$diagnosis = "Diagnose: \"<i>$vepgene[0]</i>-assoziierte Erkrankung\" (nicht in OMIM gelistet)";
+		$diagnosis = "$diagnosetext: \"<i>$vepgene[0]</i>-assoziierte Erkrankung\" (nicht in OMIM gelistet)";
 	}
 }
 
@@ -787,7 +829,7 @@ $probability0
 else {
 print qq#
 <ul $justify><b> $xxx not appropriate
-<li>Diagnose: $diagnosis</li>
+<li>$diagnosetext: $diagnosis</li>
 <li>Nachweis einer $patho[$i]en $genotype_g[$i]en $vepconseq[$i]-Variante in dem Krankheitsgen <i>$vepgene[$i]</i>.</li>
 #;
 }
@@ -843,15 +885,15 @@ $eltern = "und seiner Eltern" if (($sex eq "male") and ($mother ne ""));
 $eltern = "und ihrer Eltern" if (($sex eq "female") and ($mother ne ""));
 print qq#
 <p $left><br><br>$salutation,</p>
-<p $justify>wir bedanken uns f&uuml;r die Zusendung der Blutproben von <span class="prename"></span> <span style='color:red'>xxx</span> $eltern zur diagnostischen Exomsequenzierung.</p>
+<p $justify>wir bedanken uns f&uuml;r die Zusendung der Blutproben von <span class="prename"></span> <span style='color:red'>xxx</span> $eltern zur diagnostischen Sequenzierung.</p>
 <p $left><b>Ergebnis</b></p>
-<p $justify>Die in den Exomdaten des Patienten identifizierten Varianten wurden unter Ber&uuml;cksichtigung verschiedener Vererbungsformen und 
+<p $justify>Die in den Sequenzdaten des Patienten identifizierten Varianten wurden unter Ber&uuml;cksichtigung verschiedener Vererbungsformen und 
 Analyseverfahren ausgewertet.</p>
 #;
 if ($mode eq "X-chromosomal") {
 print qq#
 <p $justify>Filter I - autosomal-rezessiv: Kein Nachweis (wahrscheinlich) pathogener Varianten.</p>
-<p $justify0>Filter II - autosomal-dominant (Ph&auml;notyp-basiert): Kein Nachweis (wahrscheinlich) pathogener Varianten.</p>
+<p $justify0>Filter II - autosomal-dominant: Kein Nachweis (wahrscheinlich) pathogener Varianten.</p>
 <p $justify0><b>Filter III - X-chromosomal: Nachweis einer $genotype_g[$i]en Variante ($vepconseq[$i]) in <i>$vepgene[$i]</i>.</b></p>
 <p $justify0>Filter IV - mtDNA: Kein Nachweis (wahrscheinlich) pathogener Varianten.</p>
 <p $justify0>Filter V - de-novo-Varianten: Kein Nachweis (wahrscheinlich) pathogener Varianten.</p>
@@ -865,7 +907,7 @@ print qq#
 elsif ($inheritance[$i] eq "de novo") {
 print qq#
 <p $justify>Filter I - autosomal-rezessiv: Kein Nachweis (wahrscheinlich) pathogener Varianten.</p>
-<p $justify0>Filter II - autosomal-dominant (Ph&auml;notyp-basiert): Kein Nachweis (wahrscheinlich) pathogener Varianten.</p>
+<p $justify0>Filter II - autosomal-dominant: Kein Nachweis (wahrscheinlich) pathogener Varianten.</p>
 <p $justify0>Filter III - X-chromosomal: Kein Nachweis (wahrscheinlich) pathogener Varianten.</p>
 <p $justify0>Filter IV - mtDNA: Kein Nachweis (wahrscheinlich) pathogener Varianten.</p>
 <p $justify0><b>Filter V - de-novo-Varianten: Nachweis einer $genotype_g[$i]en $vepconseq[$i]-Variante in <i>$vepgene[$i]</i>.</b></p>
@@ -879,7 +921,7 @@ print qq#
 elsif ($genotype[$i] eq "homozygous") {
 print qq#
 <p $justify><b>Filter I - autosomal-rezessiv: Nachweis einer homozygoten $vepconseq[$i]-Variante in <i>$vepgene[$i]</i>.</b></p>
-<p $justify0>Filter II - autosomal-dominant (Ph&auml;notyp-basiert): Kein Nachweis (wahrscheinlich) pathogener Varianten.</p>
+<p $justify0>Filter II - autosomal-dominant: Kein Nachweis (wahrscheinlich) pathogener Varianten.</p>
 <p $justify0>Filter III - X-chromosomal: Kein Nachweis (wahrscheinlich) pathogener Varianten.</p>
 <p $justify0>Filter IV - mtDNA: Kein Nachweis (wahrscheinlich) pathogener Varianten.</p>
 #;
@@ -893,7 +935,7 @@ print qq#
 elsif ($genotype[$i] eq "compound_heterozygous") {
 print qq#
 <p $justify><b>Filter I - autosomal-rezessiv: Nachweis von zwei compound-heterozygoten Varianten ($vepconseq[$i]/$vepconseq[$i+1]) in <i>$vepgene[$i]</i>.</b></p>
-<p $justify0>Filter II - autosomal-dominant (Ph&auml;notyp-basiert): Kein Nachweis (wahrscheinlich) pathogener Varianten.</p>
+<p $justify0>Filter II - autosomal-dominant: Kein Nachweis (wahrscheinlich) pathogener Varianten.</p>
 <p $justify0>Filter III - X-chromosomal: Kein Nachweis (wahrscheinlich) pathogener Varianten.</p>
 <p $justify0>Filter IV - mtDNA: Kein Nachweis (wahrscheinlich) pathogener Varianten.</p>
 #;
@@ -907,7 +949,7 @@ print qq#
 elsif ($mode eq "possible_recessive") {
 print qq#
 <p $justify><b>Filter I - autosomal-rezessiv: Nachweis von zwei heterozygoten Varianten ($vepconseq[$i]/$vepconseq[$i+1]) in <i>$vepgene[$i]</i>.</b></p>
-<p $justify0>Filter II - autosomal-dominant (Ph&auml;notyp-basiert): Kein Nachweis (wahrscheinlich) pathogener Varianten.</p>
+<p $justify0>Filter II - autosomal-dominant: Kein Nachweis (wahrscheinlich) pathogener Varianten.</p>
 <p $justify0>Filter III - X-chromosomal: Kein Nachweis (wahrscheinlich) pathogener Varianten.</p>
 <p $justify0>Filter IV - mtDNA: Kein Nachweis (wahrscheinlich) pathogener Varianten.</p>
 #;
@@ -941,7 +983,7 @@ my $i = shift;
 print qq#
 <p $left>Details zu den Varianten</p>
 <table style='width:$width;border-collapse:collapse;border-right:0;'>
-<tr><td $td_center>Variante</td><td $td_center>Abdeckung<br>in Index</td><td $td_center>VEP IMPACT<sup $sup>1</sup></td><td $td_center>H&auml;ufigkeit in<br>in-house Exomen<sup $sup>2</sup></td><td $td_center>H&auml;ufigkeit in<br>gnomAD</td></tr> 
+<tr><td $td_center>Variante</td><td $td_center>Abdeckung<br>in Index</td><td $td_center>VEP IMPACT<sup $sup>1</sup></td><td $td_center>H&auml;ufigkeit in<br>in-house Sequenzdaten<sup $sup>2</sup></td><td $td_center>H&auml;ufigkeit in<br>gnomAD</td></tr> 
 #;
 foreach (@patho) {
 print qq#
@@ -951,7 +993,7 @@ $i++;
 }
 print qq#
 <tr><td $td_left_wo colspan='5'><sup $sup>1</sup>Gem&auml;&szlig; Ensembl Variant Effect Predictor (https://www.ensembl.org/Help/Glossary?id=535).</td></tr>
-<tr><td $td_left_wo colspan='5'><sup $sup>2</sup>Derzeit $inhouse_exomes in-house Exome.</td></tr>
+<tr><td $td_left_wo colspan='5'><sup $sup>2</sup>Derzeit $inhouse_exomes in-house Proben.</td></tr>
 </table>
 #;
 
@@ -967,7 +1009,8 @@ WHERE name = 'munich_main_remarks'
 my $out = &executeQuerySth($dbh,$query,$values);
 my $text = $out->fetchrow_array;
 $text =~ s/(\$\w+)/$1/gee;
-print "$text";
+#print "$text";
+remarks1();
 
 }
 ##################################
@@ -976,15 +1019,13 @@ print qq#
 <p $left><b>Allgemeine Bemerkungen</b></p>
 <p $justify>Bei Auftreten neuer klinischer Merkmale oder der Ver&ouml;ffentlichung neuer Krankheitsgene mit &auml;hnlicher Klinik kann jederzeit 
 eine erneute Auswertung der Daten erfolgen.</p>
-<p $justify>Allgemein weisen wir darauf hin, dass die durchgef&uuml;hrte Exomanalyse nicht als abschlie&szlig;ende Beurteilung aller Abschnitte aller 
-Gene betrachtet werden darf. So k&ouml;nnen beispielsweise Varianten in nicht angereicherten Regionen (untranslatierte Bereiche, 
-Introns, Promotor- und Enhancer-Regionen), Repeat-Expansionen, Duplikationen und Deletionen nicht sicher detektiert und ausgeschlossen 
-werden. Bei entsprechendem klinischem Verdacht kann eine konventionelle Analyse (Sanger-Sequenzierung, MLPA) trotz des vorliegenden 
-Exombefundes indiziert sein. Hinsichtlich der Beurteilung identifizierter Varianten besteht die M&ouml;glichkeit, dass sich aufgrund der 
+<p $justify>Allgemein weisen wir darauf hin, dass die durchgef&uuml;hrte Analyse der Sequenzdaten nicht als abschlie&szlig;ende Beurteilung der Gesamtheit aller Gene betrachtet werden darf. Limitationen bestehen beispielsweise bei der Detektion von niedrig-gradigen Mosaiken, von Repeatexpansionen, von balancierten Ver&auml;nderungen (Translokationen und Inversionen) sowie bei der Callinggenauigkeit von gr&ouml;ßeren Indels &gt;20bp und kleineren SVs &lt;1000bp. Bei der Exomsequenzierung k&ouml;nnen dar&uuml;ber hinaus Varianten in nicht angereicherten Regionen (untranslatierte Bereiche, Introns, Promotor- und Enhancer-Regionen) nicht detektiert werden.
+Grunds&auml;tzlich ist die Genauigkeit f&uuml;r alle Variantentypen in Regionen mit hoher Sequenzhomologie oder niedriger Komplexit&auml;t bzw. mit anderen technischen Herausforderungen eingeschr&aumlnkt. 
+<br>Bei entsprechendem klinischem Verdacht kann eine konventionelle Analyse (Sanger-Sequenzierung, MLPA, Array-Analyse) trotz des vorliegenden 
+Befundes indiziert sein. Hinsichtlich der Beurteilung identifizierter Varianten besteht die M&ouml;glichkeit, dass sich aufgrund der 
 Verf&uuml;gbarkeit neuer Daten die Einsch&auml;tzung ihrer Pathogenit&auml;t und klinischen Relevanz zu einem sp&auml;teren Zeitpunkt 
 ver&auml;ndern k&ouml;nnte. Auf Wunsch kann eine Bereitstellung des Datensatzes erfolgen.</p>
-<p $justify>Gem&auml;&szlig; dem Gendiagnostikgesetz (GenDG) sollte der Befund im Rahmen eines humangenetischen Beratungsgespr&auml;chs mitgeteilt werden. 
-F&uuml;r R&uuml;ckfragen stehen wir selbstverst&auml;ndlich jederzeit gerne zur Verf&uuml;gung.</p>
+<p $justify>Nach &sect;10 GenDG soll jede diagnostische genetische Untersuchung mit dem Angebot einer genetischen Beratung einhergehen. F&uuml;r R&uuml;ckfragen stehen wir jederzeit gerne zur Verf&uuml;gung.</p>
 #;
 }
 

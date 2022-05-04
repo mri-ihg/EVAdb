@@ -1980,6 +1980,15 @@ my @AoH = (
 		maxlength   => "45",
 	  	bgcolor     => "formbg",
 	  },
+	  {
+                label       => "Invoice number",
+		type        => "text",
+		name        => "invoice",
+		value       => "",
+		size        => "45",
+		maxlegth    => "45",
+		bgcolor     => "formbg",
+	  }
 );
 
 $ref = \@AoH;
@@ -2052,6 +2061,15 @@ my @AoH = (
 		name        => "lmenuflag",
 	  	value       => "T",
 	  	values      => "F, T, ",
+	  	bgcolor     => "formbg",
+	  },
+	  {
+	  	label       => "Pool Name",
+	  	type        => "text",
+		name        => "odescription",
+	  	value       => "",
+		size        => "100",
+		maxlength   => "100",
 	  	bgcolor     => "formbg",
 	  },
 	  {
@@ -2952,6 +2970,15 @@ my @AoH = (
 	  	bgcolor     => "formbg",
 	  },
 	  {
+		label       => "Invoice number",
+		type        => "text",
+		name        => "invoice",
+		value       => "",
+		size        => "45",
+		maxlength   => "45",
+		bgcolor     => "formbg",
+	  },
+	  {
 	  	label       => "Entered from",
 	  	type        => "readonly2",
 		name        => "buser",
@@ -3395,6 +3422,61 @@ while ($resultref = $sth->fetchrow_hashref) {
 print "</table><br>";
 
 }
+
+########################################################################
+# showRunPF
+########################################################################
+sub showRunPF {
+my $self         = shift;
+my $dbh          = shift;
+my $id           = shift;
+
+my $sth          = "";
+my $resultref    = "";
+my $sql          = "";
+my @labels       = ();
+
+my $rname = "";
+
+$sql = "
+        SELECT rid, rname
+        FROM run r
+        where r.rid = ? ";
+
+$sth = $dbh->prepare($sql) || die print "$DBI::errstr";
+$sth->execute($id) || die print "$DBI::errstr";
+@labels = (
+        'rid',
+        'rname'
+        );
+
+print q(<br><br><br><table border="1" cellspacing="0" cellpadding="1"> );
+print "<tr>";
+foreach (@labels) {
+        print "<th align=\"center\">$_</th>";
+}
+print "</tr>";
+while ($resultref = $sth->fetchrow_hashref) {
+        print "<tr>";
+        print "<td>$resultref->{rid}</td><td>$resultref->{rname}</td>";
+        print "</tr>";
+	$rname=$resultref->{rname};
+}
+print "</table><br>";
+
+if ( -d glob "/data/runs/Runs/*$rname/Demultiplexed/Project_all/" )
+{
+	print "<br>Flowcell has been demultiplexed<br>";
+	print "<table><tr><td>%PF Sample</td><td>Sample</td></tr>";
+	my $out=`/data/isilon/users/scripts/illumina-pipeline/makePF.sh /data/runs/Runs/*$rname | awk '{print "<tr><td>"\$1"</td><td>"\$2"</td><tr>"}'`;
+	print "$out";
+	print "</table>";
+}else{
+	print "<br>Flowcell $rname has not been demultiplexed<br>"; 
+}
+
+}
+
 ########################################################################
 # showPool2library called by pool.pl
 ########################################################################
@@ -3414,7 +3496,7 @@ my $i            = 0;
 #print qq(<a href="library2pool.pl?mode=new&idpool=$id">Add Library to Pool</a><br>);
 
 $sql = "
-	SELECT DISTINCT  l.lid,idlibrary2pool,pdescription,lname,ldescription,lcomment,ltlibtype,lplibpair,
+	SELECT DISTINCT  l.lid,idlibrary2pool,pdescription,s.name,lname,ldescription,lcomment,ltlibtype,lplibpair,
 	l.lstatus,
 	tag1.tgroup,
 	tag1.tname,
@@ -3441,6 +3523,7 @@ $sth->execute || die print "$DBI::errstr";
 	'Library',
 	'Library2Pool',
 	'Project',
+	'Sample',
 	'Lib Name',
 	'Lib Description',
 	'LibComment',
@@ -3462,6 +3545,8 @@ foreach (@labels) {
 }
 print "</tr></thead><tbody>";
 
+my $samples="";
+
 while (@row = $sth->fetchrow_array) {
 	print "<tr>";
 	$i=0;
@@ -3472,9 +3557,13 @@ while (@row = $sth->fetchrow_array) {
 		else {
 			print "<td>$row[$i]</td>"; 
 		}
+		
 		$i++;
 	}
 	print "</tr>";
+	
+	$samples .= "%20" if $samples ne "";
+	$samples .= $row[3];
 }
 
 =begin comment
@@ -3496,6 +3585,9 @@ while ($resultref = $sth->fetchrow_hashref) {
 =cut
 
 print "</tbody></table></div>";
+
+print "<div><hr><a href=\"../snv-vcf/searchStat.pl?sample=$samples&autosearch=1\"</a>Pool Quality</a> - Opens a mask on SNV-VCF with Stats table for all the samples in the pool<hr></div>";
+
 &tablescript;
 
 }
@@ -3517,11 +3609,14 @@ my @labels       = ();
 #print qq(<a href="library2pool.pl?mode=new&lid=$id">Add to Pool</a><br>);
 
 $sql = "
-	SELECT  * 
+	SELECT  o.idpool, oname, odescription, ocomment, group_concat(distinct r.rname) runs 
 	FROM library2pool lo
 	INNER JOIN pool     o   ON o.idpool=lo.idpool
 	INNER JOIN library  l   ON lo.lid=l.lid
+	LEFT JOIN lane      ln  ON ln.idpool=o.idpool
+	LEFT JOIN run       r   ON r.rid=ln.rid
 	WHERE   l.lid = $id
+	GROUP BY idpool
 	";
 	
 $sth = $dbh->prepare($sql) || die print "$DBI::errstr";
@@ -3531,6 +3626,7 @@ $sth->execute || die print "$DBI::errstr";
 	'Name',
 	'Description',
 	'Comment',
+	'Runs'
 	);
 
 print q(<table border="1" cellspacing="0" cellpadding="1"> );
@@ -3545,7 +3641,8 @@ while ($resultref = $sth->fetchrow_hashref) {
 	#print "<td><a href=\"library2pool.pl?mode=edit&id=$resultref->{idlibrary2pool}\">$resultref->{idlibrary2pool}</a></td>"; 
 	print "<td>$resultref->{oname}</td>"; 
 	print "<td >$resultref->{odescription}</td>"; 
-	print "<td>$resultref->{ocomment}</td>"; 
+	print "<td>$resultref->{ocomment}</td>";
+	print "<td>$resultref->{runs}</td>";
 	print "</tr>";
 }
 print "</table><br>";
@@ -7115,10 +7212,13 @@ if ($ref->{'pspelement'} ne "") {
 	$where .= " AND pspelement = ? ";
 	push(@prepare, $ref->{'pspelement'});
 }
-
+if ($ref->{'invoice'} ne "" ) {
+	$where .= " AND invoice = ? ";
+	push(@prepare, $ref->{'invoice'});
+}
 
 $query = "SELECT  idshopping,co.coname,bnumber,bdescription,articlegroup,pspelement,blistprice,
-	bprice,beinkaufswagen,bordernumber,u.name,bdate
+	bprice,beinkaufswagen,bordernumber,invoice,u.name,bdate
 	FROM shopping
 	LEFT JOIN $logindb.user u ON buser=u.iduser
 	LEFT JOIN company co ON bcompany=co.idcompany
@@ -7139,6 +7239,7 @@ $out->execute(@prepare) || die print "$DBI::errstr";
 	'Price',
 	'Einkaufswagen',
 	'Order number',
+	'Invoice number',
 	'Entered by',
 	'Date'
 	);
@@ -8897,7 +8998,79 @@ print "</table>";
 
 $out->finish;
 }
+########################################################################
+# listAssays
+########################################################################
+sub listAssays {
+my $self         = shift;
+my $dbh          = shift;
+my $ref          = shift;
 
+my @labels    = ();
+my $out       = "";
+my @row       = ();
+my $query     = "";
+my $i         = 0;
+my $n         = 1;
+my $count     = 1;
+my $tmp       = "";
+my @individuals = ();
+my $individuals = "";
+
+my @fields    = sort keys %$ref;
+my @values    = @{$ref}{@fields};
+
+		
+$i=0;
+$query = qq#
+SELECT
+A.idassay,
+A.name
+FROM
+assay A
+ORDER BY
+A.name ASC
+#;
+#print "query = $query<br>";
+
+$out = $dbh->prepare($query) || die print "$DBI::errstr";
+$out->execute() || die print "$DBI::errstr";
+
+@labels	= (
+	'Num',
+	'Assay Name'
+	);
+
+print q(<table border="1" cellspacing="0" cellpadding="2"> );
+$i=0;
+
+print "<tr>";
+foreach (@labels) {
+	print "<th align=\"center\">$_</th>";
+}
+print "</tr>";
+
+$n=1;
+while (@row = $out->fetchrow_array) {
+	print "<tr>";
+	$i=0;
+	foreach (@row) {
+		if ($i == 0) { #edit
+			print "<td align=\"center\">$n</td>";
+		}
+		else {
+			print "<td> $row[$i]</td>";
+		}
+		$i++;
+	}
+	print "</tr>\n";
+	$n++;
+}
+print "</table>";
+
+
+$out->finish;
+}
 ########################################################################
 # searchSample for createlibsheet called by searchSampleDo.pl
 ########################################################################
@@ -12266,6 +12439,7 @@ print qq|
 <a href="kit.pl">New Kit</a>
 <a href="kitList.pl">List Kits</a>
 <a href="listKits.pl">List Exome Kits</a>
+<a href="listAssays.pl">List Assays</a>
 <div class="subnav">Statistics</div>
 <a href="statistics.pl">Statistics</a>
 <a href="yield.pl">Yield</a>
