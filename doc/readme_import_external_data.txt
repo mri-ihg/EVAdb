@@ -6,6 +6,17 @@ https://hgdownload.soe.ucsc.edu/goldenPath/hg19/database/
 - For hg38:
 https://hgdownload.soe.ucsc.edu/goldenPath/hg38/database/
 
+Download, for example,
+
+knownGene.sql -> table definition
+	Import with
+        mysql -u USER -h HOST -p PASSWORD [hg19|hg38|...] < knownGene.sql
+knownGene.txt.gz -> table contents
+	gzip -d knownGene.txt.gz
+	mysqlimport --local -u USER -h HOST -p [hg19|hg38] knownGene.txt
+
+
+
 Use the following scripts and utilities from 
 https://github.com/mri-ihg/ngs_pipeline
 to fill the database with external data you need at least:
