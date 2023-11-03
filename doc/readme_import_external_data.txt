@@ -1,3 +1,11 @@
+Import the necessary tables from UCSC Genome Browser
+
+- For hg19:
+https://hgdownload.soe.ucsc.edu/goldenPath/hg19/database/
+
+- For hg38:
+https://hgdownload.soe.ucsc.edu/goldenPath/hg38/database/
+
 Use the following scripts and utilities from 
 https://github.com/mri-ihg/ngs_pipeline
 to fill the database with external data you need at least:
