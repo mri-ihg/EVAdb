@@ -38,18 +38,18 @@ $snv ->deleteSpace($ref);
 
 if ($ref->{mode} eq "edit") {
 	delete($ref->{"mode"});
-	$snv->editDisease($ref,$dbh,'disease');
+	$snv->editOrganism($ref,$dbh,'organism');
 }
 else {
 	delete($ref->{"mode"});
-	$snv->insertIntoDisease($ref,$dbh,'disease');
+	$snv->insertIntoOrganism($ref,$dbh,'organism');
 }
 
 # select and display new entry
 $snv->showMenu();
 
 
-$snv->showAllDisease($dbh,$ref->{iddisease});
+$snv->showAllOrganism($dbh,$ref->{idorganism});
 
 
 $snv->printFooter($dbh);

@@ -1,7 +1,8 @@
 ########################################################################
-# Tim M Strom June 2010
-# Institute of Human Genetics
-# Helmholtz Zentrum Muenchen
+# EVAdb LIMS
+########################################################################
+# Tim M Strom       2010-2021
+# Riccardo Berutti  2016-2023
 ########################################################################
 
 package Snvedit;
@@ -143,6 +144,7 @@ my $nonce     = "";
 my $dbh = DBI->connect("DBI:mysql:$humanexomedb", "$logins{dblogin}", "$logins{dbpasswd}") || die print "$DBI::errstr";
 #$dbh->{Profile} = 4;
 #$dbh->{LongTruncOk} = 1;
+
 my $query = "SELECT password,yubikey,igvport,role,edit FROM $logindb.user WHERE name=?";
 my $out = $dbh->prepare($query) || die print "$DBI::errstr";
 $out->execute($user) || die print "$DBI::errstr";
@@ -286,6 +288,10 @@ my $session     = CGI::Session->load($sess_id) or die CGI::Session->errstr;
 	close IN;
 
 	my $dbh = DBI->connect("DBI:mysql:$humanexomedb", "$logins{dblogin}", "$logins{dbpasswd}") || die print "$DBI::errstr";
+	
+	#my $sql = qq{SET NAMES 'latin1';};
+	#$dbh->do($sql);
+
 	my $query = "SELECT iduser FROM $logindb.user WHERE name=?";
 	my $out = $dbh->prepare($query) || die print "$DBI::errstr";
 	$out->execute($user) || die print "$DBI::errstr";
@@ -347,6 +353,34 @@ my $ref          = "";
 
 $ref = $self->initDisease   ();
 $self->getShowDisease($dbh,$id,$ref,'Y');
+
+}
+########################################################################
+# showAllTissue
+########################################################################
+
+sub showAllTissue {
+my $self         = shift;
+my $dbh          = shift;
+my $id           = shift;
+my $ref          = "";
+
+$ref = $self->initTissue   ();
+$self->getShowTissue($dbh,$id,$ref,'Y');
+
+}
+########################################################################
+# showAllOrganism
+########################################################################
+
+sub showAllOrganism {
+my $self         = shift;
+my $dbh          = shift;
+my $id           = shift;
+my $ref          = "";
+
+$ref = $self->initOrganism ();
+$self->getShowOrganism($dbh,$id,$ref,'Y');
 
 }
 ########################################################################
@@ -836,6 +870,88 @@ my @AoH = (
 	  	type        => "selectdb",
 		name        => "iddiseasegroup",
 	  	value       => "",
+	  	bgcolor     => "formbg",
+	  },
+);
+
+$ref = \@AoH;
+return($ref);
+}
+########################################################################
+# init for edit tissue
+########################################################################
+sub initTissue {
+my $self         = shift;
+
+my $ref          = "";
+
+my @AoH = (
+	  {
+	  	label       => "Id",
+	  	type        => "readonly2",
+		name        => "idtissue",
+	  	value       => "",
+		size        => "45",
+		maxlength   => "45",
+	  	bgcolor     => "formbg",
+	  },
+	  {
+	  	label       => "Name",
+	  	type        => "text",
+		name        => "name",
+	  	value       => "",
+		size        => "100",
+		maxlength   => "50",
+	  	bgcolor     => "formbg",
+	  },
+	  {
+	  	label       => "Menu",
+	  	labels      => "Enabled, Disabled",
+	  	type        => "radio",
+		name        => "menuflag",
+	  	value       => "0",
+	  	values      => "T, F",
+	  	bgcolor     => "formbg",
+	  },
+);
+
+$ref = \@AoH;
+return($ref);
+}
+########################################################################
+# init for edit organism
+########################################################################
+sub initOrganism {
+my $self         = shift;
+
+my $ref          = "";
+
+my @AoH = (
+	  {
+	  	label       => "Id",
+	  	type        => "readonly2",
+		name        => "idorganism",
+	  	value       => "",
+		size        => "45",
+		maxlength   => "45",
+	  	bgcolor     => "formbg",
+	  },
+	  {
+	  	label       => "Name",
+	  	type        => "text",
+		name        => "orname",
+	  	value       => "",
+		size        => "100",
+		maxlength   => "50",
+	  	bgcolor     => "formbg",
+	  },
+	  {
+	  	label       => "Menu",
+	  	labels      => "Enabled, Disabled",
+	  	type        => "radio",
+		name        => "ormenuflag",
+	  	value       => "0",
+	  	values      => "T, F",
 	  	bgcolor     => "formbg",
 	  },
 );
@@ -2171,6 +2287,118 @@ if ($mode eq 'Y') {
 $sth->finish;
 
 }
+
+
+########################################################################
+# getShowTissue
+########################################################################
+
+sub getShowTissue {
+my $self         = shift;
+my $dbh          = shift;
+my $id           = shift;
+my $ref          = shift;
+my $mode         = shift;
+
+my $sth          = "";
+my $resultref    = "";
+my $sql          = "";
+my $href         = "";
+
+$sql = "
+	SELECT *
+	FROM tissue 
+	WHERE idtissue = $id
+	";
+#print "$sql\n";
+$sth = $dbh->prepare($sql) || die print "$DBI::errstr";
+$sth->execute || die print "$DBI::errstr";
+$resultref = $sth->fetchrow_hashref;
+
+# fill @AoH with results
+if ($mode eq 'Y') {
+	print "<span class=\"big\">Tissue</span><br><br>" ;
+	print qq(<table border="1" cellspacing="0" cellpadding="3">);
+}
+
+for $href ( @{$ref} ) {
+	if (exists $resultref->{$href->{name}}) {
+		$href->{value} = $resultref->{$href->{name}};
+		if ($mode eq 'Y') {
+			if ($href->{name} eq 'iddisease') {
+				print qq(<tr><td>$href->{label}</td>
+				<td class="person"><a href="tissue.pl?id=$resultref->{idtissue}&amp;mode=edit">$resultref->{idtissue} </a></td></tr>);
+			}
+			else {
+				print "<tr><td>$href->{label}</td>
+				<td> $resultref->{$href->{name}} &nbsp;</td></tr>";		
+			}
+		}
+	}
+}
+
+if ($mode eq 'Y') {
+	print "</table>";
+}
+
+$sth->finish;
+
+}
+
+########################################################################
+
+sub getShowOrganism {
+my $self         = shift;
+my $dbh          = shift;
+my $id           = shift;
+my $ref          = shift;
+my $mode         = shift;
+
+my $sth          = "";
+my $resultref    = "";
+my $sql          = "";
+my $href         = "";
+
+$sql = "
+	SELECT *
+	FROM organism 
+	WHERE idorganism = $id
+	";
+#print "$sql\n";
+$sth = $dbh->prepare($sql) || die print "$DBI::errstr";
+$sth->execute || die print "$DBI::errstr";
+$resultref = $sth->fetchrow_hashref;
+
+# fill @AoH with results
+if ($mode eq 'Y') {
+	print "<span class=\"big\">Organism</span><br><br>" ;
+	print qq(<table border="1" cellspacing="0" cellpadding="3">);
+}
+
+for $href ( @{$ref} ) {
+	if (exists $resultref->{$href->{name}}) {
+		$href->{value} = $resultref->{$href->{name}};
+		if ($mode eq 'Y') {
+			if ($href->{name} eq 'iddisease') {
+				print qq(<tr><td>$href->{label}</td>
+				<td class="person"><a href="organism.pl?id=$resultref->{idorganism}&amp;mode=edit">$resultref->{idorganism} </a></td></tr>);
+			}
+			else {
+				print "<tr><td>$href->{label}</td>
+				<td> $resultref->{$href->{name}} &nbsp;</td></tr>";		
+			}
+		}
+	}
+}
+
+if ($mode eq 'Y') {
+	print "</table>";
+}
+
+$sth->finish;
+
+}
+
 ########################################################################
 # getShowCooperation
 ########################################################################
@@ -2588,6 +2816,202 @@ $sth->execute(@values) || die print "$DBI::errstr";
 $sth->finish;
 
 }
+
+########################################################################
+# insertIntoTissue
+########################################################################
+
+sub insertIntoTissue {
+my $self      = shift;
+my $ref       = shift;
+my $dbh       = shift;
+my $table     = shift;
+
+$ref->{idtissue} = 0 ;
+
+my $sql = "";
+my $sth = "";
+
+#check_before_update($ref,$dbh);
+if ($ref->{name} eq "") {
+	showMenu("");
+	print "Please fill in name. Nothing done.<br>";
+	printFooter("",$dbh);
+	exit(1);
+}
+
+if ($ref->{menuflag} ne "T" && $ref->{menuflag} ne "F" )
+{
+	showMenu("");
+	print "Invalid values<br>";
+	printFooter("",$dbh);
+	exit(1);
+}
+
+my @fields           = sort keys %$ref;
+my @values           = @{$ref}{@fields};
+
+$sql = sprintf "insert into %s (%s) values (%s)",
+         $table, join(",", @fields), join(",", ("?")x@fields);
+
+$sth = $dbh->prepare($sql) || die print "$DBI::errstr";
+$sth->execute(@values) || die print "$DBI::errstr";
+$ref->{idtissue}=$sth->{mysql_insertid};
+$sth->finish;
+
+}
+
+########################################################################
+# editTissue
+########################################################################
+
+sub editTissue {
+my $self      = shift;
+my $ref       = shift;
+my $dbh       = shift;
+my $table     = shift;
+my $sql       = "";
+my $sth       = "";
+my @fields2   = ();
+my $field     = "";
+my $value     = "";
+
+
+
+#check_before_update($ref,$dbh);
+if ($ref->{name} eq "") {
+	showMenu("");
+	print "Please fill in name. Nothing done.<br>";
+	printFooter("",$dbh);
+	exit(1);
+}
+if ($ref->{menuflag} ne "T" && $ref->{menuflag} ne "F" )
+{
+	showMenu("");
+	print "Invalid values<br>";
+	printFooter("",$dbh);
+	exit(1);
+}
+
+
+
+#print "refpversion $ref->{pversion}<br>";
+my @fields    = sort keys %$ref;
+my @values    = @{$ref}{@fields};
+foreach $field (@fields) {
+	$value=$field . " = ?";
+	push(@fields2,$value);
+}
+
+$sql = sprintf "UPDATE %s SET %s WHERE idtissue=$ref->{idtissue}",
+         $table, join(",", @fields2);
+
+$sth = $dbh->prepare($sql) || die print "$DBI::errstr";
+$sth->execute(@values) || die print "$DBI::errstr";
+
+
+$sth->finish;
+
+}
+
+
+########################################################################
+# insertIntoOrganism
+########################################################################
+
+sub insertIntoOrganism {
+my $self      = shift;
+my $ref       = shift;
+my $dbh       = shift;
+my $table     = shift;
+
+$ref->{idorganism} = 0 ;
+
+my $sql = "";
+my $sth = "";
+
+#check_before_update($ref,$dbh);
+if ($ref->{orname} eq "") {
+	showMenu("");
+	print "Please fill in name. Nothing done.<br>";
+	printFooter("",$dbh);
+	exit(1);
+}
+
+if ($ref->{ormenuflag} ne "T" && $ref->{ormenuflag} ne "F" )
+{
+	showMenu("");
+	print "Invalid values<br>";
+	printFooter("",$dbh);
+	exit(1);
+}
+
+my @fields           = sort keys %$ref;
+my @values           = @{$ref}{@fields};
+
+$sql = sprintf "insert into %s (%s) values (%s)",
+         $table, join(",", @fields), join(",", ("?")x@fields);
+
+$sth = $dbh->prepare($sql) || die print "$DBI::errstr";
+$sth->execute(@values) || die print "$DBI::errstr";
+$ref->{idorganism}=$sth->{mysql_insertid};
+$sth->finish;
+
+}
+
+########################################################################
+# editOrganism
+########################################################################
+
+sub editOrganism {
+my $self      = shift;
+my $ref       = shift;
+my $dbh       = shift;
+my $table     = shift;
+my $sql       = "";
+my $sth       = "";
+my @fields2   = ();
+my $field     = "";
+my $value     = "";
+
+
+
+#check_before_update($ref,$dbh);
+if ($ref->{orname} eq "") {
+	showMenu("");
+	print "Please fill in name. Nothing done.<br>";
+	printFooter("",$dbh);
+	exit(1);
+}
+if ($ref->{ormenuflag} ne "T" && $ref->{ormenuflag} ne "F" )
+{
+	showMenu("");
+	print "Invalid values<br>";
+	printFooter("",$dbh);
+	exit(1);
+}
+
+
+
+#print "refpversion $ref->{pversion}<br>";
+my @fields    = sort keys %$ref;
+my @values    = @{$ref}{@fields};
+foreach $field (@fields) {
+	$value=$field . " = ?";
+	push(@fields2,$value);
+}
+
+$sql = sprintf "UPDATE %s SET %s WHERE idorganism=$ref->{idorganism}",
+         $table, join(",", @fields2);
+
+$sth = $dbh->prepare($sql) || die print "$DBI::errstr";
+$sth->execute(@values) || die print "$DBI::errstr";
+
+
+$sth->finish;
+
+}
+
 ########################################################################
 # insertIntoCooperation
 ########################################################################
@@ -3200,6 +3624,211 @@ print "</tbody></table></div>";
 $out->finish;
 }
 
+
+########################################################################
+# listRun
+########################################################################
+sub listRun {
+my $self         = shift;
+my $dbh          = shift;
+my $ref          = shift;
+
+my @labels    = ();
+my $out       = "";
+my @row       = ();
+my $query     = "";
+my $i         = 0;
+my $n         = 1;
+my $count     = 1;
+my $tmp       = "";
+my @individuals = ();
+my $individuals = "";
+
+my @fields    = sort keys %$ref;
+my @values    = @{$ref}{@fields};
+
+			
+$i=0;
+$query = qq#
+SELECT
+concat("<a href='cooperation.pl?mode=edit&amp;id=",idcooperation,"'>",idcooperation,"</a>"),
+name,prename,institution,department,comment,email,phone,sendemail,sendstatus
+FROM
+cooperation
+ORDER BY
+name
+#;
+#print "query = $query<br>";
+
+
+$query = qq#
+SELECT 
+	rname,
+	rcomment,
+	rdate,
+	rinstrument
+FROM
+$solexa.run
+ORDER BY rid desc
+#;
+
+
+$out = $dbh->prepare($query) || die print "$DBI::errstr";
+$out->execute() || die print "$DBI::errstr";
+
+@labels	= (
+	'#',
+	'Run Name',
+	'Comment',
+	'Date',
+	'Instrument',
+	'Status',
+	'Operations'
+	);
+
+&tableheader("");
+$i=0;
+
+print "<thead><tr>";
+foreach (@labels) {
+	print "<th align=\"center\">$_</th>";
+}
+print "</tr></thead><tbody>";
+
+$n=1;
+while (@row = $out->fetchrow_array) {
+	print "<tr>";
+	$i=0;
+	
+	my $runID=$row[0];
+	
+	# Print columns from Query
+	foreach (@row) {
+		if ($i == 0) { 
+			print "<td align=\"center\">$n</td>";
+		}
+		print "<td> $row[$i]</td>";
+		$i++;
+	}
+	
+	# FC Status:
+	my $status="unknown";
+	
+	
+	# Check if run exists: 
+	my $runCount = `ls /data/runs/Runs/ | grep $runID | wc -l `;
+	chomp $runCount;	
+	if ( $runCount > 0 )
+	{
+		$status = "Found";
+		
+		# Check if run demultiplexed 
+		
+		my $isDemultiplexed = `ls /data/runs/Runs/*_[AB]$runID/Demultiplexed | wc -l `;
+		if ($isDemultiplexed > 0 ) 
+		{
+			$status = "Demultiplexed";		
+		}	
+		else
+		{
+			my $sampleSheetPresent = `ls /data/runs/Runs/*_[AB]$runID/SampleSheet.csv | wc -l `;
+			if ( $sampleSheetPresent > 0 )
+			{
+				$status = "To demultiplex";
+			}
+			else
+			{
+				$status = "Samplesheet missing"; 
+			}
+		}
+	}
+	else
+	{
+		my $isDownloaded = `ls /data/runs/Runs/MRI/*_[AB]$runID | wc -l `;
+		
+		if ( $isDownloaded > 0 )
+		{
+			my $isDownloadComplete = `ls /data/runs/Runs/MRI/*_[AB]$runID/ftpget.complete | wc -l`;
+			my $isDownloadError    = `ls /data/runs/Runs/MRI/*_[AB]$runID/ftpget.error    | wc -l`;
+	
+			if ( $isDownloadError > 0 )
+			{
+				$status = "Download error";
+			}
+			elsif ( $isDownloadComplete > 0 )
+			{
+				$status = "Download complete";
+			}
+			else
+			{
+				$status = "Downloading";
+			}
+		
+		}
+		else
+		{
+			# Check if Run has been converted to BAM and archived:
+			my $isArchived = `ls /data/isilon/seq/analysis/SequenceBams/$runID /data/isilon/seq/analysis/SequenceBams22/$runID 2>/dev/null | wc -l`;
+		
+	
+			if ($isArchived > 0 )
+			{
+				$status = "Archived"; 
+			}
+			else
+			{
+				# Check if Run still to be downloaded
+				# cronjob from user SEQ writes a list of available flowcells with status flag 0 or 1 is CopyComplete.txt is present
+			
+				my ($isOnRemoteStorage,$isReadyToDownload) = split  " ", `cat /data/runs/Runs/MRI/listfc | grep $runID`;
+				
+		
+		
+				if ($isOnRemoteStorage > 0 )
+				{
+					if ( $isReadyToDownload == 0 )
+					{
+						$status = "Copying";
+					}
+					else
+					{
+						$status = "Ready to download";
+					}
+				}
+				else
+				{
+					$status = "Not received";
+				}
+			}
+		}
+	}
+	
+	
+	print "<td>$status</td>";
+
+	# Print Operations:
+	my $opInfo =                 ( $status eq "Copying"                ? "Sequencing not finished" : $status eq "Not received" ? "Data not available" : $status eq "Archived" ? "No action available" : $status eq "Dwonloading" ? "No action available" : "" );
+	my $opDownload =             ( $status eq "Ready to download" || $status eq "Download error"      ? "<a href=\"admOp.pl?op=downloadrun&runid=$runID\">Start download</a>" : "" );
+	my $opMakeSampleSheet =      ( $status eq "Samplesheet missing"    ? "<a href=\"admOp.pl?op=makesamplesheet&runid=$runID\">Make Samplesheet</a>" : "");
+	my $opDemultiplex =          ( $status eq "To demultiplex"         ? "<a href=\"admOp.pl?op=demuxstart&runid=$runID\">Start demultiplexing</a>": "");
+	my $opGeneratePipelineRun =  ( $status eq "Demultiplexed"          ? "<a href=\"admOp.pl?op=generatepipeline&runid=$runID\">Create pipeline</a>": "");
+	my $opStartAnalysis = 	     ( $status eq "Ready for analysis"     ? "<a href=\"admOp.pl?op=startpipeline&runid=$runID\">Start pipeline</a>": "");
+	
+	print "<td> $opInfo $opDownload $opMakeSampleSheet $opDemultiplex $opGeneratePipelineRun $opStartAnalysis</td>";
+	
+	print "</tr>\n";
+	$n++;
+}
+print "</tbody></table></div>";
+&tablescript;
+
+
+
+
+$out->finish;
+}
+
+
 ########################################################################
 # listDisease
 ########################################################################
@@ -3243,6 +3872,150 @@ $out->execute() || die print "$DBI::errstr";
 	'Symbol',
 	'Omim',
 	'Disease group'
+	);
+
+&tableheader("1000px");
+$i=0;
+
+print "<thead><tr>";
+foreach (@labels) {
+	print "<th align=\"center\">$_</th>";
+}
+print "</tr></thead><tbody>";
+
+$n=1;
+while (@row = $out->fetchrow_array) {
+	print "<tr>";
+	$i=0;
+	foreach (@row) {
+		if ($i == 0) { #edit project
+			print "<td align=\"center\">$n</td>";
+		}
+		print "<td> $row[$i]</td>";
+		$i++;
+	}
+	print "</tr>\n";
+	$n++;
+}
+print "</tbody></table></div>";
+&tablescript;
+
+
+$out->finish;
+}
+
+########################################################################
+# listTissue
+########################################################################
+sub listTissue {
+my $self         = shift;
+my $dbh          = shift;
+my $ref          = shift;
+
+my @labels    = ();
+my $out       = "";
+my @row       = ();
+my $query     = "";
+my $i         = 0;
+my $n         = 1;
+my $tmp       = "";
+
+my @fields    = sort keys %$ref;
+my @values    = @{$ref}{@fields};
+
+			
+$i=0;
+$query = qq#
+SELECT
+concat("<a href='tissue.pl?mode=edit&amp;id=",ti.idtissue,"'>",ti.idtissue,"</a>"),
+ti.name,ti.menuflag
+FROM
+tissue ti
+ORDER BY
+ti.name
+#;
+#print "query = $query<br>";
+
+$out = $dbh->prepare($query) || die print "$DBI::errstr";
+$out->execute() || die print "$DBI::errstr";
+
+@labels	= (
+	'n',
+	'Id',
+	'Name',
+	'Enabled'
+	);
+
+&tableheader("1000px");
+$i=0;
+
+print "<thead><tr>";
+foreach (@labels) {
+	print "<th align=\"center\">$_</th>";
+}
+print "</tr></thead><tbody>";
+
+$n=1;
+while (@row = $out->fetchrow_array) {
+	print "<tr>";
+	$i=0;
+	foreach (@row) {
+		if ($i == 0) { #edit project
+			print "<td align=\"center\">$n</td>";
+		}
+		print "<td> $row[$i]</td>";
+		$i++;
+	}
+	print "</tr>\n";
+	$n++;
+}
+print "</tbody></table></div>";
+&tablescript;
+
+
+$out->finish;
+}
+
+########################################################################
+# listOrganism
+########################################################################
+sub listOrganism {
+my $self         = shift;
+my $dbh          = shift;
+my $ref          = shift;
+
+my @labels    = ();
+my $out       = "";
+my @row       = ();
+my $query     = "";
+my $i         = 0;
+my $n         = 1;
+my $tmp       = "";
+
+my @fields    = sort keys %$ref;
+my @values    = @{$ref}{@fields};
+
+			
+$i=0;
+$query = qq#
+SELECT
+concat("<a href='organism.pl?mode=edit&amp;id=",org.idorganism,"'>",org.idorganism,"</a>"),
+org.orname,org.ormenuflag
+FROM
+organism org
+ORDER BY
+org.orname
+#;
+#print "query = $query<br>";
+
+$out = $dbh->prepare($query) || die print "$DBI::errstr";
+$out->execute() || die print "$DBI::errstr";
+
+@labels	= (
+	'n',
+	'Id',
+	'Organism Name',
+	'Enabled'
 	);
 
 &tableheader("1000px");
@@ -3862,7 +4635,7 @@ INNER JOIN $solexa.sample2library sosl ON ss.idsample = sosl.idsample
 INNER JOIN $solexa.library sol         ON sosl.lid = sol.lid
 WHERE  (s.idproject = ss.idproject AND sol.libtype=l.libtype AND sol.libpair=l.libpair)
 AND sol.lstatus = 'to do'
-AND sol.lstatus != 'external'
+AND sol.lstatus != ''
 AND ss.nottoseq  = 0
 AND sol.lfailed  = 0
 $where1
@@ -5233,6 +6006,10 @@ if ( $filesinstagingarea )
 		{
 			if ( $values{'libtype'} eq "exomic" )
 			{
+				if ($values{'exomeassay'} eq "") {
+					print ("Exome Assay value missing.<br>");
+					exit();
+				}
 				$analysis="exome";
 			}
 			else
@@ -6495,7 +7272,7 @@ my $cgi         = new CGI;
 
 unless ($sessionid eq "sessionid_created") {
 	#print $cgi->header(-type=>'text/html',-charset=>'ISO-8859-1');
-	print $cgi->header(-type=>'text/html',-charset=>'utf-8');
+	print $cgi->header(-type=>'text/html',-charset=>'utf8');
 }
 
 print qq(
@@ -6506,6 +7283,7 @@ print qq(
 <title>ExomeEdit</title>
 ) ;
 
+# <link rel="icon"  type="image/x-icon"  href="/favicon_lims.ico">
 print qq(
 
 <link rel="stylesheet" type="text/css" href="/DataTables-1.10.22/datatables.min.css">
@@ -6555,7 +7333,7 @@ print qq|
   <a href="createLibraries.pl">Create libraries</a>
 <div class="subnav">Diseases</div>
   <a href="disease.pl">New disease</a>
-  <a href="listDisease.pl">List diseases</a>
+  <a href="listDisease.pl">List diseases</a> 
 <div class="subnav">Cooperations</div>
   <a href="cooperation.pl">New cooperation</a>
   <a href="listCooperation.pl">List cooperations</a>
@@ -6569,11 +7347,17 @@ print qq|
   <a href="importSamples.pl">Import internal samples</a>
   <a href="importSamplesExternal.pl">Import external samples</a>
   <a href="importmtDNASamples.pl">Import mtDNA samples</a>
+<div class="subnav">Organisms</div>
+  <a href="organism.pl">New organism</a>
+  <a href="listOrganism.pl">List organisms</a> 
+<div class="subnav">Tissues</div>
+  <a href="tissue.pl">New tissue</a>
+  <a href="listTissue.pl">List tissues</a> 
 <div class="subnav">Statistics</div>
   <a href="overview.pl">Overview</a>
   <a href="statistics.pl">Statistics</a>
 <div class="subnav">Logout</div>
-  <a href="login.pl">Logout</a>
+  <a href="login.pl">Logout $user</a>
 </div>
 
 <!-- Use any element to open the sidenav -->
