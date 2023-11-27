@@ -150,7 +150,7 @@ open FOUT, "$filename" or die "$filename: $!";
 		seek FOUT, $start, 0;
 	}else{
 		if ( 
-			( $cgi->param("file") eq "merged.rmdup.bam" || $cgi->param("file") =~ /.*vcf/ ) 
+			( $cgi->param("file") eq "merged.rmdup.bam" || $cgi->param("file") =~ /.*vcf/ || $cgi->param("file") eq "merged.rmdup.cram" ) 
 			&&
 			( $snv->getRole() ne "admin" && $snv->getRole() ne "manager" && ! $snv->canDownload($sname, $dbh) )
 		)
@@ -173,7 +173,6 @@ open FOUT, "$filename" or die "$filename: $!";
 	print $cgi->header(%cgihead);
 
 # Send file
-	$|++;
 	my $buf_size = 4096;
 	#my $buf_size = 8192;
 	#my $buf_size = 1024;
@@ -196,7 +195,7 @@ open FOUT, "$filename" or die "$filename: $!";
 
 		$total=$total+$buf_size; 
 
-		if ( $total > 512*1024*1024*1024 )
+		if ( $total > 512*1024*1024 )
 		{
 			exit;
 		}

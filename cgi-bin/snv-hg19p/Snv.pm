@@ -1,25 +1,35 @@
 ########################################################################
-# Tim M Strom June 2010-2020
-# Institute of Human Genetics
-# Helmholtz Zentrum Muenchen
-# Klinikum rechts der Isar, Technische Universitaet Muenchen
+# EVAdb
+########################################################################
+#
+# Snv.pm
+#
+# EVAdb core functions
+# 
+########################################################################
+# Tim M Strom      2010-2020
+# Riccardo Berutti 2016-2023
 ########################################################################
 
 use strict;
 package Snv;
 #use warnings;
 
+use XML::Simple;
+
+
 ####### change only here #############
 
 my $vcf                = 0;
-my $hg19p              = 1;
+my $hg19p              = 0;
 my $genomegatk         = 0;
+my $genomedv           = 0;
 my $multisampletest    = 0;
 my $multisampletesthardfilter    = 0;
 my $mtdnagatk          = 0;
 my $mm10               = 0;
 my $genomemm10         = 0;
-my $test               = 0;
+my $test               = 1;
 my $demo               = 0;
 my $mip                = 0;
 my $mipcad             = 0;
@@ -30,8 +40,12 @@ my $fhcl               = 0;
 my $rna_menu           = 1;
 
 ######################################
+my $subtitle  = "";
+my $shorttitle = "";
+my $beta      = 0;
 my $translocation_menu = 0;
 my $sv_menu        = 0;
+my $expansion_menu = 0;
 my $mtdna_menu     = 0;
 my $cgidir         = "";
 my $logindb        = "";
@@ -42,20 +56,22 @@ my $rnagenedb      = "";
 our $coredb         = "exomehg19";
 our $exomevcfe      = "";
 my $solexa         = "solexa";
-my $hgmdserver     = "SERVERNAME";
+our $snvsample     = "snvsample";
+our $variantstat   = "variantstat";  
+my $hgmdserver     = "hgmd.server.address";
 my $igvserver      = "";
 my $igvdir         = "";
-my $igvrnadir      = "/path/to/seq/analysis/exomehg19/";
-my $igvgenomedir   = "/path/to/seq/analysis/exomehg19plus/";
+my $igvrnadir      = "/path/to/igv/data/rna";
+my $igvgenomedir   = "/path/to/igv/data/genome";
 my $snvqual        = "";
 my $gtqual         = "";
 my $popmax_af      = "";
 my $solrurl        = "http://localhost:8983/solr/omim";
 my $maxFailedLogin = 6;
 my $vep            = 1; #use Variant Effect Predictor
-our $vep_cmd         = "/usr/local/packages/seq/ensembl-tools-release-102/ensembl-vep/vep";
-our $vep_fasta       = "/data/mirror/vep/homo_sapiens/102_GRCh37/Homo_sapiens.GRCh37.75.dna_sm.primary_assembly.fa";
-our $vep_genesplicer = "/usr/local/packages/seq/GeneSplicer";
+our $vep_cmd         = "/path/to/ensembl-tools-release-102/ensembl-vep/vep";
+our $vep_fasta       = "/path/to/vep/homo_sapiens/102_GRCh37/Homo_sapiens.GRCh37.75.dna_sm.primary_assembly.fa";
+our $vep_genesplicer = "/path/to/GeneSplicer";
 # should be changed only for demo data
 my $cookie_only_when_https = 1;
 my $libtype_default = 5; # initsearchfor exome,  select * from solexa.libtype
@@ -63,15 +79,33 @@ my $hg             = "hg19";
 my $contextM       = "contextM";
 my $giabradio      = 0;
 my $giabform       = "";
-my $performDEAnalysis = "/path/to/users/scripts/eclipse_workspace_wieland/Pipeline/performDEAnalysis.pl";
-my $performDiffPeakCalling = "/path/to/users/scripts/eclipse_workspace_wieland/Pipeline/performDiffPeakCalling.pl";
+my $performDEAnalysis = "/path/to/performDEAnalysis.pl";
+my $performDiffPeakCalling = "/path/to/Pipeline/performDiffPeakCalling.pl";
 my $wholegenome = "wholegenomehg19";
 
 my $bamFileName = "merged.rmdup.bam";
 my $bamIndexFileName = "merged.rmdup.bam.bai";
 my $vcfRawFileName = "gatk.ontarget.haplotypecaller.vcf";
 
+my $rawDataPath = "/path/to/rawdata";
 
+my $liftOver = "/path/to/liftOver";
+my $liftOverFrom = "hg19";
+my $liftOverTo   = "hg38";
+my $liftOverMTFrom = "hg38";
+my $liftOverMTTo   = "hg38";
+my $liftOverFile = "/path/to/liftOverFiles/".$liftOverFrom."To".ucfirst($liftOverTo).".over.chain.gz";
+my $liftOverMTFile = "/path/to/liftOverFiles/".$liftOverMTFrom."To".ucfirst($liftOverMTTo).".over.chain.gz";
+
+#BCL2FASTQ Configuration
+my $bcl2fastq = "/path/to/bcl2fastq2-v2.20.0/bin/bcl2fastq";
+my $bcl2fastqLoadThreads = 40;
+my $bcl2fastqWriteThreads = 40;
+my $bcl2fastqProcessThreads = 80;
+
+my %qcthresholds;
+
+# Overload variables if necessary
 # Overload variables if necessary
 if ($vcf) {
 	$cgidir     = "/cgi-bin/mysql/snv-vcf";
@@ -313,16 +347,18 @@ elsif ($fhcl) {
 else { ();
 	exit;
 }
+
+$subtitle = " | ".$subtitle if ($subtitle ne "" );
     
 my $hgmito        = "hg38";
 my $dbsnp         = "dbSNP 142";
 my $ucscSite      = "genome-euro";
 my $hg19_coords   = "hgmd_hg19_vcf"; # hgmd table
 my $rssnplink     = qq{"<a href='https://www.ncbi.nlm.nih.gov/SNP/snp_ref.cgi?type=rs&rs=",v.rs,"' title='dbSNP'>",v.rs,"&nbsp;</a>"};
-my $exac_link  = qq{"<a href='https://gnomad.broadinstitute.org/variant/",evs.chrom,"-",evs.start,"-",evs.refallele,"-",evs.allele,"' title='ExAC'>",evs.homref,"--",evs.het,"--",evs.homalt,"</a>"};
-my $exac_ae_link  = qq{"<a href='https://gnomad.broadinstitute.org/variant/",evs.chrom,"-",evs.start,"-",evs.refallele,"-",evs.allele,"' title='ExAC'>",evs.ea_homref,"--",evs.ea_het,"--",evs.ea_homalt,"</a>"};
-my $exac_aa_link  = qq{"<a href='https://gnomad.broadinstitute.org/variant/",evs.chrom,"-",evs.start,"-",evs.refallele,"-",evs.allele,"' title='ExAC'>",evs.aa_homref,"--",evs.aa_het,"--",evs.aa_homalt,"</a>"};
-my $exac_gene_link= qq{"<a href='http://gnomad.broadinstitute.org/awesome?query=",exac.transcript,"' title='gnomAD'>",ROUND(exac.pLI,2),"</a>"};
+my $exac_link  = qq{"<a href='https://gnomad.broadinstitute.org/variant/",evs.chrom,"-",evs.start,"-",evs.refallele,"-",evs.allele,"?dataset=gnomad_r2_1' title='ExAC'>",evs.homref,"--",evs.het,"--",evs.homalt,"</a>"};
+my $exac_ae_link  = qq{"<a href='https://gnomad.broadinstitute.org/variant/",evs.chrom,"-",evs.start,"-",evs.refallele,"-",evs.allele,"?dataset=gnomad_r2_1' title='ExAC'>",evs.ea_homref,"--",evs.ea_het,"--",evs.ea_homalt,"</a>"};
+my $exac_aa_link  = qq{"<a href='https://gnomad.broadinstitute.org/variant/",evs.chrom,"-",evs.start,"-",evs.refallele,"-",evs.allele,"?dataset=gnomad_r2_1' title='ExAC'>",evs.aa_homref,"--",evs.aa_het,"--",evs.aa_homalt,"</a>"};
+my $exac_gene_link= qq{"<a href='http://gnomad.broadinstitute.org/awesome?query=",exac.transcript,"&dataset=gnomad_r2_1' title='gnomAD'>",ROUND(exac.pLI,2),"</a>"};
 my $kaviar_link   = qq{"<a href='http://db.systemsbiology.net/kaviar/cgi-pub/Kaviar.pl?chr=",k.chrom,"&frz=$hg&onebased=1&pos=",k.start,"' title='Kaviar'>",k.ac,"&nbsp;&nbsp;(",k.an,")</a>"};
 my $omimlink      = qq{"<a href='https://www.ncbi.nlm.nih.gov/omim/",g.omim,"' title='OMIM'>",g.omim,"</a>"};
 my $ucsclink      = qq{"<a href='https://$ucscSite.ucsc.edu/cgi-bin/hgTracks?db=$hg\&highlight=$hg.",v.chrom,":",v.start-1,"-",v.end,"\&position=",v.chrom,":",v.start-1,"-",v.end,"' title='UCSC Browser'>",v.chrom,":",v.start,"-",v.end-1,"</a>"," "};
@@ -332,10 +368,19 @@ my $mgiID         = qq{"<a href='http:///www.informatics.jax.org/marker/",mo.mgi
 my $primer        = qq{"<a href='https://ihg.helmholtz-muenchen.de/cgi-bin/primer/ExonPrimerPos.pl?db=hg19&chrom=",v.chrom,"&start=",v.start,"&end=",v.end-1,"' title='Primer design'>Primer</a>"};
 my $clinvarlink   = qq{"<a href='https://www.ncbi.nlm.nih.gov/clinvar/?term=",cv.rcv,"[alleleid]'>",cv.path,"</a>"};
 my @allowedprojects = ();
+my @allowedsamples  = ();
+
+# DB, Yubikey and LIMS-DB Credentials
 my $text          = "/srv/tools/textreadonly.txt"; #database
 my $text2         = "/srv/tools/textreadonly2.txt"; #yubikey id and api
-#my $usersxml      = "/srv/tools/users.xml";
+my $credDB        = "/srv/tools/textreadonly.txt"; #database
+my $credYubiKey   = "/srv/tools/textreadonly2.txt"; #yubikey id and api
+my $credLIMS	  = "/srv/tools/text.txt"; 
+#my $usersxml     = "/srv/tools/users.xml";
+
+# User Credentials
 my $user          = "";
+my $firstname     = "";
 my $role          = "";
 my $burdentests   = "";
 my $dbedit        = 0;
@@ -373,6 +418,7 @@ use Tie::IxHash;
 use Apache::Solr;
 use HTML::Entities;
 use WWW::CSRF qw(generate_csrf_token check_csrf_token CSRF_OK);
+use List::MoreUtils qw(uniq);
 
 
 my $gapplication="Exome";
@@ -949,6 +995,7 @@ my %yubikey   = ();
 my $item      = "";
 my $value     = "";
 my %logins    = ();
+my %loginsLIMS= ();
 my $yubikey   = "";
 my $password_stored = "";
 my $yubikey_stored  = "";
@@ -964,6 +1011,16 @@ while (<IN>) {
 	$logins{$item}=$value;
 }
 close IN;
+
+#for login LIMS database
+open(IN, "$credLIMS");
+while (<IN>) {
+	chomp;
+	($item,$value)=split(/\:/);
+	$loginsLIMS{$item}=$value;
+}
+close IN;
+
 
 # for yubikey server
 open(IN, "$text2");
@@ -981,10 +1038,10 @@ my $nonce     = "";
 my $dbh = DBI->connect("DBI:mysql:$maindb", "$logins{dblogin}", "$logins{dbpasswd}") || die print "$DBI::errstr";
 #$dbh->{Profile} = 4;
 #$dbh->{LongTruncOk} = 1;
-my $query = "SELECT password,yubikey,igvport,role,edit,burdentests FROM $logindb.user WHERE name=?";
+my $query = "SELECT password,yubikey,igvport,role,edit,burdentests, firstname FROM $logindb.user WHERE name=?";
 my $out = $dbh->prepare($query) || die print "$DBI::errstr";
 $out->execute($user) || die print "$DBI::errstr";
-($password_stored,$yubikey_stored,$igvport_stored,$role,$dbedit,$burdentests) = $out->fetchrow_array;
+($password_stored,$yubikey_stored,$igvport_stored,$role,$dbedit,$burdentests, $firstname) = $out->fetchrow_array;
 
 # user darf nicht leer sein, passiert wenn man loginDo.pl direkt aufruft
 # password_stored is empty when no entry in database
@@ -1046,7 +1103,8 @@ if ( ($password_stored eq $password) and ($yubikeyOK eq "OK") ) {
 	$self->printHeader("","sessionid_created");
 	$self->showMenu;
 	#print "<font size = 6>$newcookie</font><br>" ;
-	print "<font size = 6>Login successful</font><br>" ;
+	print "<font size = 8><strong>Welcome ".$firstname."<br>You are on EVAdb - $shorttitle</strong></font><br>" ;
+	#print "<font size = 6>Login successful</font><br>" ;
 	print "<font size = 6>IGVport $igvport</font><br>" ;
 	print "<font size = 6>YubiKey $yubikeyOK<br>";
 	my $mylocaltime = &mylocaltime;
@@ -1211,10 +1269,60 @@ my $session     = CGI::Session->load($sess_id) or die CGI::Session->errstr;
 	if ( ($projects ne "") and  ($#allowedprojects == -1) ) {
 		push(@allowedprojects,'-999');
 	}
+	
+	# Check if temporary samples or projects are allowed:
+	# 		( (s.idsample = auth.idsample OR s.idproject = auth.idproject) and NOW()>=auth.startdate and NOW()<=auth.enddate and auth.iduser=(select iduser FROM $exomevcfe.user where name='$user') and auth.download=1)
+	# Projects
+	$query = "
+		SELECT distinct(s.idproject)
+		FROM $sampledb.sample s
+		INNER JOIN $sampledb.project p ON s.idproject=p.idproject
+		INNER JOIN $logindb.authorization auth on 
+						( (auth.idsample IS NULL AND s.idproject = auth.idproject) and NOW()>=auth.startdate and NOW()<=auth.enddate and auth.iduser=(select iduser FROM $logindb.user where name=?) and auth.access=1)	
+		INNER JOIN $logindb.user U on (U.iduser = auth.iduser )
+	";
+	$out = $dbh->prepare($query) || die print "$DBI::errstr";
+		$out->execute($user) || die print "$DBI::errstr";
+		while ($tmp = $out->fetchrow_array) {
+			push(@allowedprojects,$tmp);
+		}
+	
+	
+	# Samples
+	$query = "
+		SELECT distinct(s.idsample)
+		FROM $sampledb.sample s
+		INNER JOIN $logindb.authorization auth on 
+						( (auth.idsample = s.idsample AND auth.idproject IS NULL) and CURDATE()>=auth.startdate and CURDATE()<=auth.enddate and auth.iduser=(select iduser FROM $logindb.user where name=?) and auth.access=1)	
+		INNER JOIN $logindb.user U on (U.iduser = auth.iduser )
+	";
+	
+	$out = $dbh->prepare($query) || die print "$DBI::errstr";
+		$out->execute($user) || die print "$DBI::errstr";
+		while ($tmp = $out->fetchrow_array) {
+			push(@allowedsamples,$tmp);
+		}
+	
 	#print "$#allowedprojects\n";
 	#print "all @allowedprojects<br>";
+	
+	# Provide LIMS db access if role is ADMIN
+	my $dbhLIMS = "";
+	
+	if ( $role eq "admin" )
+	{
+		open(IN, "$credLIMS");
+		while (<IN>) {
+			chomp;
+			($item,$value)=split(/\:/);
+			$logins{$item}=$value;
+		}	
+		close IN;
+		
+		$dbhLIMS = DBI->connect("DBI:mysql:$maindb", "$logins{dblogin}", "$logins{dbpasswd}") || die print "$DBI::errstr";
+	}
 
-return($dbh,$user,$csrfsalt);
+return($dbh,$user,$csrfsalt, $dbhLIMS);
 }
 
 ########################################################################
@@ -1226,21 +1334,38 @@ sub allowedprojects {
 	my $tmp = "";
 	my $i   = 0;
 	my $n   = $#allowedprojects;
-	$prefix = $prefix . 'idproject';
+	
+	my $nsamples = $#allowedsamples;
+	
+	my $prefixproject = $prefix . 'idproject';
+	my $prefixsample  = $prefix . 'idsample';
 	
 	if ($n>=0) {
 		$allowedprojects = " ( ";
 	}
+	
 	foreach $tmp (@allowedprojects) {
 		if ($i > 0) {
 			$allowedprojects .= " OR  ";
 		}
-		$allowedprojects .= "  ($prefix = $tmp) ";
+		$allowedprojects .= "  ($prefixproject = $tmp) ";
 		$i++;
 	}
 	if ($n>=0) {
+	
+		if ($nsamples >=0)
+		{
+	
+			foreach $tmp (@allowedsamples) {
+				$allowedprojects .= " OR  ";
+				$allowedprojects .= "  ($prefixsample = $tmp) ";
+			}
+	
+		}
+		
 		$allowedprojects .= " ) ";
 	}
+	
 	return ($allowedprojects);
 }
 
@@ -2029,6 +2154,15 @@ push(@AoH,({
 	  	values      => ", 1, 0",
 	  	bgcolor     => "formbg",
 	  },
+  	  {
+	  	label       => "Restrict to OMIM Genes (and proximity)",
+	  	labels      => "No, Yes",
+	  	type        => "radio",
+		name        => "omim",
+	  	value       => "no",
+	  	values      => "no, yes",
+	  	bgcolor     => "formbg",
+	  },
 	  {
 	  	label       => "Print query",
 	  	labels      => "no, yes",
@@ -2039,6 +2173,63 @@ push(@AoH,({
 	  	bgcolor     => "formbg",
 	  },
 ));
+
+$ref = \@AoH;
+return($ref);
+}
+########################################################################
+# init for search MNV Hunter
+########################################################################
+sub initSearchMNVHunter {
+my $self         = shift;
+my $sample       = shift;
+my $pedigree     = shift;
+my $autosearch   = shift;
+
+if (!defined($sample)) {$sample = ""};
+if (!defined($pedigree)) {$pedigree = ""};
+if (defined($autosearch)){$libtype_default = ""};
+
+my $ref          = "";
+
+my @AoH = (
+	  {
+	  	label       => "DNA ID",
+	  	type        => "text",
+		name        => "s.name",
+	  	value       => "$sample",
+		size        => "30",
+		maxlength   => "30",
+	  	bgcolor     => "formbg",
+	  },
+	  {
+	  	label       => "Foreign ID",
+	  	type        => "text",
+		name        => "s.foreignid",
+	  	value       => "",
+		size        => "30",
+		maxlength   => "30",
+	  	bgcolor     => "formbg",
+	  },
+	  {
+	  	label       => "Pedigree",
+	  	type        => "text",
+		name        => "pedigree",
+	  	value       =>  "$pedigree",
+		size        => "30",
+		maxlength   => "30",
+	  	bgcolor     => "formbg",
+	  },
+	  {
+	  	label       => "Filter level",
+	  	labels      => "PASS, all",
+	  	type        => "radio",
+		name        => "mode",
+	  	value       => "PASS",
+	  	values      => "PASS, all",
+	  	bgcolor     => "formbg",
+	  },
+);
 
 $ref = \@AoH;
 return($ref);
@@ -2234,7 +2425,7 @@ if ($sname ne "") {
 	$sql = "
 	SELECT s.name,s.saffected
 	FROM $sampledb.sample s
-	INNER JOIN variantstat vs ON s.idsample=vs.idsample
+	INNER JOIN $variantstat vs ON s.idsample=vs.idsample
 	WHERE s.pedigree = ?
 	AND nottoseq = 0
 	";
@@ -2747,7 +2938,7 @@ if ($sname ne "") {
 	$sql = "
 	SELECT s.name,s.saffected
 	FROM $sampledb.sample s
-	INNER JOIN variantstat vs ON s.idsample=vs.idsample
+	INNER JOIN $variantstat vs ON s.idsample=vs.idsample
 	WHERE s.pedigree = ?
 	AND nottoseq = 0
 	";
@@ -3046,6 +3237,125 @@ print qq#
 $ref = \@AoH;
 return($ref);
 }
+
+########################################################################
+# init for search Expansion
+########################################################################
+sub initSearchExpansion {
+my $self         = shift;
+my $sname        = shift;
+
+my $ref          = "";
+
+my @AoH = (
+	  {
+	  	label       => "Analysis date >= (yyyy-mm-dd)",
+	  	type        => "jsdate",
+		name        => "datebegin",
+	  	value       => "",
+		size        => "10",
+		maxlength   => "10",
+	  	bgcolor     => "formbg",
+	  },
+	  {
+	  	label       => "Analysis date <= (yyyy-mm-dd)",
+	  	type        => "jsdate",
+		name        => "dateend",
+	  	value       => "",
+		size        => "10",
+		maxlength   => "10",
+	  	bgcolor     => "formbg",
+	  },
+	  {
+	  	label       => "DNA Id",
+	  	type        => "text",
+		name        => "name",
+	  	value       => "$sname",
+		size        => "30",
+		maxlength   => "30",
+	  	bgcolor     => "formbg",
+	  },
+	  {
+	  	label       => "Disease",
+	  	type        => "selectdb",
+		name        => "ds.iddisease",
+	  	value       => "",
+	  	bgcolor     => "formbg",
+	  },
+	  {
+	  	label       => "Cooperation",
+	  	type        => "selectdb",
+		name        => "s.idcooperation",
+	  	value       => "",
+	  	bgcolor     => "formbg",
+	  },
+	  {
+	  	label       => "Project",
+	  	type        => "selectdb",
+		name        => "idproject",
+	  	value       => "",
+	  	bgcolor     => "formbg",
+	  },
+	  { # TODO rename
+	  	label       => "Gene Symbol",
+	  	type        => "text",
+		name        => "geneAnnotation.gene",
+	  	value       => "",
+		size        => "30",
+		maxlength   => "30",
+	  	bgcolor     => "formbg",
+	  },
+	  {
+	  	label       => "Repeat count >=",
+	  	type        => "text",
+		name        => "repeatcount1",
+	  	value       => "1",
+		size        => "30",
+		maxlength   => "30",
+	  	bgcolor     => "formbg",
+	  },
+	  {
+	  	label       => "Repeat count <=",
+	  	type        => "text",
+		name        => "repeatcount2",
+	  	value       => "",
+		size        => "30",
+		maxlength   => "30",
+	  	bgcolor     => "formbg",
+	  },
+	  {
+	  	label       => "z score >=",
+	  	type        => "text",
+		name        => "zThreshold",
+	  	value       => "1",
+		size        => "30",
+		maxlength   => "30",
+	  	bgcolor     => qq{formbg" title = "Defined as the absolute difference of repeat counts between the observed allele and the reference allele, divided by our data sample standard deviation of the repeat locus. May be used as pathogenicity filter. For convenience, only the maximum z score from the two alleles will be querried. For population disease prevalence K, initial values for the z score may be 2.3 (K = 1E-2), 3.0 (K = 1E-3), 3.7 (K = 1E-4), 4.2 (K = 1E-5), or 4.7 (K = 1E-6), respectively.},
+	  },
+	  {
+	  	label       => "Filter",
+	  	type        => "text",
+		name        => "filter",
+	  	value       => "PASS",
+		size        => "30",
+		maxlength   => "30",
+	  	bgcolor     => "formbg",
+	  },
+	  {
+	  	label       => "Exclude tumor samples",
+	  	labels      => "no, yes",
+	  	type        => "radio",
+		name        => "tumor",
+	  	value       => "yes",
+	  	values      => "no, yes",
+	  	bgcolor     => "formbg",
+	  },
+);
+
+$ref = \@AoH;
+return($ref);
+}
+
 ########################################################################
 # init for search Translocations
 ########################################################################
@@ -4509,6 +4819,7 @@ my $ref          = "";
 my $sql          = "";
 my $out          = "";
 my $iddisease  = "";
+my $iddiseasegroup = "";
 
 if (($demo) and ($sname eq "")) {
 	$sname = "S0001";
@@ -4521,12 +4832,30 @@ if ($sname ne "") {
 	INNER JOIN $sampledb.disease2sample ds ON s.idsample   = ds.idsample
 	INNER JOIN $sampledb.disease         d ON ds.iddisease = d.iddisease
 	INNER JOIN disease2gene             dg ON d.iddisease  = dg.iddisease
+	INNER JOIN $sampledb.diseasegroup  dgr ON d.iddiseasegroup = dgr.iddiseasegroup
 	WHERE s.name = ?
 	";
 	$out = $dbh->prepare($sql) || die print "$DBI::errstr";
 	$out->execute($sname) || die print "$DBI::errstr";
-	$iddisease = $out->fetchrow_array;
+	($iddisease) = $out->fetchrow_array;
+	
+	$sql = "
+	SELECT DISTINCT dgr.iddiseasegroup
+	FROM $sampledb.sample s
+	INNER JOIN $sampledb.disease2sample ds ON s.idsample   = ds.idsample
+	INNER JOIN $sampledb.disease         d ON ds.iddisease = d.iddisease
+	INNER JOIN disease2gene             dg ON d.iddisease  = dg.iddisease
+	INNER JOIN $sampledb.diseasegroup  dgr ON d.iddiseasegroup = dgr.iddiseasegroup
+	WHERE s.name = ?
+	";
+	
+
+	$out = $dbh->prepare($sql) || die print "$DBI::errstr";
+	$out->execute($sname) || die print "$DBI::errstr";
+	($iddiseasegroup) = $out->fetchrow_array;
 }
+
+
 
 
 my @AoH = (
@@ -4556,6 +4885,13 @@ my @AoH = (
 	  	bgcolor     => "formbg",
 	  },
 	  {
+	  	label       => "Test disease group",
+		type        => "selectdb",
+		name        => "dgr.iddiseasegroup",
+		value       => "$iddiseasegroup",
+		bgcolor     => "formbg",
+	  },
+	  {
 	  	label       => "Disease gene score <=",
 	  	type        => "text",
 		name        => "score",
@@ -4565,12 +4901,12 @@ my @AoH = (
 	  	bgcolor     => "formbg",
 	  },
 	  {
-	  	label       => "DNA ID",
-	  	type        => "text",
+	  	label       => "DNA ID(s)<br><br>Space or newline separated",
+	  	type        => "textArea",
 		name        => "s.name",
 	  	value       => "$sname",
-		size        => "30",
-		maxlength   => "30",
+		size        => "40",
+		maxlength   => "20000000",
 	  	bgcolor     => "formbg",
 	  	autofocus   => "autofocus",
 	  },
@@ -4609,12 +4945,30 @@ my @AoH = (
 push(@AoH,(&defaultAoH));
 	  
 push(@AoH,({
+	  	label       => "Clinical status",
+	  	labels      => "All, Solved, Unsolved / Not processed",
+	  	type        => "radio",
+		name        => "clinicalstatus",
+	  	value       => "0",
+	  	values      => "0, 1, 2",
+	  	bgcolor     => "formbg",
+	  },
+	  {
 	  	label       => "Genome in a bottle (only for genomes)",
 	  	labels      => "All, callable, not callable",
 	  	type        => "radio",
 		name        => "giab",
 	  	value       => "$giabform",
 	  	values      => ", 1, 0",
+	  	bgcolor     => "formbg",
+	  },
+	  {
+	  	label       => "LiftOver coordinates ($liftOverFrom to $liftOverTo) (Slow!)",
+	  	labels      => "no, yes",
+	  	type        => "radio",
+		name        => "liftover",
+	  	value       => "no",
+	  	values      => "no, yes",
 	  	bgcolor     => "formbg",
 	  },
 	  {
@@ -4626,13 +4980,22 @@ push(@AoH,({
 	  	values      => "0, 1, 2",
 	  	bgcolor     => "formbg",
 	  },
+	  {
+	  	label       => "Print query",
+	  	labels      => "no, yes",
+	  	type        => "radio",
+		name        => "printquery",
+	  	value       => "no",
+	  	values      => "no, yes",
+	  	bgcolor     => "formbg",
+	  },
 ));
 
 $ref = \@AoH;
 return($ref);
 }
 ########################################################################
-# init for search Comment
+# init for search 
 ########################################################################
 sub initSearchComment {
 my $self         = shift;
@@ -4993,6 +5356,78 @@ my @AoH = (
 $ref = \@AoH;
 return($ref);
 }
+
+
+########################################################################
+# init for search Pengelly
+########################################################################
+sub initSearchPengelly {
+my $self         = shift;
+my $sname        = shift;
+my $dbh          = shift;
+my $ref          = "";
+my $sql          = "";
+my $out          = "";
+
+
+my @AoH = (
+	  {
+	  	label       => "Analysis date >= (yyyy-mm-dd)",
+	  	type        => "jsdate",
+		name        => "datebegin",
+	  	value       => "",
+		size        => "10",
+		maxlength   => "10",
+	  	bgcolor     => "formbg",
+	  },
+	  {
+	  	label       => "Analysis date <= (yyyy-mm-dd)",
+	  	type        => "jsdate",
+		name        => "dateend",
+	  	value       => "",
+		size        => "10",
+		maxlength   => "10",
+	  	bgcolor     => "formbg",
+	  },
+	  {
+	  	label       => "DNA ID(s)<br><br>Space or newline separated",
+	  	type        => "textArea",
+		name        => "s.name",
+	  	value       => "$sname",
+		size        => "40",
+		maxlength   => "20000000",
+	  	bgcolor     => "formbg",
+	  	autofocus   => "autofocus",
+	  },
+	  {
+	  	label       => "Disease",
+	  	type        => "selectdb",
+		name        => "ds.iddisease",
+	  	value       => "",
+	  	bgcolor     => "formbg",
+	  },
+	  {
+	  	label       => "Cooperation",
+	  	type        => "selectdb",
+		name        => "s.idcooperation",
+	  	value       => "",
+	  	bgcolor     => "formbg",
+	  },
+	  {
+	  	label       => "Project",
+	  	type        => "selectdb",
+		name        => "idproject",
+	  	value       => "",
+	  	bgcolor     => "formbg",
+	  }
+);
+
+$ref = \@AoH;
+return($ref);
+}
+
+
+
 ########################################################################
 # init for comment
 ########################################################################
@@ -5267,7 +5702,7 @@ if ($table eq "svsample") {
 	  },
 );
 
-if ($user eq "tim") {
+if ($role eq "admin") {
 push(@AoH,(
 	  {
 	  	label       => "ClinVar SCV",
@@ -5607,6 +6042,96 @@ my @AoH = (
 $ref = \@AoH;
 return($ref);
 }
+
+########################################################################
+# init for search Sample
+########################################################################
+sub initShareSample {
+
+my $self         = shift;
+my $pedigree     = shift;
+
+if ($role ne "admin") {print "Not admin";exit(1);}
+
+if (!defined($pedigree)) {$pedigree = ""};
+my $ref          = "";
+
+my @AoH = (
+	  {
+	  	label       => "Date start >= (yyyy-mm-dd)",
+	  	type        => "jsdate",
+		name        => "datebegin",
+	  	value       => "",
+		size        => "10",
+		maxlength   => "10",
+	  	bgcolor     => "formbg",
+	  },
+	  {
+	  	label       => "Date end <= (yyyy-mm-dd)",
+	  	type        => "jsdate",
+		name        => "dateend",
+	  	value       => "",
+		size        => "10",
+		maxlength   => "10",
+	  	bgcolor     => "formbg",
+	  },
+	  {
+	  	label       => "DNA ID",
+	  	type        => "text",
+		name        => "s.name",
+	  	value       => "",
+		size        => "30",
+		maxlength   => "30",
+	  	bgcolor     => "formbg",
+	  },
+	  {
+	  	label       => "Foreign ID",
+	  	type        => "text",
+		name        => "foreignid",
+	  	value       => "",
+		size        => "30",
+		maxlength   => "30",
+	  	bgcolor     => "formbg",
+	  },
+	  {
+	  	label       => "Pedigree",
+	  	type        => "text",
+		name        => "pedigree",
+	  	value       =>  "$pedigree",
+		size        => "30",
+		maxlength   => "30",
+	  	bgcolor     => "formbg",
+	  },
+	  {
+	  	label       => "Project",
+	  	type        => "selectdb",
+		name        => "idproject",
+	  	value       => "",
+	  	bgcolor     => "formbg",
+	  },
+	  {
+	  	label       => "To user",
+	  	type        => "selectdb",
+		name        => "iduser",
+	  	value       => "",
+	  	bgcolor     => "formbg",
+	  },
+          {
+	  	label       => "Access",
+	  	labels      => "None, Access, Download, Access and download",
+	  	type        => "radio",
+		name        => "access",
+	  	value       => "0",
+	  	values      => "0, 1, 2, 3",
+	  	bgcolor     => "formbg",
+	  },
+);
+
+$ref = \@AoH;
+return($ref);
+}
+
+
 ########################################################################
 # init for admin
 ########################################################################
@@ -5627,7 +6152,7 @@ my @AoH = (
 	  	bgcolor     => "formbg",
 	  },
 	  {
-	  	label       => "Name",
+	  	label       => "user",
 	  	type        => "text",
 		name        => "name",
 	  	value       => "",
@@ -5650,14 +6175,14 @@ my @AoH = (
 		name        => "yubikey",
 	  	value       => "",
 		size        => "45",
-		maxlength   => "45",
+		maxlength   => "12",
 	  	bgcolor     => "formbg",
 	  },
 	  {
 	  	label       => "IGV port",
 	  	type        => "text",
 		name        => "igvport",
-	  	value       => "",
+	  	value       => "60151",
 		size        => "45",
 		maxlength   => "45",
 	  	bgcolor     => "formbg",
@@ -5677,7 +6202,7 @@ my @AoH = (
 		name        => "projects",
 	  	value       => "",
 		size        => "80",
-		maxlength   => "255",
+		maxlength   => "512",
 	  	bgcolor     => "formbg",
 	  },
 	  {
@@ -5726,6 +6251,42 @@ my @AoH = (
 	  	bgcolor     => "formbg",
 	  },
 	  {
+	  	label       => "Family Name",
+	  	type        => "text",
+		name        => "familyname",
+	  	value       => "",
+		size        => "45",
+		maxlength   => "255",
+	  	bgcolor     => "formbg",
+	  },
+	  {
+	  	label       => "First Name",
+	  	type        => "text",
+		name        => "firstname",
+	  	value       => "",
+		size        => "45",
+		maxlength   => "255",
+	  	bgcolor     => "formbg",
+	  },
+	  {
+	  	label       => "Email",
+	  	type        => "text",
+		name        => "email",
+	  	value       => "",
+		size        => "80",
+		maxlength   => "255",
+	  	bgcolor     => "formbg",
+	  },
+	  {
+	  	label       => "Phone",
+	  	type        => "text",
+		name        => "phone",
+	  	value       => "",
+		size        => "80",
+		maxlength   => "255",
+	  	bgcolor     => "formbg",
+	  },	  
+	  {
 	  	label       => "Comment",
 	  	type        => "text",
 		name        => "comment",
@@ -5734,6 +6295,15 @@ my @AoH = (
 		maxlength   => "255",
 	  	bgcolor     => "formbg",
 	  },
+	  {
+	  	label       => "IP",
+	  	type        => "text",
+		name        => "ipaddress",
+	  	value       => "",
+		size        => "300",
+		maxlength   => "255",
+	  	bgcolor     => "formbg",
+	  },	  
 );
 
 $ref = \@AoH;
@@ -6180,7 +6750,7 @@ $query = qq#
 SELECT
 count(distinct idsample)
 FROM
-snvsample
+$snvsample
 #;
 $out = $dbh->prepare($query) || die print "$DBI::errstr";
 $out->execute() || die print "$DBI::errstr";
@@ -6934,7 +7504,7 @@ f.fsample,
 f.samplecontrols,
 group_concat(DISTINCT $exac_gene_link separator '<br>'),
 group_concat(DISTINCT exac.mis_z separator '<br>'),
-group_concat(DISTINCT '<a href="http://$hgmdserver/hgmd/pro/mut.php?accession=',h.id,'">',h.id,'</a>'),
+group_concat(DISTINCT '<a href="https://$hgmdserver/hgmd/pro/mut.php?accession=',h.id,'">',h.id,'</a>'),
 group_concat(DISTINCT $clinvarlink separator '<br>'),
 group_concat(DISTINCT $exac_link separator '<br>'),
 group_concat(DISTINCT g.nonsynpergene,' (', g.delpergene,')' separator '<br>'),
@@ -6959,7 +7529,7 @@ group_concat(DISTINCT g.genesymbol),
 x.idsample
 FROM
 snv v
-INNER JOIN snvsample                     x ON (v.idsnv = x.idsnv) 
+INNER JOIN $snvsample                     x ON (v.idsnv = x.idsnv) 
 LEFT  JOIN $coredb.dgvbp               dgv ON (v.chrom = dgv.chrom AND v.start=dgv.start)
 INNER JOIN $sampledb.sample              s ON (s.idsample = x.idsample)
 INNER JOIN $sampledb.disease2sample     ds ON (s.idsample = ds.idsample)
@@ -7408,7 +7978,7 @@ f.fsample,
 f.samplecontrols,
 group_concat(DISTINCT $exac_gene_link separator '<br>'),
 group_concat(DISTINCT exac.mis_z separator '<br>'),
-group_concat(DISTINCT '<a href="http://$hgmdserver/hgmd/pro/mut.php?accession=',h.id,'">',h.id,'</a>'),
+group_concat(DISTINCT '<a href="https://$hgmdserver/hgmd/pro/mut.php?accession=',h.id,'">',h.id,'</a>'),
 group_concat(DISTINCT $clinvarlink separator '<br>'),
 group_concat(DISTINCT $exac_link separator '<br>'),
 group_concat(DISTINCT g.nonsynpergene,' (', g.delpergene,')' separator '<br>'),
@@ -7436,7 +8006,7 @@ group_concat(DISTINCT g.genesymbol),
 x.idsample
 FROM
 snv v
-INNER JOIN snvsample                     x ON (v.idsnv = x.idsnv) 
+INNER JOIN $snvsample                     x ON (v.idsnv = x.idsnv) 
 LEFT  JOIN $coredb.dgvbp               dgv ON (v.chrom = dgv.chrom AND v.start=dgv.start)
 INNER JOIN $sampledb.sample              s ON (s.idsample = x.idsample)
 INNER JOIN $sampledb.disease2sample     ds ON (s.idsample = ds.idsample)
@@ -7881,7 +8451,7 @@ group_concat(DISTINCT $exac_aa_link separator '<br>'),
 group_concat(DISTINCT evs.filter SEPARATOR ', '),
 group_concat(DISTINCT cadd.phred separator ' '),
 group_concat(DISTINCT g.omim separator ' '),
-group_concat(DISTINCT '<a href="http://$hgmdserver/hgmd/pro/mut.php?accession=',h.id,'">',h.id,'</a>'),
+group_concat(DISTINCT '<a href="https://$hgmdserver/hgmd/pro/mut.php?accession=',h.id,'">',h.id,'</a>'),
 group_concat(DISTINCT $clinvarlink separator '<br>'),
 group_concat(DISTINCT x.TLOD SEPARATOR ', '),
 group_concat(DISTINCT x.gt_MBQ SEPARATOR ', '),
@@ -8376,7 +8946,7 @@ group_concat(DISTINCT $exac_aa_link separator '<br>'),
 group_concat(DISTINCT evs.filter SEPARATOR ', '),
 group_concat(DISTINCT cadd.phred separator ' '),
 group_concat(DISTINCT g.omim separator ' '),
-group_concat(DISTINCT '<a href="http://$hgmdserver/hgmd/pro/mut.php?accession=',h.id,'">',h.id,'</a>'),
+group_concat(DISTINCT '<a href="https://$hgmdserver/hgmd/pro/mut.php?accession=',h.id,'">',h.id,'</a>'),
 group_concat(DISTINCT $clinvarlink separator '<br>'),
 group_concat(DISTINCT x.hiConfDeNovo SEPARATOR ', '),
 group_concat(DISTINCT x.loConfDeNovo SEPARATOR ', '),
@@ -8752,7 +9322,7 @@ sub checkParents {
 	
 	$query = "
 	SELECT x.idsnv 
-	FROM snvsample x
+	FROM $snvsample x
 	INNER JOIN $sampledb.sample s ON x.idsample=s.idsample
 	WHERE s.name= ?
 	AND   x.idsnv = ?
@@ -8993,7 +9563,7 @@ f.fsample,
 f.samplecontrols,
 group_concat(DISTINCT $exac_gene_link separator '<br>'),
 group_concat(DISTINCT exac.mis_z separator '<br>'),
-group_concat(DISTINCT '<a href="http://$hgmdserver/hgmd/pro/mut.php?accession=',h.id,'">',h.id,'</a>'),
+group_concat(DISTINCT '<a href="https://$hgmdserver/hgmd/pro/mut.php?accession=',h.id,'">',h.id,'</a>'),
 group_concat(DISTINCT $clinvarlink separator '<br>'),
 group_concat(DISTINCT $exac_link separator '<br>'),
 group_concat(distinct g.nonsynpergene,' (', g.delpergene,')'),
@@ -9016,7 +9586,7 @@ group_concat(DISTINCT dg.class),
 s.pedigree
 FROM
 snv v 
-INNER JOIN snvsample                    x ON (v.idsnv = x.idsnv) 
+INNER JOIN $snvsample                    x ON (v.idsnv = x.idsnv) 
 LEFT  JOIN $coredb.dgvbp              dgv ON (v.chrom = dgv.chrom AND v.start=dgv.start)
 INNER JOIN $sampledb.sample             s ON (s.idsample = x.idsample)
 INNER JOIN $sampledb.disease2sample    ds ON (s.idsample = ds.idsample)
@@ -9402,7 +9972,7 @@ group_concat(DISTINCT $genelink, ',',v.class, ',', replace(v.func,',',' ') ORDER
 group_concat(DISTINCT g.genesymbol)
 FROM
 $sampledb.sample s
-LEFT  JOIN snvsample                    x ON (s.idsample = x.idsample)
+LEFT  JOIN $snvsample                    x ON (s.idsample = x.idsample)
 LEFT  JOIN snv                          v ON (v.idsnv = x.idsnv)
 LEFT  JOIN $exomevcfe.comment           c ON (v.chrom=c.chrom and v.start=c.start and v.refallele=c.refallele and v.allele=c.altallele and s.idsample=c.idsample)
 LEFT  JOIN $coredb.dgvbp              dgv ON (v.chrom = dgv.chrom AND v.start=dgv.start)
@@ -9561,7 +10131,7 @@ my $end       = "";
 my $diseasename = "";
 my $igvfile   = "";
 my $sample    = "";
-my $allowedprojects = &allowedprojects("");
+my $allowedprojects = &allowedprojects("s."); #CHANGED
 my $genotype  = "";
 my $genotypeprint = "";
 my $inheritance  = "";
@@ -9681,7 +10251,7 @@ group_concat(distinct x.coverage),
 group_concat(distinct x.percentvar),
 concat($rssnplink),
 avhet,
-group_concat(DISTINCT '<a href="http://$hgmdserver/hgmd/pro/mut.php?accession=',h.id,'">',h.id,'</a>'),
+group_concat(DISTINCT '<a href="https://$hgmdserver/hgmd/pro/mut.php?accession=',h.id,'">',h.id,'</a>'),
 group_concat(DISTINCT $clinvarlink separator '<br>'),
 concat(af),
 group_concat(DISTINCT $exac_ae_link separator '<br>'),
@@ -9704,7 +10274,7 @@ s.idsample,
 dg.class
 FROM
 snv v 
-INNER JOIN snvsample                       x ON (v.idsnv = x.idsnv) 
+INNER JOIN $snvsample                      x ON (v.idsnv = x.idsnv) 
 INNER JOIN $sampledb.sample                s ON (s.idsample = x.idsample)
 INNER JOIN $exomevcfe.comment              c ON (v.chrom=c.chrom and v.start=c.start and v.refallele=c.refallele and v.allele=c.altallele and s.idsample=c.idsample)
 LEFT  JOIN $coredb.dgvbp                 dgv ON (v.chrom = dgv.chrom AND v.start=dgv.start)
@@ -10029,7 +10599,7 @@ my $end               = "";
 my $excluded          = "";
 my $diseasegroup      = "";
 my $samples           = "";
-my $allowedprojects   = &allowedprojects("");
+my $allowedprojects   = &allowedprojects("s."); #CHANGED
 my @prepare           = ();
 my $dgiddisease       = "";
 my $cnvfile           = "";
@@ -10194,7 +10764,7 @@ f.fsample,
 f.samplecontrols,
 group_concat(DISTINCT $exac_gene_link separator '<br>'),
 group_concat(DISTINCT exac.mis_z separator '<br>'),
-group_concat(DISTINCT '<a href="http://$hgmdserver/hgmd/pro/mut.php?accession=',h.id,'">',h.id,'</a>'),
+group_concat(DISTINCT '<a href="https://$hgmdserver/hgmd/pro/mut.php?accession=',h.id,'">',h.id,'</a>'),
 group_concat(DISTINCT $clinvarlink separator '<br>'),
 group_concat(DISTINCT $exac_link separator '<br>'),
 group_concat(distinct g.nonsynpergene,' (', g.delpergene,')'),
@@ -10217,7 +10787,7 @@ x.idsample,
 v.idsnv
 FROM
 snv v 
-INNER JOIN snvsample                   x ON (v.idsnv = x.idsnv) 
+INNER JOIN $snvsample                  x ON (v.idsnv = x.idsnv) 
 LEFT  JOIN $coredb.dgvbp             dgv ON (v.chrom = dgv.chrom AND v.start=dgv.start)
 INNER JOIN $sampledb.sample            s ON (s.idsample = x.idsample)
 INNER JOIN $sampledb.disease2sample   ds ON (s.idsample = ds.idsample)
@@ -10433,7 +11003,7 @@ sub checkSamples {
 	
 	$query = "
 	SELECT x.idsnv 
-	FROM snvsample x
+	FROM $snvsample x
 	WHERE x.idsample  = ?
 	AND   x.idsnv = ?
 	";
@@ -10671,7 +11241,7 @@ max(x.alleles),
 s.saffected
 FROM
 snv v 
-INNER JOIN snvsample                    x on (v.idsnv = x.idsnv) 
+INNER JOIN $snvsample                   x on (v.idsnv = x.idsnv) 
 LEFT  JOIN $coredb.dgvbp              dgv on (v.chrom = dgv.chrom AND v.start=dgv.start)
 LEFT  JOIN $sampledb.sample             s on (s.idsample = x.idsample)
 LEFT  JOIN snvgene                      y on (v.idsnv = y.idsnv)
@@ -10980,8 +11550,8 @@ WHERE s.idsample = ?
 
 
 $query = qq#
-SELECT group_concat("<a href='http://localhost:$igvport/load?file=$igvserver","%3Fsid=$sess_id%26sname=",s.name,"%26file=merged.rmdup.bam",
-"\&index=$igvserver","%3Fsid=$sess_id%26sname=",s.name,"%26file=merged.rmdup.bam.bai",
+SELECT group_concat("<a href='http://localhost:$igvport/load?file=$igvserver","%3Fsid=$sess_id%26sname=",s.name,"%26file=merged.rmdup.cram",
+"\&index=$igvserver","%3Fsid=$sess_id%26sname=",s.name,"%26file=merged.rmdup.cram.crai",
 "\&merge=true\&name=",s.name,"' title='Open sample in IGV'>$parent ",s.name,"</a>")
 FROM $sampledb.sample s
 WHERE s.idsample = ?
@@ -11019,7 +11589,7 @@ group_concat(DISTINCT '<a href="listPosition.pl?idsnv=',v.idsnv,'" title="All ca
 group_concat(DISTINCT '<a href="http://localhost:$igvport/load?file=',$igvserver2,'" title="Open sample in IGV"','>',s.name,'</a>' SEPARATOR '<br>'),
 group_concat(DISTINCT s.pedigree),
 s.sex,
-d.symbol,
+d.name,
 group_concat(DISTINCT v.chrom,' ',v.start,' ',v.end,' ',v.class,' ',v.refallele,' ',v.allele SEPARATOR '|'),
 c.rating,
 c.patho,
@@ -11033,7 +11603,7 @@ group_concat(DISTINCT f.fsample),
 group_concat(DISTINCT f.samplecontrols),
 group_concat(DISTINCT $exac_gene_link separator '<br>'),
 group_concat(DISTINCT exac.mis_z separator '<br>'),
-group_concat(DISTINCT '<a href="http://$hgmdserver/hgmd/pro/mut.php?accession=',h.id,'">',h.id,'</a>'),
+group_concat(DISTINCT '<a href="https://$hgmdserver/hgmd/pro/mut.php?accession=',h.id,'">',h.id,'</a>'),
 group_concat(DISTINCT $clinvarlink separator '<br>'),
 group_concat(DISTINCT $exac_link separator '<br>'),
 group_concat(DISTINCT g.nonsynpergene,' (', g.delpergene,')'),
@@ -11057,7 +11627,7 @@ group_concat(DISTINCT x.alleles),
 dg.class
 FROM
 snv v 
-INNER JOIN snvsample                    x ON (v.idsnv = x.idsnv) 
+INNER JOIN $snvsample                   x ON (v.idsnv = x.idsnv) 
 LEFT  JOIN $coredb.dgvbp              dgv ON (v.chrom = dgv.chrom AND v.start=dgv.start)
 INNER JOIN $sampledb.sample             s ON (s.idsample = x.idsample)
 INNER JOIN $sampledb.disease2sample    ds ON (s.idsample = ds.idsample)
@@ -11182,7 +11752,7 @@ x.snvqual,x.gtqual,x.mapqual,x.coverage,x.percentvar,x.filter,v.start,
 group_concat(dg.class)
 FROM
 snv v
-INNER JOIN snvsample x on (v.idsnv = x.idsnv) 
+INNER JOIN $snvsample x on (v.idsnv = x.idsnv) 
 INNER JOIN $sampledb.sample s on (s.idsample = x.idsample)
 INNER JOIN $sampledb.disease2sample ds ON (s.idsample = ds.idsample)
 INNER JOIN $sampledb.disease i on (ds.iddisease = i.iddisease)
@@ -11546,10 +12116,11 @@ concat($rssnplink),
 concat( '<a href="http://localhost:$igvport/load?file=',$igvserver2,'" title="Open sample in IGV"','>',s.name,'</a>' ),
 s.pedigree,
 i.name,s.saffected,x.alleles,x.snvqual,x.gtqual,x.mapqual,x.coverage,x.percentvar,x.filter,
-group_concat(DISTINCT $exac_link separator '<br>')
+group_concat(DISTINCT $exac_link separator '<br>'),
+concat(v.chrom,":",v.start-1,"-",v.end-2)
 FROM
 snv v
-LEFT JOIN snvsample                 x ON v.idsnv = x.idsnv 
+LEFT JOIN $snvsample                x ON v.idsnv = x.idsnv 
 LEFT JOIN $sampledb.sample          s ON s.idsample = x.idsample
 LEFT JOIN $sampledb.disease2sample ds ON s.idsample = ds.idsample
 LEFT JOIN $sampledb.disease         i ON ds.iddisease = i.iddisease
@@ -11593,8 +12164,13 @@ $out->execute(@prepare) || die print "$DBI::errstr";
 	'Depth',
 	'%Var',
 	'Filter',
-	'gnomAD',
+	'gnomAD'
 	);
+
+if ( $liftOverFrom ne $liftOverTo )
+{
+	push(@labels, "$liftOverTo coords");
+}
 
 $i=0;
 &tableheaderDefault("1500px");
@@ -11608,6 +12184,17 @@ $n=1;
 while (@row = $out->fetchrow_array) {
 	print "<tr>";
 	$i=0;
+	
+	if ( $liftOverFrom ne $liftOverTo )
+	{
+		my $liftOverCoords=liftOver($row[24]);
+		$row[24] = $liftOverCoords;
+	}
+	else
+	{
+		pop(@row);
+	}
+	
 	foreach (@row) {
 		if ($i == 0) { #edit project
 			print "<td align=\"center\">$n</td>";
@@ -11902,7 +12489,7 @@ group_concat(s.saffected separator '<br>'),
 group_concat(p.pdescription separator '<br>'),
 (SELECT
 count(xx.idsnv)
-FROM snvsample xx 
+FROM $snvsample xx 
 WHERE v.idsnv = xx.idsnv
 AND xx.filter = 'PASS'
 ) as allcount,
@@ -11918,7 +12505,7 @@ LEFT  JOIN gene                      g ON g.idgene = y.idgene
 WHERE vv.idsnv = v.idsnv
 )
 FROM snv v
-INNER JOIN snvsample                 x ON v.idsnv=x.idsnv
+INNER JOIN $snvsample                x ON v.idsnv=x.idsnv
 INNER JOIN $sampledb.sample          s ON x.idsample=s.idsample
 INNER JOIN $sampledb.disease2sample ds ON s.idsample=ds.idsample
 INNER JOIN $sampledb.disease         d ON ds.iddisease=d.iddisease
@@ -12098,7 +12685,7 @@ elsif ($ref->{'idproject'} ne "") {
 	# excluded unaffected
 	$query = "
 	SELECT name FROM $sampledb.sample s
-	INNER JOIN variantstat vs ON s.idsample=vs.idsample
+	INNER JOIN $variantstat vs ON s.idsample=vs.idsample
 	WHERE idproject = ?
 	AND   saffected = 0
 	";
@@ -12115,7 +12702,7 @@ elsif ($ref->{'idproject'} ne "") {
 	# names affected
 	$query = "
 	SELECT name FROM $sampledb.sample s
-	INNER JOIN variantstat vs ON s.idsample=vs.idsample
+	INNER JOIN $variantstat vs ON s.idsample=vs.idsample
 	WHERE idproject = ?
 	AND   saffected = 1
 	";
@@ -13025,6 +13612,281 @@ while (@row = $out->fetchrow_array) {
 print "</tbody></table></div>";
 
 }
+
+
+
+
+
+########################################################################
+# searchResultsExpansion searchExpansion
+########################################################################
+sub searchResultsExpansion {
+my $self         = shift;
+my $dbh          = shift;
+my $ref          = shift;
+
+my @labels    = ();
+my $out       = "";
+my @row       = ();
+my $query     = "";
+my $i         = 0;
+my $n         = 1;
+my $where     = "";
+my @subTableFilter = ("","","","");
+my $tmp       = "";
+my @tmp       = ();
+my @prepare   = ();
+my $position  = "";
+my $chrom     = "";
+my $start     = "";
+my $end       = "";
+my $igvfile   = "";
+my $cnvfile   = "";
+my $having    = "";
+my $allowedprojects = &allowedprojects("s.");
+
+
+if ( $ref->{'name'} eq "" &&  $ref->{'idproject'} eq ""  && $ref->{'s.idcooperation'} eq "" && $ref->{'ds.iddisease'} eq "")
+{
+	printf "Select sample / project / cooperation or disease";
+	exit(0);
+}
+
+
+if ($ref->{'datebegin'} ne "") {
+	$where = " AND es.date >= ? ";
+	push(@prepare, $ref->{'datebegin'});
+}
+if ($ref->{'dateend'} ne "") {
+	$where .= " AND es.date <= ? ";
+	push(@prepare, $ref->{'dateend'});
+}
+if ($ref->{'name'} ne "") {
+	$where .= " AND s.name = ? ";
+	push(@prepare, $ref->{'name'});
+}
+if ($ref->{'ds.iddisease'} ne "") {
+	$where .= " AND ds.iddisease = ? ";
+	push(@prepare, $ref->{'ds.iddisease'});
+}
+if ($ref->{'s.idcooperation'} ne "") {
+	$where .= " AND s.idcooperation = ? ";
+	push(@prepare, $ref->{'s.idcooperation'});
+}
+if ($ref->{'idproject'} ne "") {
+	$where .= " AND s.idproject = ? ";
+	push(@prepare,$ref->{'idproject'});
+}
+if ($ref->{'repeatcount1'} ne "") { #number of repeats min
+	$where .= " AND (x.count1 >= ? OR x.count2 >= ?)";
+	push(@prepare,$ref->{'repeatcount1'});
+	push(@prepare,$ref->{'repeatcount1'});
+}
+if ($ref->{'repeatcount2'} ne "") { #number of repeats max
+	$where .= " AND (x.count1 <= ? OR x.count2 <= ?)";
+	push(@prepare,$ref->{'repeatcount2'});
+	push(@prepare,$ref->{'repeatcount2'});
+}
+if ($ref->{'g.geneSymbol'} ne "") { 
+	$where .= " AND g.geneSymbol = ? ";
+	push(@prepare,$ref->{'g.geneSymbol'});
+}
+#TODO: rename
+if ($ref->{'geneAnnotation.gene'} ne "") { 
+	$where .= " AND geneAnnotation.gene = ? ";
+	push(@prepare,$ref->{'geneAnnotation.gene'});
+}
+if ($ref->{'filter'} ne "") { 
+	$where .= " AND x.filter = ? ";
+	push(@prepare,$ref->{'filter'});
+	@subTableFilter = ("where xs2.filter = ?");
+	push(@subTableFilter, "where xs3.filter = ?");
+	push(@subTableFilter, "where xs22.filter = ?");
+	push(@subTableFilter, "where xs32.filter = ?");
+	#add the filter option for the rank calculations to the parameters (at the beginning!!!)
+	#for (my $i=1; $i <= 3; $i++) {unshift(@prepare,$ref->{'filter'})};
+	for (my $i=1; $i <= 4; $i++) {unshift(@prepare,$ref->{'filter'})};
+
+
+}
+if ($ref->{'exomedepthrsd'} ne "") { 
+	$where .= " AND es.exomedepthrsd <= ? ";
+	push(@prepare,$ref->{'exomedepthrsd'});
+}
+if ($ref->{'percentfor1'} ne "") { #dosage
+	$where .= " AND (x.percentfor <= ? ";
+	push(@prepare,$ref->{'percentfor1'});
+	if ($ref->{'percentfor2'} ne "") { #dosage
+		$where .= " OR x.percentfor >= ? ";
+		push(@prepare,$ref->{'percentfor2'});
+	}
+	$where .= " ) ";
+}
+if (($ref->{'percentfor2'} ne "") and ($ref->{'percentfor1'} eq "")) { #number of exons
+	$where .= " AND x.percentfor >= ? ";
+	push(@prepare,$ref->{'percentfor2'});
+}
+if ($ref->{'tumor'} eq "yes") { #exclude tumor samples
+	$where .= " AND dg.name != ? ";
+	push(@prepare,'Tumor');
+}
+
+if ($ref->{'zThreshold'} ne "") { #z score threshold
+	#$having .= " HAVING allcount <= ? ";
+	#$having .= " HAVING alleleRanking.alleleRank <= ? ";
+	#$having .= " HAVING zScore >= ? ";
+	$where .= " and zScoreTbl.zScore >= ? ";
+	#$having .= "";
+	push(@prepare,$ref->{'zThreshold'});
+}
+
+
+&todaysdate;
+&numberofsamples($dbh);
+
+$i=0;
+
+# A Z-score is calculated for each expansion considering the whole dataset
+
+$query = qq#
+SELECT
+v.idexpansion,
+group_concat('<a href="http://localhost:$igvport/load?file=',$igvserver2,'" title="IGV"','>',s.name,'</a>' SEPARATOR '<br>'),
+concat(v.chrom,' ',v.start,' ',v.end,' (',v.repeatunit,' - ',v.refcount,')'),
+geneAnnotation.gene,
+geneAnnotation.omim,
+v.refcount,
+v.repeatunit,
+group_concat(x.count1 separator '<br>'),
+group_concat(concat('[',x.cilo1, ';',x.cihi1, ']') separator '<br>'),
+group_concat(x.count2 separator '<br>'),
+group_concat(concat('[', x.cilo2, ';',x.cihi2,']') separator '<br>'),
+group_concat(zScoreTbl.zScore separator '<br>'),
+group_concat(s.saffected separator '<br>'),
+group_concat(p.pdescription separator '<br>'),
+group_concat(x.coverage separator '<br>'),
+group_concat(x.filter separator '<br>'),
+geneAnnotation.transcript
+FROM expansion v
+inner join
+(select distinct vv.idexpansion, group_concat(distinct G.name separator ' ') transcript, group_concat(distinct G.geneSymbol separator ' ') gene, group_concat(DISTINCT g.omim separator ' ') omim FROM expansion vv
+	LEFT JOIN hg19.knownGeneSymbol G ON (G.chrom=vv.chrom AND G.txEnd >= vv.start AND G.txStart <= vv.end)
+	LEFT JOIN gene g on G.geneSymbol=g.genesymbol
+	group by vv.idexpansion) geneAnnotation
+on geneAnnotation.idexpansion = v.idexpansion
+INNER JOIN expansionsample x ON v.idexpansion=x.idexpansion
+inner join (select diffAlleles.idexpansionsample, round(max(diffAlleles.diffcount/stdDevTbl.stdDev),2) zScore from (
+select xs2.idexpansion, xs2.idsample, xs2.idexpansionsample, abs(cast(xs2.count1 as signed) - vx2.refcount) diffCount, xs2.filter from expansionsample xs2
+inner join expansion vx2 on vx2.idexpansion=xs2.idexpansion
+$subTableFilter[0]
+union
+select xs3.idexpansion, xs3.idsample, xs3.idexpansionsample, abs(cast(xs3.count2 as signed) - vx3.refcount) diffcount, xs3.filter from expansionsample xs3
+inner join expansion vx3 on vx3.idexpansion=xs3.idexpansion
+$subTableFilter[1]) diffAlleles
+inner join
+(select alleleCounts.idexpansion, if(stddev(alleleCounts.count)=0,0.0000001, stddev(alleleCounts.count)) stdDev from (select xs22.idexpansion, xs22.count1 count, xs22.filter from expansionsample xs22
+inner join expansion vx22 on vx22.idexpansion=xs22.idexpansion
+$subTableFilter[2]
+union
+select xs32.idexpansion, xs32.count2 count, xs32.filter from expansionsample xs32
+inner join expansion vx32 on vx32.idexpansion=xs32.idexpansion
+$subTableFilter[3]) alleleCounts
+group by alleleCounts.idexpansion) stdDevTbl
+on stdDevTbl.idexpansion = diffAlleles.idexpansion
+group by diffAlleles.idexpansionsample) zScoreTbl
+on zScoreTbl.idexpansionsample = x.idexpansionsample
+INNER JOIN $sampledb.sample s ON x.idsample=s.idsample
+INNER JOIN $sampledb.disease2sample ds ON s.idsample=ds.idsample
+INNER JOIN $sampledb.disease d ON ds.iddisease=d.iddisease
+INNER JOIN $sampledb.diseasegroup dg ON d.iddiseasegroup=dg.iddiseasegroup
+INNER JOIN $sampledb.project p ON s.idproject=p.idproject
+WHERE
+$allowedprojects
+$where
+GROUP BY v.idexpansion
+ORDER BY s.name asc,chrom,v.start
+LIMIT 30000;
+#;
+
+#print "query = $query<br>";
+#print "where @prepare<br>";
+
+$out = $dbh->prepare($query) || die print "$DBI::errstr";
+#$out->execute($ref->{'v.chrom'},$ref->{"v.start"}) || die print "$DBI::errstr";
+$out->execute(@prepare) || die print "$DBI::errstr";
+
+@labels	= (
+	'n',
+	'idexpansion',
+	'IGV',
+	'Chr',
+	'Gene symbol',
+	'Omim',
+	'Reference Repeat Count',
+	'Repeat Unit',
+	'Allele #1',
+	'Confidence Interval Allele #1',
+	'Allele #2',
+	'Confidence Interval Allele #2',
+	'Expansion Z-score',
+	'Sample Affected',
+	'Project',
+	'Coverage',
+	'Filter',
+	'Transcripts'
+	);
+
+
+$i=0;
+
+&tableheaderDefault("1500px");
+print "<thead><tr>";
+foreach (@labels) {
+	print "<th align=\"center\">$_</th>";
+}
+print "</tr></thead><tbody>\n";
+
+$n=1;
+while (@row = $out->fetchrow_array) {
+	print "<tr>";
+	$i=0;
+	foreach (@row) {
+		if (!defined($row[$i])) {$row[$i] = "";}
+		if ($i == 0) {
+			print "<td align=\"center\">$n</td>";
+		}
+		if ($i == 2) {
+			$tmp=&ucsclink2($row[$i]);
+			print "<td> $tmp</td>";
+		}
+		elsif ($i == 4) {
+			($tmp)=&omim($dbh,$row[$i]);
+			#$tmp=$row[$i];
+			print "<td>$tmp</td>";
+		}
+		else {
+			print "<td> $row[$i]</td>";
+		}
+		$i++;
+	}
+	print "</tr>\n";
+	$n++;
+}
+print "</tbody></table></div>";
+
+
+
+
+
+$out->finish;
+}
+
+
+
+
+
+
+
 ########################################################################
 # searchResultsHomozygosity searchHomozygosity
 ########################################################################
@@ -13170,7 +14032,7 @@ v.start,
 x.percentvar
 FROM
 snv v
-INNER JOIN snvsample        x ON v.idsnv    = x.idsnv 
+INNER JOIN $snvsample       x ON v.idsnv    = x.idsnv 
 INNER JOIN $sampledb.sample s ON s.idsample = x.idsample
 WHERE v.chrom='$chomosome'
 AND s.name=?
@@ -13413,7 +14275,7 @@ group_concat(f.fsample separator '<br>'),
 v.freq,
 group_concat(DISTINCT $exac_gene_link separator '<br>'),
 group_concat(DISTINCT exac.mis_z separator '<br>'),
-(SELECT group_concat('<a href="http://$hgmdserver/hgmd/pro/mut.php?accession=',h.id,'">',h.id,'</a>' separator ' <br>')
+(SELECT group_concat('<a href="https://$hgmdserver/hgmd/pro/mut.php?accession=',h.id,'">',h.id,'</a>' separator ' <br>')
 FROM hgmd_pro.$hg19_coords h WHERE v.chrom = h.chrom AND v.start = h.pos AND v.refallele=h.ref AND v.allele=h.alt),
 (SELECT group_concat( DISTINCT $clinvarlink separator ' <br>')
 FROM $coredb.clinvar cv WHERE (v.chrom=cv.chrom and v.start=cv.start AND v.refallele=cv.ref AND v.allele=cv.alt)),
@@ -13443,7 +14305,7 @@ group_concat(DISTINCT $primer SEPARATOR '<br>'),
 group_concat(DISTINCT v.idsnv separator ' <br>')
 FROM
 snv v 
-INNER JOIN snvsample                   x ON v.idsnv = x.idsnv 
+INNER JOIN $snvsample                  x ON v.idsnv = x.idsnv 
 LEFT  JOIN $coredb.dgvbp             dgv ON (v.chrom = dgv.chrom AND v.start=dgv.start)
 INNER JOIN $sampledb.sample            s ON s.idsample = x.idsample
 INNER JOIN $sampledb.disease2sample   ds ON s.idsample=ds.idsample
@@ -13580,7 +14442,7 @@ group_concat(DISTINCT v.idsnv ORDER BY v.chrom, v.start),
 group_concat(DISTINCT s.idsample)
 FROM
 snv v 
-INNER JOIN snvsample                   x ON v.idsnv = x.idsnv 
+INNER JOIN $snvsample                  x ON v.idsnv = x.idsnv 
 LEFT  JOIN $coredb.dgvbp             dgv ON (v.chrom = dgv.chrom AND v.start=dgv.start)
 INNER JOIN $sampledb.sample            s ON s.idsample = x.idsample
 INNER JOIN $sampledb.disease2sample   ds ON s.idsample=ds.idsample
@@ -13721,7 +14583,7 @@ FROM $sampledb.sample s
 INNER JOIN $sampledb.disease2sample   ds ON s.idsample       = ds.idsample
 INNER JOIN $sampledb.disease           d ON ds.iddisease     = d.iddisease
 INNER JOIN $sampledb.diseasegroup     dg ON d.iddiseasegroup = dg.iddiseasegroup
-INNER JOIN variantstat                vs ON s.idsample       = vs.idsample
+INNER JOIN $variantstat                vs ON s.idsample       = vs.idsample
 GROUP BY dg.iddiseasegroup,d.iddisease,s.saffected
 #;
 $out = $dbh->prepare($query) || die print "$DBI::errstr";
@@ -13745,7 +14607,7 @@ $sampledb.sample                       s
 INNER JOIN $sampledb.disease2sample   ds ON s.idsample       = ds.idsample
 INNER JOIN $sampledb.disease           i ON ds.iddisease     = i.iddisease
 INNER JOIN $sampledb.diseasegroup     dg ON i.iddiseasegroup = dg.iddiseasegroup
-INNER JOIN snvsample                   x ON s.idsample       = x.idsample
+INNER JOIN $snvsample                  x ON s.idsample       = x.idsample
 INNER JOIN snv                         v ON v.idsnv          = x.idsnv
 INNER JOIN snvgene                     y ON v.idsnv          = y.idsnv
 INNER JOIN gene                        g ON g.idgene         = y.idgene
@@ -13826,7 +14688,7 @@ FROM $sampledb.sample s
 INNER JOIN $sampledb.disease2sample   ds ON s.idsample       = ds.idsample
 INNER JOIN $sampledb.disease           d ON ds.iddisease     = d.iddisease
 INNER JOIN $sampledb.diseasegroup     dg ON d.iddiseasegroup = dg.iddiseasegroup
-INNER JOIN variantstat                vs ON s.idsample       = vs.idsample
+INNER JOIN $variantstat                vs ON s.idsample       = vs.idsample
 WHERE (s.mother = "" OR ISNULL(s.mother))
 AND   (s.father = "" OR ISNULL(s.father))
 GROUP BY dg.iddiseasegroup,d.iddisease,s.saffected
@@ -13852,7 +14714,7 @@ $sampledb.sample                       s
 INNER JOIN $sampledb.disease2sample   ds ON s.idsample       = ds.idsample
 INNER JOIN $sampledb.disease           i ON ds.iddisease     = i.iddisease
 INNER JOIN $sampledb.diseasegroup     dg ON i.iddiseasegroup = dg.iddiseasegroup
-INNER JOIN snvsample                   x ON s.idsample       = x.idsample
+INNER JOIN $snvsample                  x ON s.idsample       = x.idsample
 INNER JOIN snv                         v ON v.idsnv          = x.idsnv
 INNER JOIN snvgene                     y ON v.idsnv          = y.idsnv
 INNER JOIN gene                        g ON g.idgene         = y.idgene
@@ -13960,7 +14822,7 @@ group_concat(DISTINCT f.fsampleall separator '<br>'),
 group_concat(DISTINCT x.alleles separator '<br>'),
 group_concat(DISTINCT $rssnplink separator '<br>'),
 group_concat(DISTINCT avhet separator '<br>'),
-group_concat(DISTINCT '<a href="http://$hgmdserver/hgmd/pro/mut.php?accession=',h.id,'">',h.id,'</a>' separator '<br>'),
+group_concat(DISTINCT '<a href="https://$hgmdserver/hgmd/pro/mut.php?accession=',h.id,'">',h.id,'</a>' separator '<br>'),
 group_concat(DISTINCT $clinvarlink separator '<br>'),
 group_concat(DISTINCT af separator '<br>'),
 group_concat(DISTINCT $exac_ae_link separator '<br>'),
@@ -13974,7 +14836,7 @@ group_concat(DISTINCT x.filter separator '<br>'),
 group_concat(DISTINCT v.transcript separator '<br>')
 FROM
 snv v 
-INNER JOIN snvsample                    x ON (v.idsnv = x.idsnv) 
+INNER JOIN $snvsample                   x ON (v.idsnv = x.idsnv) 
 INNER JOIN $sampledb.sample             s ON (s.idsample = x.idsample)
 INNER JOIN $sampledb.disease2sample    ds ON (s.idsample=ds.idsample)
 INNER JOIN $sampledb.disease            i ON (ds.iddisease = i.iddisease)
@@ -14148,7 +15010,7 @@ f.fsample,
 f.samplecontrols,
 group_concat(DISTINCT $exac_gene_link separator '<br>'),
 group_concat(DISTINCT exac.mis_z separator '<br>'),
-group_concat(DISTINCT '<a href="http://$hgmdserver/hgmd/pro/mut.php?accession=',h.id,'">',h.id,'</a>'),
+group_concat(DISTINCT '<a href="https://$hgmdserver/hgmd/pro/mut.php?accession=',h.id,'">',h.id,'</a>'),
 group_concat(DISTINCT $clinvarlink separator '<br>'),
 group_concat(DISTINCT $exac_link separator '<br>'),
 group_concat(distinct g.nonsynpergene,' (', g.delpergene,')'),
@@ -14168,7 +15030,7 @@ group_concat(DISTINCT $primer SEPARATOR '<br>'),
 v.idsnv
 FROM
 snv v 
-INNER JOIN snvsample                   x ON (v.idsnv = x.idsnv) 
+INNER JOIN $snvsample                  x ON (v.idsnv = x.idsnv) 
 LEFT  JOIN $coredb.dgvbp             dgv ON (v.chrom = dgv.chrom AND v.start=dgv.start)
 INNER JOIN $sampledb.sample            s ON (s.idsample = x.idsample)
 LEFT  JOIN $sampledb.disease2sample   ds ON (s.idsample=ds.idsample)
@@ -14506,7 +15368,7 @@ group_concat(DISTINCT cadd.phred separator ' '),
 (SELECT DISTINCT f.fsampleall FROM snv2diseasegroup f WHERE v.idsnv=f.fidsnv),
 group_concat(DISTINCT x.alleles separator '<br>'),
 concat($rssnplink),avhet,
-(SELECT group_concat('<a href="http://$hgmdserver/hgmd/pro/mut.php?accession=',h.id,'">',h.id,'</a>' separator '<br>')
+(SELECT group_concat('<a href="https://$hgmdserver/hgmd/pro/mut.php?accession=',h.id,'">',h.id,'</a>' separator '<br>')
 FROM hgmd_pro.$hg19_coords h WHERE v.chrom = h.chrom AND v.start = h.pos AND v.refallele=h.ref AND v.allele=h.alt),
 group_concat(DISTINCT $clinvarlink separator '<br>'),
 af,
@@ -14522,7 +15384,7 @@ v.transcript,
 v.idsnv
 FROM
 snv v 
-INNER JOIN snvsample                 x ON (v.idsnv = x.idsnv) 
+INNER JOIN $snvsample                x ON (v.idsnv = x.idsnv) 
 INNER JOIN $sampledb.sample          s ON (s.idsample = x.idsample)
 LEFT  JOIN $sampledb.disease2sample ds ON (s.idsample=ds.idsample)
 LEFT  JOIN $sampledb.disease         i ON (ds.iddisease = i.iddisease)
@@ -15086,7 +15948,7 @@ f.fsample,
 f.samplecontrols,
 group_concat(DISTINCT $exac_gene_link separator '<br>'),
 group_concat(DISTINCT exac.mis_z separator '<br>'),
-group_concat(DISTINCT '<a href="http://$hgmdserver/hgmd/pro/mut.php?accession=',h.id,'">',h.id,'</a>'),
+group_concat(DISTINCT '<a href="https://$hgmdserver/hgmd/pro/mut.php?accession=',h.id,'">',h.id,'</a>'),
 group_concat(DISTINCT $clinvarlink separator '<br>'),
 group_concat(DISTINCT $exac_link separator '<br>'),
 group_concat(distinct g.nonsynpergene,' (', g.delpergene,')'),
@@ -15106,7 +15968,7 @@ group_concat(DISTINCT $primer SEPARATOR '<br>'),
 v.idsnv
 FROM
 snv v 
-INNER JOIN snvsample                   x ON (v.idsnv = x.idsnv) 
+INNER JOIN $snvsample                  x ON (v.idsnv = x.idsnv) 
 LEFT  JOIN $coredb.dgvbp             dgv ON (v.chrom = dgv.chrom AND v.start=dgv.start)
 INNER JOIN $sampledb.sample            s ON (s.idsample = x.idsample)
 LEFT  JOIN $sampledb.disease2sample   ds ON (s.idsample=ds.idsample)
@@ -15449,7 +16311,7 @@ group_concat(DISTINCT cadd.phred separator ' '),
 (SELECT DISTINCT f.fsampleall FROM snv2diseasegroup f WHERE v.idsnv=f.fidsnv),
 group_concat(DISTINCT x.alleles separator '<br>'),
 concat($rssnplink),avhet,
-(SELECT group_concat('<a href="http://$hgmdserver/hgmd/pro/mut.php?accession=',h.id,'">',h.id,'</a>' separator '<br>')
+(SELECT group_concat('<a href="https://$hgmdserver/hgmd/pro/mut.php?accession=',h.id,'">',h.id,'</a>' separator '<br>')
 FROM hgmd_pro.$hg19_coords h WHERE v.chrom = h.chrom AND v.start = h.pos AND v.refallele=h.ref AND v.allele=h.alt),
 group_concat(DISTINCT $clinvarlink separator '<br>'),
 af,
@@ -15465,7 +16327,7 @@ v.transcript,
 v.idsnv
 FROM
 snv v 
-INNER JOIN snvsample                 x ON (v.idsnv = x.idsnv) 
+INNER JOIN $snvsample                x ON (v.idsnv = x.idsnv) 
 INNER JOIN $sampledb.sample          s ON (s.idsample = x.idsample)
 LEFT  JOIN $sampledb.disease2sample ds ON (s.idsample=ds.idsample)
 LEFT  JOIN $sampledb.disease         i ON (ds.iddisease = i.iddisease)
@@ -15682,13 +16544,15 @@ my $tmp       = "";
 my @individuals = ();
 my $individuals = "";
 my $genesymbol = "";
-my $allowedprojects = &allowedprojects("");
+my $allowedprojects = &allowedprojects("s."); # CHANGED FROM ""
 my @prepare   = ();
 my $forcount  = "";
 my @forcount  = ();
 my $ncount    = "";
 my $avhet     = "";
 my $where     = "";
+
+my $liftOverResults  = 0;
 
 delete($ref->{burdentest});
 
@@ -15707,11 +16571,41 @@ if ($ref->{'dateend'} ne "") {
 	push(@forcount, $ref->{'dateend'});
 }
 if ($ref->{'s.name'} ne "") {
-	$where = "AND s.name = ? ";
-	$forcount .= "AND s.name = ? ";
-	push(@prepare,$ref->{'s.name'});
-	push(@forcount,$ref->{'s.name'});
+	#$where = "AND s.name = ? ";
+	#$forcount .= "AND s.name = ? ";
+	#push(@prepare,$ref->{'s.name'});
+	#push(@forcount,$ref->{'s.name'});
+	
+	my $tmpList=$ref->{'s.name'};
+	$tmpList =~ s/\n/\ /g;
+	$tmpList =~ s/(\ )+/\ /g;
+	
+	my @namestmp=split(" ", $tmpList);
+	my @names=uniq(@namestmp);
+	my $namesquery="(";
+	foreach my $samplename (@names){
+		if ($namesquery ne "(" ) {
+			$namesquery .= " OR ";
+		}
+		$namesquery .= " s.name = ? ";
+		push(@prepare,  $samplename);
+		push(@forcount, $samplename);
+	}
+	$namesquery.=")";
+	
+	$where    .= "AND " . $namesquery . " " if $namesquery ne "()";
+	$forcount .= "AND " . $namesquery . " " if $namesquery ne "()";
+	
 }
+
+
+if ( $ref->{'dg.iddisease'} eq "" && $ref->{'dgr.iddiseasegroup'} eq "" )
+{
+	print "Select either disease genes or disease group"; 
+	exit;
+}
+
+
 if ($ref->{'s.idcooperation'} ne "") {
 	$where .= "AND s.idcooperation = ? ";
 	$forcount .= "AND s.idcooperation = ? ";
@@ -15747,6 +16641,13 @@ if ($ref->{'giab'} ne "") {
 if ($ref->{'affecteds'} eq "onlyunaffecteds") {
 	$forcount .= " AND s.saffected = 0 ";
 }
+# All Samples, Only Solved / Only Unsolved
+# 0            1             2
+if ($ref->{'clinicalstatus'} eq "1" ){ # SOLVED
+	$where .= " AND ccl.solved = 1 ";
+}elsif ( $ref->{'clinicalstatus'} eq "2" ) { #Not solved / Not processed / not finalized
+	$where .= " AND ( ccl.solved <> 1 OR ccl.solved IS NULL ) ";
+}
 
 ($where,@prepare) = &defaultwhere($ref,$where,@prepare);
 
@@ -15754,6 +16655,10 @@ if ($ref->{'affecteds'} eq "onlyunaffecteds") {
 ($function,$functionprint)=&function($ref->{'function'},$dbh);
 ($class,$classprint)=&class($ref->{'class'},$dbh);
 
+if ($ref->{'liftover'} eq "yes" )
+{
+	$liftOverResults = 1;
+}
 
 # number of individuals
 			
@@ -15775,6 +16680,7 @@ AND $allowedprojects
 #print "values = $ref->{'ds.iddisease'} @prepare<br>";
 
 $out = $dbh->prepare($query) || die print "$DBI::errstr";
+
 $out->execute(@forcount) || die print "$DBI::errstr";
 $ncount = $out->fetchrow_array;
 
@@ -15786,110 +16692,305 @@ $ncount = $out->fetchrow_array;
 
 print "<br>Individuals tested $ncount<br>";
 print "Allowed in in-house exomes $ref->{'nall'}<br>";
-&printqueryheader($ref,$classprint,$functionprint);
 
-$query = qq#
-SELECT 
-concat('<a href="listPosition.pl?idsnv=',v.idsnv,'" title="All carriers of this variant">',v.idsnv,'</a>',' '),
-group_concat(DISTINCT '<a href="http://localhost:$igvport/load?file=',$igvserver2,'" title="Open sample in IGV"','>',s.name,'</a>' SEPARATOR '<br>'),
-group_concat(DISTINCT s.pedigree," "),
-s.sex,
-d.symbol,
-concat($ucsclink),
-c.rating,
-c.patho,
-group_concat(DISTINCT $genelink separator '<br>'),
-group_concat(DISTINCT g.omim separator ' '),
-group_concat(distinct $mgiID separator ' '),
-v.class,
-replace(v.func,',',' '),
-x.alleles,
-f.fsample,
-f.samplecontrols,
-group_concat(DISTINCT $exac_gene_link separator '<br>'),
-group_concat(DISTINCT exac.mis_z separator '<br>'),
-group_concat(DISTINCT '<a href="http://$hgmdserver/hgmd/pro/mut.php?accession=',h.id,'">',h.id,'</a>'),
-group_concat(DISTINCT $clinvarlink separator '<br>'),
-group_concat(DISTINCT $exac_link separator '<br>'),
-group_concat(distinct g.nonsynpergene,' (', g.delpergene,')'),
-group_concat(distinct dgv.depth),
-group_concat(DISTINCT pph.hvar_prediction separator ' '),
-group_concat(DISTINCT pph.hvar_prob separator ' '),
-group_concat(DISTINCT sift.score separator ' '),
-group_concat(DISTINCT cadd.phred separator ' '),
-x.filter,
-x.snvqual,
-x.gtqual,
-x.mapqual,
-x.coverage,
-group_concat(distinct x.percentvar),
-replace(v.transcript,':','<br>'),
-group_concat(DISTINCT $primer SEPARATOR '<br>'),
-group_concat(DISTINCT dg.class),
-v.idsnv,
-x.idsample
-FROM
-snv v 
-INNER JOIN snvsample                   x on (v.idsnv = x.idsnv) 
-LEFT  JOIN $coredb.dgvbp             dgv ON (v.chrom = dgv.chrom AND v.start=dgv.start)
-INNER JOIN $sampledb.sample            s on (s.idsample = x.idsample)
-INNER JOIN $sampledb.disease2sample   ds ON (s.idsample = ds.idsample)
-INNER JOIN $sampledb.disease           d on (ds.iddisease = d.iddisease)
-LEFT  JOIN snv2diseasegroup            f ON (v.idsnv = f.fidsnv AND d.iddiseasegroup=f.fiddiseasegroup)
-LEFT  JOIN snvgene                     y on (v.idsnv = y.idsnv)
-LEFT  JOIN gene                        g on (g.idgene = y.idgene)
-LEFT  JOIN disease2gene               dg on (g.idgene = dg.idgene)
-LEFT  JOIN $sampledb.mouse            mo ON (g.genesymbol = mo.humanSymbol)
-LEFT  JOIN $sampledb.exomestat        es ON s.idsample = es.idsample AND ((es.idlibtype = 5) or (es.idlibtype = 1))
-LEFT  JOIN $coredb.pph3              pph ON (v.chrom=pph.chrom and v.start=pph.start and v.refallele=pph.ref and v.allele=pph.alt)
-LEFT  JOIN $coredb.sift             sift ON (v.chrom=sift.chrom and v.start=sift.start and v.refallele=sift.ref and v.allele=sift.alt)
-LEFT  JOIN $coredb.cadd             cadd ON (v.chrom=cadd.chrom and v.start=cadd.start and v.refallele=cadd.ref and v.allele=cadd.alt)
-LEFT  JOIN $coredb.evs               evs ON (v.chrom=evs.chrom and v.start=evs.start and v.refallele=evs.refallele and v.allele=evs.allele)
-LEFT  JOIN $coredb.evsscores        exac ON (g.genesymbol=exac.gene)
-LEFT  JOIN hgmd_pro.$hg19_coords       h ON (v.chrom = h.chrom AND v.start = h.pos  AND v.refallele=h.ref AND v.allele=h.alt)
-LEFT  JOIN $coredb.clinvar            cv ON (v.chrom=cv.chrom and v.start=cv.start and v.refallele=cv.ref and v.allele=cv.alt)
-LEFT  JOIN $exomevcfe.comment          c ON (v.chrom=c.chrom and v.start=c.start and v.refallele=c.refallele and v.allele=c.altallele and s.idsample=c.idsample)
-WHERE
-dg.iddisease = ?
-$function
-$class
-$where
-AND $allowedprojects
-GROUP BY
-v.idsnv,s.idsample
-ORDER BY
-v.chrom,v.start
-#;
-#print "query = $query<br>";
-#print "values = $ref->{'ds.iddisease'} @prepare<br>";
 
-$out = $dbh->prepare($query) || die print "$DBI::errstr";
-$out->execute($ref->{'dg.iddisease'},@prepare) || die print "$DBI::errstr";
+my @iddiseases; 
+my @diseases;
+my $diseasecount=0;
 
-# Now print table
-(@labels) = &resultlabels();
+my $diseasecondition=""; # Disease or diseasegroup
+my $diseaseconditionargument = "";
 
-$i=0;
-
-&tableheaderResults();
-print "<thead><tr>";
-foreach (@labels) {
-	print "<th align=\"center\">$_</th>";
+if ( $ref->{'dg.iddisease'} ne "")
+{
+	$iddiseases[0]= $ref->{'dg.iddisease'};
+	$diseasecount=1;
+	$diseasecondition = "(dg.iddisease = ? and dg.iddisease = ?)";
+	$diseaseconditionargument = $ref->{'dg.iddisease'};
 }
-print "</tr></thead><tbody>\n";
-$class = "";
+elsif ( $ref->{'dgr.iddiseasegroup'} ne "" )
+{
+	$query = qq#
+		SELECT
+		distinct d.iddisease, d.name
+		FROM
+		$sampledb.disease d
+		inner join disease2gene dg on dg.iddisease=d.iddisease 
+		WHERE iddiseasegroup = ? 
+		#;
+	
+	$out = $dbh->prepare($query) || die print "$DBI::errstr";
+	$out->execute($ref->{'dgr.iddiseasegroup'});
 
+
+	while ( my ($iddisease, $diseasename) = $out->fetchrow_array )
+	{
+		$iddiseases[$diseasecount] = $iddisease;
+		$diseases[$diseasecount] = $diseasename;
+		$diseasecount++;
+	}
+	
+	$diseasecondition = "(ddg.iddiseasegroup = ? and (d.iddiseasegroup = ? OR 1=1))";
+	$diseaseconditionargument = $ref->{'dgr.iddiseasegroup'};
+}
+else
+{
+	exit;
+}
+
+my $iddiseaselist = join(",",@iddiseases);
+
+
+
+
+	&printqueryheader($ref,$classprint,$functionprint);
+	
+	
+
+	$query = qq#
+	SELECT 
+	concat('<a href="listPosition.pl?idsnv=',v.idsnv,'" title="All carriers of this variant">',v.idsnv,'</a>',' '),
+	group_concat(DISTINCT '<a href="http://localhost:$igvport/load?file=',$igvserver2,'" title="Open sample in IGV"','>',s.name,'</a>' SEPARATOR '<br>'),
+	group_concat(DISTINCT s.pedigree," "),
+	s.sex,
+	d.symbol,
+	concat($ucsclink),
+	c.rating,
+	c.patho,
+	group_concat(DISTINCT $genelink separator '<br>'),
+	group_concat(DISTINCT g.omim separator ' '),
+	group_concat(distinct $mgiID separator ' '),
+	v.class,
+	replace(v.func,',',' '),
+	x.alleles,
+	f.fsample,
+	f.samplecontrols,
+	group_concat(DISTINCT $exac_gene_link separator '<br>'),
+	group_concat(DISTINCT exac.mis_z separator '<br>'),
+	group_concat(DISTINCT '<a href="https://$hgmdserver/hgmd/pro/mut.php?accession=',h.id,'">',h.id,'</a>'),
+	group_concat(DISTINCT $clinvarlink separator '<br>'),
+	group_concat(DISTINCT $exac_link separator '<br>'),
+	group_concat(distinct g.nonsynpergene,' (', g.delpergene,')'),
+	group_concat(distinct dgv.depth),
+	group_concat(DISTINCT pph.hvar_prediction separator ' '),
+	group_concat(DISTINCT pph.hvar_prob separator ' '),
+	group_concat(DISTINCT sift.score separator ' '),
+	group_concat(DISTINCT cadd.phred separator ' '),
+	x.filter,
+	x.snvqual,
+	x.gtqual,
+	x.mapqual,
+	x.coverage,
+	group_concat(distinct x.percentvar),
+	replace(v.transcript,':','<br>'),
+	group_concat(DISTINCT $primer SEPARATOR '<br>'),
+	ddg.name,
+	group_concat(DISTINCT dg.class),
+	v.idsnv,
+	x.idsample,
+	concat(v.chrom, ':', v.start, '-', v.end-1)
+	FROM
+	snv v 
+	INNER JOIN $snvsample                  x on (v.idsnv = x.idsnv) 
+	LEFT  JOIN $coredb.dgvbp             dgv ON (v.chrom = dgv.chrom AND v.start=dgv.start)
+	INNER JOIN $sampledb.sample            s on (s.idsample = x.idsample)
+	INNER JOIN $sampledb.disease2sample   ds ON (s.idsample = ds.idsample)
+	INNER JOIN $sampledb.disease           d on (ds.iddisease = d.iddisease)
+	INNER JOIN $sampledb.diseasegroup    dgr ON (dgr.iddiseasegroup = d.iddiseasegroup ) 
+ 	LEFT  JOIN snv2diseasegroup            f ON (v.idsnv = f.fidsnv AND d.iddiseasegroup=f.fiddiseasegroup)
+	LEFT  JOIN snvgene                     y on (v.idsnv = y.idsnv)
+	LEFT  JOIN gene                        g on (g.idgene = y.idgene)
+	LEFT  JOIN disease2gene               dg on (g.idgene = dg.idgene)
+        LEFT  JOIN $sampledb.disease         ddg on (ddg.iddisease=dg.iddisease)
+	LEFT  JOIN $sampledb.mouse            mo ON (g.genesymbol = mo.humanSymbol)
+	LEFT  JOIN $sampledb.exomestat        es ON s.idsample = es.idsample AND ((es.idlibtype = 5) or (es.idlibtype = 1))
+	LEFT  JOIN $coredb.pph3              pph ON (v.chrom=pph.chrom and v.start=pph.start and v.refallele=pph.ref and v.allele=pph.alt)
+	LEFT  JOIN $coredb.sift             sift ON (v.chrom=sift.chrom and v.start=sift.start and v.refallele=sift.ref and v.allele=sift.alt)
+	LEFT  JOIN $coredb.cadd             cadd ON (v.chrom=cadd.chrom and v.start=cadd.start and v.refallele=cadd.ref and v.allele=cadd.alt)
+	LEFT  JOIN $coredb.evs               evs ON (v.chrom=evs.chrom and v.start=evs.start and v.refallele=evs.refallele and v.allele=evs.allele)
+	LEFT  JOIN $coredb.evsscores        exac ON (g.genesymbol=exac.gene)
+	LEFT  JOIN hgmd_pro.$hg19_coords       h ON (v.chrom = h.chrom AND v.start = h.pos  AND v.refallele=h.ref AND v.allele=h.alt)
+	LEFT  JOIN $coredb.clinvar            cv ON (v.chrom=cv.chrom and v.start=cv.start and v.refallele=cv.ref and v.allele=cv.alt)
+	LEFT  JOIN $exomevcfe.comment          c ON (v.chrom=c.chrom and v.start=c.start and v.refallele=c.refallele and v.allele=c.altallele and s.idsample=c.idsample)
+	LEFT  JOIN $exomevcfe.conclusion     ccl ON (ccl.idsample = s.idsample )
+	WHERE
+	$diseasecondition
+	$function
+	$class
+	$where
+	AND $allowedprojects
+	GROUP BY
+	v.idsnv,s.idsample,ddg.name
+	ORDER BY
+	v.chrom,v.start
+	#;
+	
+	#print "query = $query<br>"; exit;
+	#print "values = $ref->{'ds.iddisease'} @prepare<br>";
+	
+	
+	#Beta
+	$query = qq#
+	SELECT 
+	concat('<a href="listPosition.pl?idsnv=',v.idsnv,'" title="All carriers of this variant">',v.idsnv,'</a>',' '),
+	group_concat(DISTINCT '<a href="http://localhost:$igvport/load?file=',$igvserver2,'" title="Open sample in IGV"','>',s.name,'</a>' SEPARATOR '<br>'),
+	group_concat(DISTINCT s.pedigree," "),
+	s.sex,
+	d.symbol,
+	concat($ucsclink),
+	c.rating,
+	c.patho,
+	group_concat(DISTINCT $genelink separator '<br>'),
+	group_concat(DISTINCT g.omim separator ' '),
+	group_concat(distinct $mgiID separator ' '),
+	v.class,
+	replace(v.func,',',' '),
+	x.alleles,
+	f.fsample,
+	f.samplecontrols,
+	group_concat(DISTINCT $exac_gene_link separator '<br>'),
+	group_concat(DISTINCT exac.mis_z separator '<br>'),
+	group_concat(DISTINCT '<a href="https://$hgmdserver/hgmd/pro/mut.php?accession=',h.id,'">',h.id,'</a>'),
+	group_concat(DISTINCT $clinvarlink separator '<br>'),
+	group_concat(DISTINCT $exac_link separator '<br>'),
+	group_concat(distinct g.nonsynpergene,' (', g.delpergene,')'),
+	group_concat(distinct dgv.depth),
+	group_concat(DISTINCT pph.hvar_prediction separator ' '),
+	group_concat(DISTINCT pph.hvar_prob separator ' '),
+	group_concat(DISTINCT sift.score separator ' '),
+	group_concat(DISTINCT cadd.phred separator ' '),
+	x.filter,
+	x.snvqual,
+	x.gtqual,
+	x.mapqual,
+	x.coverage,
+	group_concat(distinct x.percentvar),
+	replace(v.transcript,':','<br>'),
+	group_concat(DISTINCT $primer SEPARATOR '<br>'),
+	ddg.name,
+	group_concat(DISTINCT dg.class),
+	v.idsnv,
+	x.idsample,
+	concat(v.chrom, ':', v.start, '-', v.end-1)
+	FROM
+	snv v 
+	INNER JOIN $snvsample                  x on (v.idsnv = x.idsnv) 
+	LEFT  JOIN $coredb.dgvbp             dgv ON (v.chrom = dgv.chrom AND v.start=dgv.start)
+	INNER JOIN $sampledb.sample            s on (s.idsample = x.idsample)
+	INNER JOIN $sampledb.disease2sample   ds ON (s.idsample = ds.idsample)
+	INNER JOIN $sampledb.disease           d on (ds.iddisease = d.iddisease)
+	INNER JOIN $sampledb.diseasegroup    dgr ON (dgr.iddiseasegroup = d.iddiseasegroup ) 
+ 	LEFT  JOIN snv2diseasegroup            f ON (v.idsnv = f.fidsnv AND d.iddiseasegroup=f.fiddiseasegroup)
+	LEFT  JOIN snvgene                     y on (v.idsnv = y.idsnv)
+	LEFT  JOIN gene                        g on (g.idgene = y.idgene)
+	LEFT  JOIN disease2gene               dg on (g.idgene = dg.idgene)
+        LEFT  JOIN $sampledb.disease         ddg on (ddg.iddisease=dg.iddisease)
+	LEFT  JOIN $sampledb.mouse            mo ON (g.genesymbol = mo.humanSymbol)
+	LEFT  JOIN $sampledb.exomestat        es ON s.idsample = es.idsample AND ((es.idlibtype = 5) or (es.idlibtype = 1))
+	LEFT  JOIN $coredb.pph3              pph ON (v.chrom=pph.chrom and v.start=pph.start and v.refallele=pph.ref and v.allele=pph.alt)
+	LEFT  JOIN $coredb.sift             sift ON (v.chrom=sift.chrom and v.start=sift.start and v.refallele=sift.ref and v.allele=sift.alt)
+	LEFT  JOIN $coredb.cadd             cadd ON (v.chrom=cadd.chrom and v.start=cadd.start and v.refallele=cadd.ref and v.allele=cadd.alt)
+	LEFT  JOIN $coredb.evs               evs ON (v.chrom=evs.chrom and v.start=evs.start and v.refallele=evs.refallele and v.allele=evs.allele)
+	LEFT  JOIN $coredb.evsscores        exac ON (g.genesymbol=exac.gene)
+	LEFT  JOIN hgmd_pro.$hg19_coords       h ON (v.chrom = h.chrom AND v.start = h.pos  AND v.refallele=h.ref AND v.allele=h.alt)
+	LEFT  JOIN $coredb.clinvar            cv ON (v.chrom=cv.chrom and v.start=cv.start and v.refallele=cv.ref and v.allele=cv.alt)
+	LEFT  JOIN $exomevcfe.comment          c ON (v.chrom=c.chrom and v.start=c.start and v.refallele=c.refallele and v.allele=c.altallele and s.idsample=c.idsample)
+	LEFT  JOIN $exomevcfe.conclusion     ccl ON (ccl.idsample = s.idsample )
+	WHERE
+	$diseasecondition
+	$function
+	$class
+	$where
+	AND $allowedprojects
+	GROUP BY
+	v.idsnv,s.idsample,ddg.name
+	ORDER BY
+	v.chrom,v.start
+	#;
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+	$out = $dbh->prepare($query) || die print "$DBI::errstr";
+	$out->execute($diseaseconditionargument, $diseaseconditionargument,@prepare) || die print "$DBI::errstr";
+
+	# Now print table
+	(@labels) = &resultlabels();
+	push(@labels, "Disease Panel");
+	push(@labels, "$liftOverTo coords") if $liftOverResults;
+
+	$i=0;
+
+	&tableheaderResults();
+	print "<thead><tr>";
+	foreach (@labels) {
+	print "<th align=\"center\">$_</th>";
+	}
+	print "</tr></thead><tbody>\n";
+
+
+$class = "";
 $n=1;
+
 my $program      = "";
 my $damaging     = "";
 my $omimmode     = "";
 my $omimdiseases = "";
 my $idsnv        = "";
 my $idsample     = "";
+my $panelname    = "";
+my $tmppos = "";
 while (@row = $out->fetchrow_array) {
 	print "<tr>";
 	$i=0;
 	# bekannte Gene in disease2gene color red
+	$tmppos = $row[-1];
+	pop(@row);
+	
 	$idsample     = $row[-1];
 	pop(@row);
 	$idsnv=($row[-1]);
@@ -15901,6 +17002,9 @@ while (@row = $out->fetchrow_array) {
 		$class = '';
 	}
 	pop(@row);
+	
+	push(@row, liftOver($tmppos)) if $liftOverResults;
+	
 	foreach (@row) {
 		if (!defined($row[$i])) {$row[$i] = "";}
 		if ($i == 0) { 
@@ -15992,7 +17096,7 @@ my $i         = 0;
 my $n         = 1;
 my $tmp       = "";
 my $genesymbol = "";
-my $allowedprojects = &allowedprojects("");
+my $allowedprojects = &allowedprojects("s."); #CHANGED
 my @prepare   = ();
 my $avhet     = "";
 my $name      = "";
@@ -16118,7 +17222,7 @@ v.start,
 v.idsnv
 FROM
 snv v 
-INNER JOIN snvsample                     x ON (v.idsnv = x.idsnv) 
+INNER JOIN $snvsample                    x ON (v.idsnv = x.idsnv) 
 INNER JOIN $sampledb.sample              s ON (s.idsample = x.idsample)
 INNER JOIN snvgene                       y ON (v.idsnv = y.idsnv)
 INNER JOIN gene                          g ON (g.idgene = y.idgene)
@@ -16385,7 +17489,7 @@ snv v
 INNER JOIN snvgene                     y ON v.idsnv          = y.idsnv
 INNER JOIN gene                        g ON g.idgene         = y.idgene
 LEFT  JOIN disease2gene               dg ON g.idgene         = dg.idgene
-INNER JOIN snvsample                   x ON v.idsnv          = x.idsnv
+INNER JOIN $snvsample                  x ON v.idsnv          = x.idsnv
 INNER JOIN snv2diseasegroup            f ON v.idsnv          = f.fidsnv
 INNER JOIN $sampledb.sample            s ON s.idsample       = x.idsample
 INNER JOIN $sampledb.disease2sample   ds ON s.idsample       = ds.idsample
@@ -16411,7 +17515,7 @@ FROM  snv v
 INNER JOIN snvgene                     y ON v.idsnv          = y.idsnv 
 INNER JOIN gene                        g ON g.idgene         = y.idgene 
 LEFT  JOIN disease2gene               dg ON g.idgene         = dg.idgene 
-INNER JOIN snvsample                   x ON v.idsnv          = x.idsnv 
+INNER JOIN $snvsample                  x ON v.idsnv          = x.idsnv 
 INNER JOIN snv2diseasegroup            f ON v.idsnv          = f.fidsnv 
 INNER JOIN $sampledb.sample            s ON s.idsample       = x.idsample 
 INNER JOIN $sampledb.disease2sample   ds ON s.idsample       = ds.idsample 
@@ -16435,7 +17539,7 @@ FROM  snv v
 INNER JOIN snvgene                     y ON v.idsnv          = y.idsnv 
 INNER JOIN gene                        g ON g.idgene         = y.idgene 
 LEFT  JOIN disease2gene               dg ON g.idgene         = dg.idgene 
-INNER JOIN snvsample                   x ON v.idsnv          = x.idsnv 
+INNER JOIN $snvsample                  x ON v.idsnv          = x.idsnv 
 INNER JOIN snv2diseasegroup            f ON v.idsnv          = f.fidsnv 
 INNER JOIN $sampledb.sample            s ON s.idsample       = x.idsample 
 INNER JOIN $sampledb.disease2sample   ds ON s.idsample       = ds.idsample 
@@ -16545,7 +17649,7 @@ WHERE s.idsample IN
 (SELECT
 DISTINCT x.idsample
 FROM
-snvsample x)
+$snvsample x)
 GROUP BY dg.iddiseasegroup,d.iddisease,s.saffected
 #;
 $out = $dbh->prepare($query) || die print "$DBI::errstr";
@@ -16791,7 +17895,9 @@ $i=0;
 $query = qq#
 SELECT
 iduser, 
-name, 
+name,
+familyname,
+firstname, 
 yubikey, 
 igvport, 
 cooperations, 
@@ -16804,7 +17910,10 @@ succeeded_all,
 failed_all,
 failed_last,
 lastlogin,
-genesearchcount
+genesearchcount,
+email,
+phone,
+ipaddress
 FROM
 $logindb.user
 ORDER BY
@@ -16819,6 +17928,8 @@ $out->execute() || die print "$DBI::errstr";
 	'n',
 	'id',
 	'Login',
+	'Surname',
+	'Name',
 	'Yubikey',
 	'IGV port',
 	'Cooperations',
@@ -16831,7 +17942,10 @@ $out->execute() || die print "$DBI::errstr";
 	'Failed logins',
 	'Last failed logins',
 	'Last login',
-	'Gene search count'
+	'Gene search count',
+	'Email',
+	'Phone',
+	'IP'
 	);
 
 $i=0;
@@ -16864,6 +17978,527 @@ print "</tbody></table></div>";
 
 $out->finish;
 }
+
+########################################################################
+# authorizationList list authorizations (access / download)
+########################################################################
+sub authorizationList {
+
+my $self         = shift;
+my $dbh          = shift;
+my $ref          = shift;
+
+my @labels    = ();
+my $out       = "";
+my @row       = ();
+my $query     = "";
+my $i         = 0;
+my $n         = 1;
+my $tmp       = "";
+
+
+if ($role ne "admin") {print "Not admin";exit(1);}
+			
+$i=0;
+$query = qq#
+SELECT
+auth.idauthorization,
+u.name, 
+s.name, 
+concat(p.pname, ' - ', pdescription), 
+auth.startdate, 
+auth.enddate, 
+auth.download,
+auth.access,
+ug.name
+FROM
+$logindb.authorization auth
+inner join $logindb.user u on u.iduser=auth.iduser
+inner join $logindb.user ug on ug.iduser=auth.grantedby
+left join $sampledb.sample s on s.idsample=auth.idsample
+left join $sampledb.project p on p.idproject=auth.idproject
+ORDER BY
+auth.enddate desc, auth.startdate desc
+#;
+#print "query = $query<br>";
+
+$out = $dbh->prepare($query) || die print "$DBI::errstr";
+$out->execute() || die print "$DBI::errstr";
+
+@labels	= (
+	'n',
+	'Authorisation ID',
+	'User',
+	'Sample',
+	'Project',
+	'Start',
+	'End',
+	'Download',
+	'Access',
+	'Granted by',
+	'Action'
+	);
+
+$i=0;
+
+&tableheaderDefault("1000px");
+print "<thead><tr>";
+foreach (@labels) {
+	print "<th align=\"center\">$_</th>";
+}
+print "</tr></thead><tbody>\n";
+
+$n=1;
+while (@row = $out->fetchrow_array) {
+	print "<tr>";
+	$i=0;
+	foreach (@row) {
+		if ($i == 0) { #edit project
+			print "<td align=\"center\">$n</td>";
+			#print "<td><a href=\"admin.pl?mode=edit&amp;id=$row[$i]\">$row[$i]</a></td>";
+			print "<td>$row[$i]</td>";
+		}
+		else {
+			print "<td> $row[$i]</td>";
+		}
+		$i++;
+	}
+	print "<td><a href=\"mgrShareSampleDo.pl?terminate=$row[0]\">Terminate share</a></td>";
+	print "</tr>\n";
+	$n++;
+}
+print "</tbody></table></div>";
+
+$out->finish;
+}
+
+
+########################################################################
+# authorizationAdd add authorizations (access / download)
+########################################################################
+sub authorizationAdd {
+
+my $self         = shift;
+my $dbh          = shift;
+my $ref          = shift;
+
+my @labels    = ();
+my $out       = "";
+my @row       = ();
+my $query     = "";
+my $i         = 0;
+my $n         = 1;
+my $tmp       = "";
+
+my $datebegin = $ref->{datebegin};
+my $dateend   = $ref->{dateend};
+my $samplename  = $ref->{'s.name'};
+my $foreignid = $ref->{foreignid};
+my $pedigree  = $ref->{pedigree};
+my $idproject = $ref->{idproject};
+my $touser    = $ref->{iduser};
+
+my $downacc   = $ref->{access};
+my $download  = 0;
+my $access    = 0;
+
+my $out;
+
+if ($role ne "admin") {print "Not admin";exit(1);}
+
+my $iduser = getUserId($dbh,$user);
+if ($iduser == -1) 
+{
+	print "unrecoverable error";
+	exit( -1);
+}
+
+# Check args:
+
+if ( $downacc == 0 )
+{
+	print "Authorize download and / or access\n";
+	exit(-1);
+}else{
+	$download = 1 if ( $downacc eq 2 || $downacc eq 3 );
+	$access   = 1 if ( $downacc eq 1 || $downacc eq 3 );
+}
+
+
+if (! isDate($datebegin) || ! isDate($dateend) || $datebegin eq "" || $dateend eq "" )
+{
+	print "Date format yyyy-mm-dd, insert valid date\n";
+	exit(-1);
+}
+
+if ( $idproject ne "" && ( $samplename ne "" || $foreignid ne "" || $pedigree ne ""  ) )
+{
+	print "Either select sample or select project\n";
+	exit(-1);
+}
+
+if ( ! userExists($dbh, $touser) )
+{
+	printf "User $touser does not exist\n";
+	exit(-1);
+}
+
+
+if ($idproject eq "" && $samplename eq "" && $foreignid eq "" && $pedigree eq "" )
+{
+	print "Select a project or a sample\n";
+	exit(-1);
+}
+
+if ( $idproject ne "" )
+{
+	if ( ! projectExists($dbh,$idproject) )
+	{
+		print "Project does not exist";
+		exit(-1);
+	}
+
+	$query = "INSERT INTO $logindb.authorization ( iduser, idsample, idproject, startdate, enddate, download,access, downloadcount, grantedby ) VALUES ( ?, NULL, ?, ?, ?, $download, $access, 0, ? )";
+	$out = $dbh->prepare($query) || die print "$DBI::errstr";
+
+	$out->execute($touser, $idproject, $datebegin, $dateend, getUserId($dbh,$user)) || die print "$DBI::errstr";
+}
+
+
+if ( $samplename ne "" || $foreignid ne "" || $pedigree ne "" )
+{
+	my $where = "( 1=1 ";
+	my @params = ();
+	
+		$where .= " AND s.name = ?"      if ($samplename ne "");
+		push(@params, $samplename)       if ($samplename ne "");	
+		$where .= " AND s.foreignid = ?" if ($foreignid  ne "");
+		push(@params, $foreignid)        if ($foreignid  ne "");
+		$where .= " AND s.pedigree = ?"  if ($pedigree   ne "");
+		push(@params, $pedigree)         if ($pedigree   ne "");
+	
+	$where .= " )";
+	
+	$query = "SELECT idsample from $sampledb.sample s where ".$where;
+	$out = $dbh->prepare($query) || die print "$DBI::errstr";
+	$out->execute(@params) || die print "$DBI::errstr";
+
+	my $sample = "";
+	while ($sample=$out->fetchrow_array)
+	{
+		$query = "INSERT INTO $logindb.authorization ( iduser, idsample, idproject, startdate, enddate, download,access, downloadcount, grantedby ) VALUES ( ?, ?, NULL, ?, ?, $download, $access, 0, ? )";
+		my $outinner = $dbh->prepare($query) || die print "$DBI::errstr";
+		$outinner->execute($touser, $sample, $datebegin, $dateend, getUserId($dbh,$user)) || die print "$DBI::errstr";
+
+		print "User: ". getUserName($dbh, $touser) ." authorized to access sample: $sample <br>\n";	
+	}
+
+
+}
+
+
+authorizationList($self,$dbh);
+
+
+}
+
+
+########################################################################
+# authorizationAdd add authorizations (access / download)
+########################################################################
+sub authorizationTerminate {
+
+my $self         = shift;
+my $dbh          = shift;
+my $terminate    = shift;
+
+my $query ="";
+my @row = ();
+my @labels= ();
+my $out="";
+my $i = 0;
+my $n = 0;
+
+
+if ($role ne "admin") {print "Not admin";exit(1);}
+			
+$i=0;
+my $query = qq#
+SELECT
+auth.idauthorization,
+u.name, 
+s.name, 
+concat(p.pname, ' - ', pdescription), 
+auth.startdate, 
+auth.enddate, 
+auth.download,
+auth.access,
+ug.name
+FROM
+$logindb.authorization auth
+inner join $logindb.user u on u.iduser=auth.iduser
+inner join $logindb.user ug on ug.iduser=auth.grantedby
+left join $sampledb.sample s on s.idsample=auth.idsample
+left join $sampledb.project p on p.idproject=auth.idproject
+WHERE idauthorization = ?
+ORDER BY
+auth.enddate desc, auth.startdate desc
+#;
+
+$out = $dbh->prepare($query) || die print "$DBI::errstr";
+$out->execute($terminate) || die print "$DBI::errstr";
+
+@labels	= (
+	'idauth',
+	'User',
+	'Sample',
+	'Project',
+	'Start',
+	'End',
+	'Download',
+	'Access',
+	'Granted by',
+	'Action'
+	);
+
+$i=0;
+
+while (@row = $out->fetchrow_array) {
+	print "<tr>";
+	$i=0;
+	foreach (@row) {
+		print $labels[$i]. ": ".$row[$i]."<br>\n";
+		$i++;
+	}
+	$n++;
+	
+	
+	$query = "UPDATE $logindb.authorization SET enddate=DATE_SUB(CURDATE(), INTERVAL 1 DAY) WHERE (idauthorization = ? AND enddate >= CURDATE())";
+	$out=$dbh->prepare($query)  || die print "$DBI::errstr";
+	$out->execute($terminate) || die print "$DBI::errstr";
+	
+	print "<strong> Share terminated </strong><br>";
+	
+}
+
+if ($n == 0)
+{
+	print "Id authorization $terminate does not exist<br>\nNo action.";
+}
+
+$out->finish;
+}
+
+
+
+########################################################################
+# flowCellList / Lists Flowcell in raw data repository
+########################################################################
+sub flowCellList {
+
+my $self         = shift;
+my $dbh          = shift;
+my $ref          = shift;
+
+my @labels    = ();
+my $out       = "";
+my @row       = ();
+my $query     = "";
+my $i         = 0;
+my $n         = 1;
+my $tmp       = "";
+
+
+if ($role ne "admin") {print "Not admin";exit(1);}
+
+# Get a list of flowcell stored in rawdata path -> if not OBJECT STORAGE
+my $flowCellsTmp=`/usr/bin/ls -d $rawDataPath/[0-9][0-9][0-9][0-9][0-9][0-9]_*_[0-9][0-9][0-9][0-9]_* | /usr/bin/awk -F"/" '{print \$NF}'`;
+chomp($flowCellsTmp);
+my @flowCells = split("\n", $flowCellsTmp);
+
+print htmlConfirm();
+
+$i=0;
+
+$query = qq#
+	select 
+		R.rid	 						RunID,
+		R.rname	 						FlowCell,
+		count(distinct(L.aid)) 					Lanes,
+		count(distinct(P.idpool)) 				PoolCount,
+		group_concat(distinct(odescription) SEPARATOR "<br>") 	PoolNames,
+		count(distinct(LIB.lid)) 				LibraryCount,
+		group_concat(distinct(ltlibtype) SEPARATOR "<br>")	LibraryTypes,
+		count(distinct(PIPE.idsample))				SamplesRun,
+		MIN(PIPE.starttime)					Started,
+		MAX(PIPE.endtime)					Finished
+	from 
+		$solexa.run R 
+		inner join $solexa.lane L 		on L.rid=R.rid 
+		inner join $solexa.pool P 		on P.idpool=L.idpool  
+		inner join $solexa.library2pool L2P 	on L2P.idpool=P.idpool
+		inner join $solexa.library LIB 		on LIB.lid = L2P.lid 
+		inner join $solexa.libtype LT 		on LT.ltid=LIB.libtype
+		inner join $solexa.sample2library S2L	on S2L.lid=LIB.lid
+		inner join $sampledb.sample S		on S.idsample=S2L.idsample
+		left  join $sampledb.pipeline PIPE      on ( PIPE.idsample=S.idsample AND PIPE.status="finished" )
+	where 
+		R.rname= ?
+	group by 
+		R.rid;
+#;
+
+
+#$out = $dbh->prepare($query) || die print "$DBI::errstr";
+#$out->execute() || die print "$DBI::errstr";
+
+@labels	= (
+	'n',
+	'Full name',
+	'Flow cell name',
+	'Date',
+	'Instrument',
+	'Slot',
+	'Samplesheet',
+	'In database',
+	'Lanes',
+	'Pool Names',
+	'Sample Count',
+	'Sample Type(s)',
+	'Demultiplexed folder',
+	'Samples Analysed',
+	'First analysis<br>start',
+	'Analysis ended',
+	'Actions'
+	);
+
+$i=0;
+
+&tableheaderDefault("1000px");
+print "<thead><tr>";
+foreach (@labels) {
+	print "<th align=\"center\">$_</th>";
+}
+print "</tr></thead><tbody>\n";
+
+$n=1;
+
+foreach my $flowCell (reverse @flowCells)
+{
+	my ($flowCellDate, $instrumentSerial, $runCounter, $flowCellName)=split("_",$flowCell);
+	
+	my $instrumentSlot  = "-";
+	my $sampleSheet     = 0;
+	my $inDatabase      = 0;
+	my $isDemultiplexed = 0;
+	my $actionsLink = "";
+	
+	if (length ($flowCellName) == 10 )
+	{
+		#Flow Cell Name HiSeq / NovaSeq - separate slot name A/B
+		$instrumentSlot = substr($flowCellName, 0, 1);
+		$flowCellName   = substr($flowCellName, 1, 9);
+	}
+	elsif (length ($flowCellName) == 9 )
+	{
+		#Standard flow cell name GAIIx
+		#Nothing to do
+	}
+	elsif (length ($flowCellName) == 15 )
+	{
+		#MiSeq Name:
+		$flowCellName   = substr($flowCellName, 10, 5);
+	
+	}
+	
+	my $flowCellNameLink = $flowCellName;
+	
+	# Samplesheet
+	$sampleSheet     = 1 if ( -e "$rawDataPath/$flowCell/SampleSheet.csv" );
+	$isDemultiplexed = 1 if ( -d "$rawDataPath/$flowCell/Demultiplexed" );
+	
+	$out = $dbh->prepare($query) || die print "$DBI::errstr";
+	$out->execute($flowCellName) || die print "$DBI::errstr";
+	my $flowCellRunID="";
+	my $flowCellName="";
+	my $laneCount="";
+	my $poolCount="";
+	my $poolNames="";
+	my $sampleCount="";
+	my $libraryTypes="";
+	my $samplesRun="";
+	my $startTime="";
+	my $endTime="";
+	if (( $flowCellRunID, $flowCellName, $laneCount, $poolCount, $poolNames, $sampleCount, $libraryTypes, $samplesRun, $startTime, $endTime ) = $out->fetchrow_array ){
+		$inDatabase = 1;
+		$flowCellNameLink = "<a href='https://evadb.helmholtz-muenchen.de/cgi-bin/mysql/solexa/run.pl?id=$flowCellRunID&mode=edit'>$flowCellName</a>";
+	}
+	
+	# Actions
+	if($inDatabase)
+	{
+		$actionsLink .= "\> ".hrefConfirm("Make Sample Sheet",            "flowCellsDo.pl?rid=$flowCellRunID&rname=$flowCellName&rfullname=$flowCell&func=makeSampleSheet", "Confirm action:\\nMake samplesheet for flowcell \\n$flowCell").br();
+		$actionsLink .= "\> ".hrefConfirm("Make Demultiplexing File",     "flowCellsDo.pl?rid=$flowCellRunID&rname=$flowCellName&rfullname=$flowCell&func=makeDemultiplexing", "Confirm action:\\nProduce demultiplexing script for flowcell \\n$flowCell").br();
+		$actionsLink .= "\> ".hrefConfirm("Import RTA metadata",          "flowCellsDo.pl?rid=$flowCellRunID&rname=$flowCellName&rfullname=$flowCell&func=importRTA", "Confirm action:\\nImport RTA Metadata for flowcell \\n$flowCell").br();
+		
+		$actionsLink .= "\> ".hrefConfirm("Demultiplex".($isDemultiplexed ? " again" : "" ),       "flowCellsDo.pl?rid=$flowCellRunID&rname=$flowCellName&rfullname=$flowCell&func=demultiplex", "Confirm action:\\nDemultiplex flowcell \\n$flowCell\\n\\nFollowing actions will be executed:\\nMake Samplesheet\\nMake Demultiplexing\\nImport RTA Data\\nDemultiplexing job will be started").br();
+		$actionsLink .= "\> ".hrefConfirm("Demultiplex and Analyze",            "flowCellsDo.pl?rid=$flowCellRunID&rname=$flowCellName&rfullname=$flowCell&func=demultiplexAndAnalyze", "Confirm action:\\nDemultiplex and start analysis for flowcell \\n$flowCell\\n\\nFollowing actions will be executed:\\nMake Samplesheet\\nMake Demultiplexing\\nImport RTA Data\\nDemultiplexing job will be started\\nPipeline will be started (on successful demultiplexing)").br();
+		
+		if ( $isDemultiplexed )
+		{
+			$actionsLink .= "\> ".hrefConfirm("Start Pipeline","flowCellsDo.pl?rid=$flowCellRunID&rname=$flowCellName&rfullname=$flowCell&func=startPipeline", "Confirm action:\\nStart analysis for flowcell \\n$flowCell").br();
+			$actionsLink .= "\> ".hrefConfirm("Start missing / Restart failed","flowCellsDo.pl?rid=$flowCellRunID&rname=$flowCellName&rfullname=$flowCell&func=startNotAnalyzed", "Confirm action:\\nStart analysis for \\n".($sampleCount-$samplesRun)." failed/missing sample".(($sampleCount-$samplesRun)>1 ? "s" : "")."\\nin flowcell \\n$flowCell").br() if ( $samplesRun > 0 && $sampleCount > $samplesRun );
+		}
+		
+
+
+	}
+	else
+	{
+		$actionsLink .= "Import Run into DB".br();
+	}
+	
+	#Debug
+	#my ($RIFC, $RIDX, $RINST) = makeSampleSheetReadRunInfo($flowCellName);
+	#$actionsLink.="$RIFC $RIDX $RINST ";
+	#my $RPSBS = makeSampleSheetGetSbsConsumableVersion($flowCellName);
+	#$actionsLink.="$RPSBS";
+	#makeSampleSheet(0,$dbh, $flowCellName,$flowCell);
+	
+	print "<td align=\"center\">$n</td>";
+	print "	<td>$flowCell</td>
+		<td>$flowCellNameLink</td>
+		<td>$flowCellDate</td>
+		<td>$instrumentSerial</td>
+		<td>$instrumentSlot</td>
+		<td ".( $sampleSheet     == 0 ? "bgColor='red'" : "" ).">".( $sampleSheet     == 0 ? "false" : "true" )."</td>
+		<td ".( $inDatabase      == 0 ? "bgColor='red'" : "" ).">".( $inDatabase      == 0 ? "false" : "true" )."</td>
+		<td>$laneCount</td>
+		<td>$poolNames</td>
+		<td>$sampleCount</td>
+		<td>$libraryTypes</td>
+		<td ".( $isDemultiplexed == 0 ? "bgColor='red'" : "" ).">".( $isDemultiplexed == 0 ? "false" : "true" ). "</td>
+		<td ".( $samplesRun < $sampleCount ? "bgColor='red'" : "" ).">".$samplesRun."</td>
+		<td>$startTime</td>
+		<td>$endTime</td>
+		<td nowrap><details><summary>Actions</summary>".( $actionsLink )."</details></td>";
+	print "</tr>\n";
+	$n++;
+	
+	
+}
+
+#while (@row = $out->fetchrow_array) {
+#foreach (@row) {
+#print "<td><a href=\"admin.pl?mode=edit&amp;id=$row[$i]\">$row[$i]</a></td>";
+#$out->finish;
+	
+print "</tbody></table></div>";
+
+
+}
+
+
 
 ########################################################################
 # listCooperation
@@ -17169,7 +18804,7 @@ while (@row = $out->fetchrow_array) {
 				<a href='conclusion.pl?idsample=$idsample'>Sample conclusions</a>
 				<a href='report.pl?sname=$sname'>Report</a>
 				#;
-				if ($role eq "admin" || $role eq "manager" ){
+				if ( $role eq "admin" || $role eq "manager" || canDownload(0, $sname, $dbh) ){
                                         print qq#
                                         <a href='wrapper.pl?sname=$sname&file=merged.rmdup.bam'>Download BAM</a>
                                         #;
@@ -17347,7 +18982,7 @@ INNER JOIN $sampledb.cooperation     c ON s.idcooperation = c.idcooperation
 LEFT JOIN  $solexa.libtype          lt on l.libtype = lt.ltid 
 LEFT JOIN  $solexa.libpair          lp on l.libpair = lp.lpid 
 LEFT JOIN  $sampledb.exomestat       e ON (s.idsample = e.idsample AND e.idlibtype=l.libtype AND e.idlibpair=l.libpair)
-LEFT JOIN  variantstat              vs ON s.idsample = vs.idsample   
+LEFT JOIN  $variantstat              vs ON s.idsample = vs.idsample   
 LEFT JOIN  $exomevcfe.conclusion    cl ON s.idsample=cl.idsample
 LEFT JOIN  $solexa.assay             a ON e.idassay=a.idassay
 $where
@@ -17554,7 +19189,7 @@ AND soa.aread1failed = 'F'
 AND soa.aread2failed = 'F'
 AND sol.lfailed = 0  
 ), mismatchrate, avgqual, avgquallast5, libcomplexity, q30fraction, avgdiffdepth,
-s.idsample, dw.iduser is not null download
+s.idsample, auth.iduser is not null download
 FROM
 $sampledb.sample s 
 LEFT  JOIN $sampledb.disease2sample ds ON s.idsample = ds.idsample
@@ -17566,12 +19201,12 @@ INNER JOIN $sampledb.project         p ON s.idproject = p.idproject
 LEFT  JOIN $solexa.libtype          lt on l.libtype = lt.ltid 
 LEFT  JOIN $solexa.libpair          lp on l.libpair = lp.lpid 
 LEFT  JOIN $sampledb.exomestat       e ON (s.idsample = e.idsample AND e.idlibtype=l.libtype AND e.idlibpair=l.libpair)
-LEFT  JOIN variantstat              vs ON s.idsample = vs.idsample   
+LEFT  JOIN $variantstat              vs ON s.idsample = vs.idsample   
 LEFT  JOIN $exomevcfe.conclusion    cl ON s.idsample = cl.idsample
 LEFT  JOIN $solexa.assay             a ON e.idassay = a.idassay
 LEFT  JOIN $exomevcfe.hpo            h ON s.idsample = h.idsample
 LEFT  JOIN $exomevcfe.comment       co ON s.idsample = co.idsample
-LEFT  JOIN $exomevcfe.download      dw ON ( s.idsample = dw.idsample OR s.idproject = dw.idproject and NOW()>=dw.startdate and NOW()<=dw.enddate and dw.iduser=(select iduser FROM $exomevcfe.user where name='$user' ))
+LEFT  JOIN $exomevcfe.authorization auth ON ( (s.idsample = auth.idsample OR s.idproject = auth.idproject) and NOW()>=auth.startdate and NOW()<=auth.enddate and auth.iduser=(select iduser FROM $exomevcfe.user where name='$user') and auth.download=1)
 $where
 AND $allowedprojects
 AND l.lfailed = 0
@@ -17585,6 +19220,7 @@ $order
 #s.pedigree,s.name
 $out = $dbh->prepare($query) || die print "$DBI::errstr";
 $out->execute(@values2) || die print "$DBI::errstr";
+
 
 @labels	= (
 	'n',
@@ -17660,6 +19296,9 @@ while (@row = $out->fetchrow_array) {
 
 	$idsample = $row[-1];
 	$sname    = $row[0];
+	
+	$canDownload = $canDownload || canDownload(0, $sname,  $dbh);
+	
 	$pedigree = $row[3];
 	pop(@row);
 	print "<tr>";
@@ -18802,7 +20441,7 @@ s.name,s.pedigree,s.sex,e.sry,e.type,
 count(x.idsnvsample) as allx,
 ((sum(x.alleles)-count(x.alleles))/(count(x.alleles))) as hom2all
 FROM snv v 
-INNER JOIN snvsample              x ON v.idsnv = x.idsnv 
+INNER JOIN $snvsample             x ON v.idsnv = x.idsnv 
 INNER JOIN $sampledb.sample       s ON s.idsample = x.idsample
 INNER JOIN $sampledb.exomestat    e ON (s.idsample = e.idsample) 
 WHERE x.alleles > 0
@@ -18857,7 +20496,7 @@ print "</td><td class=\"outer\">\n"; #outer table
 my $subquerystop = "
 (SELECT count(xx.idsnv) 
 FROM snv vv 
-INNER JOIN snvsample    xx on vv.idsnv = xx.idsnv 
+INNER JOIN $snvsample   xx on vv.idsnv = xx.idsnv 
 INNER JOIN $sampledb.sample       ss on ss.idsample = xx.idsample
 WHERE (FIND_IN_SET('nonsense',vv.func))
 AND s.idsample=ss.idsample)
@@ -18865,7 +20504,7 @@ AND s.idsample=ss.idsample)
 my $subquerysplice = "
 (SELECT count(xx.idsnv) 
 FROM snv vv 
-INNER JOIN snvsample    xx on vv.idsnv = xx.idsnv 
+INNER JOIN $snvsample   xx on vv.idsnv = xx.idsnv 
 INNER JOIN $sampledb.sample       ss on ss.idsample = xx.idsample
 WHERE (FIND_IN_SET('splice',vv.func))
 AND s.idsample=ss.idsample)
@@ -18873,7 +20512,7 @@ AND s.idsample=ss.idsample)
 my $subqueryindel = "
 (SELECT count(xx.idsnv) 
 FROM snv vv 
-INNER JOIN snvsample    xx on vv.idsnv = xx.idsnv 
+INNER JOIN $snvsample   xx on vv.idsnv = xx.idsnv 
 INNER JOIN $sampledb.sample       ss on ss.idsample = xx.idsample
 WHERE (FIND_IN_SET('indel',vv.func))
 AND s.idsample=ss.idsample)
@@ -18881,7 +20520,7 @@ AND s.idsample=ss.idsample)
 my $subqueryframeshift = "
 (SELECT count(xx.idsnv) 
 FROM snv vv 
-INNER JOIN snvsample    xx on vv.idsnv = xx.idsnv 
+INNER JOIN $snvsample   xx on vv.idsnv = xx.idsnv 
 INNER JOIN $sampledb.sample       ss on ss.idsample = xx.idsample
 WHERE (FIND_IN_SET('frameshift',vv.func))
 AND s.idsample=ss.idsample)
@@ -18889,7 +20528,7 @@ AND s.idsample=ss.idsample)
 my $subqueryclassindel = "
 (SELECT count(xx.idsnv) 
 FROM snv vv 
-INNER JOIN snvsample    xx on vv.idsnv = xx.idsnv 
+INNER JOIN $snvsample   xx on vv.idsnv = xx.idsnv 
 INNER JOIN $sampledb.sample       ss on ss.idsample = xx.idsample
 WHERE class='indel'
 AND s.idsample=ss.idsample )
@@ -18940,7 +20579,7 @@ $subqueryindel,
 $subqueryframeshift,
 $subqueryclassindel
 FROM snv v 
-INNER JOIN snvsample    x ON v.idsnv = x.idsnv 
+INNER JOIN $snvsample   x ON v.idsnv = x.idsnv 
 INNER JOIN $sampledb.sample       s ON s.idsample = x.idsample
 INNER JOIN $sampledb.exomestat    e ON s.idsample = e.idsample 
 WHERE x.alleles > 0
@@ -19130,7 +20769,7 @@ group_concat(DISTINCT f.fsample separator '<br>'),
 group_concat(DISTINCT f.samplecontrols separator '<br>'),
 group_concat(DISTINCT $exac_gene_link separator ' '),
 group_concat(DISTINCT exac.mis_z separator ' '),
-group_concat(DISTINCT  '<a href="http://$hgmdserver/hgmd/pro/mut.php?accession=',h.id,'">',h.id,'</a>' separator '<br>'),
+group_concat(DISTINCT  '<a href="https://$hgmdserver/hgmd/pro/mut.php?accession=',h.id,'">',h.id,'</a>' separator '<br>'),
 group_concat(DISTINCT $clinvarlink separator '<br>'),
 group_concat(DISTINCT $exac_link separator '<br>'),
 group_concat(distinct g.nonsynpergene,' (', g.delpergene,')'),
@@ -19151,7 +20790,7 @@ FROM  hgmd_pro.$hg19_coords h
 INNER JOIN snv                         v ON (v.chrom      = h.chrom AND v.start = h.pos AND v.refallele=h.ref AND v.allele=h.alt)
 INNER JOIN snvgene                     y ON (v.idsnv      = y.idsnv)
 INNER JOIN gene                        g ON (y.idgene     = g.idgene)
-INNER JOIN snvsample                   x ON (v.idsnv      = x.idsnv)
+INNER JOIN $snvsample                  x ON (v.idsnv      = x.idsnv)
 INNER JOIN $sampledb.sample            s ON (x.idsample   = s.idsample)
 INNER JOIN $sampledb.disease2sample   ds ON (s.idsample   = ds.idsample)
 INNER JOIN $sampledb.disease           d ON (ds.iddisease = d.iddisease)
@@ -19196,7 +20835,7 @@ group_concat(DISTINCT f.fsample separator '<br>'),
 group_concat(DISTINCT f.samplecontrols separator '<br>'),
 group_concat(DISTINCT $exac_gene_link separator ' '),
 group_concat(DISTINCT exac.mis_z separator ' '),
-group_concat(DISTINCT  '<a href="http://$hgmdserver/hgmd/pro/mut.php?accession=',h.id,'">',h.id,'</a>' separator '<br>'),
+group_concat(DISTINCT  '<a href="https://$hgmdserver/hgmd/pro/mut.php?accession=',h.id,'">',h.id,'</a>' separator '<br>'),
 group_concat(DISTINCT $clinvarlink separator '<br>'),
 group_concat(DISTINCT $exac_link separator '<br>'),
 group_concat(distinct g.nonsynpergene,' (', g.delpergene,')'),
@@ -19217,7 +20856,7 @@ FROM $coredb.clinvar            cv
 INNER JOIN snv                         v ON (v.chrom      = cv.chrom AND v.start = cv.start AND v.refallele=cv.ref AND v.allele=cv.alt)
 INNER JOIN snvgene                     y ON (v.idsnv      = y.idsnv)
 INNER JOIN gene                        g ON (y.idgene    = g.idgene)
-INNER JOIN snvsample                   x ON (v.idsnv      = x.idsnv)
+INNER JOIN $snvsample                  x ON (v.idsnv      = x.idsnv)
 INNER JOIN $sampledb.sample            s ON (x.idsample   = s.idsample)
 INNER JOIN $sampledb.disease2sample   ds ON (s.idsample   = ds.idsample)
 INNER JOIN $sampledb.disease           d ON (ds.iddisease = d.iddisease)
@@ -19540,6 +21179,367 @@ print "</tbody></table></div>";
 
 $out->finish;
 }
+
+
+
+
+
+########################################################################
+# autoQC - Evaluates if a genome is ready for analysis
+########################################################################
+sub autoQC {
+my $self         = shift;
+my $dbh          = shift;
+my $ref          = shift;
+
+my @labels    = ();
+my $out       = "";
+my @row       = ();
+my $query     = "";
+my $i         = 0;
+my $n         = 1;
+my $where     = "";
+my $field     = "";
+my @values2   = ();
+my $idsample  = "";
+my $sname     = "";
+my $pedigree  = "";
+
+my $cgi          = new CGI::Plus;
+
+
+if (exists($ref->{'idproject'})) {
+	$ref->{'s.idproject'}=$ref->{'idproject'};
+	delete($ref->{'idproject'});
+}
+
+if ( $ref->{'s.name'} eq "" )
+{
+	print "AutoQC possible only with a sample name.<br>With <b>one</b> sample name.";
+	exit;
+}
+
+my @fields    = sort keys %$ref;
+my @values    = @{$ref}{@fields};
+my $allowedprojects = &allowedprojects("s.");
+
+
+foreach $field (@fields) {
+	unless ($values[$i] eq "") {
+		if ($where ne "") {
+			$where .= " AND ";
+		}
+		if ($field eq "datebegin") {
+			$where .= " s.entered >= ? ";
+			push(@values2,$values[$i]);
+		}
+		elsif ($field eq "dateend") {
+			$where .= " s.entered <= ? ";
+			push(@values2,$values[$i]);
+		}
+		else {
+			$where .= $field . " = ? ";
+			push(@values2,$values[$i]);
+		}
+	}
+	$i++;
+}
+if ($where ne "") {
+	$where .= " AND ";
+}
+#$where .= " libtype = 5 ";
+$where .= $allowedprojects;
+if ($where ne "") {
+	$where = "WHERE  $where";
+}
+
+
+# Select first id sample and materialn for simplicity:
+my $idsample=0;
+my $libtype="";
+
+$query = qq#
+SELECT 
+s.idsample,
+lt.ltlibtype
+FROM
+$sampledb.sample s
+LEFT  JOIN $solexa.sample2library   sl ON s.idsample = sl.idsample
+LEFT  JOIN $solexa.library           l ON sl.lid = l.lid
+LEFT  JOIN $solexa.libtype          lt ON lt.ltid = l.libtype
+where 
+$allowedprojects
+AND s.name = ? 
+#;
+$out = $dbh->prepare($query) || die print "$DBI::errstr";
+$out->execute($ref->{'s.name'}) || die print "$DBI::errstr";
+
+$n=0;
+while (@row = $out->fetchrow_array)
+{
+  $n++;
+ 
+  $idsample = $row[0];
+  $libtype  = $row[1];
+
+}
+
+if ( $n == 0 )
+{
+	print "Sample ".$ref->{'s.name'}." does not exist.";
+	#exit;
+}
+
+
+# Get Qual parameters AND AutoQC parameters
+			
+$i=0;
+$query = qq#
+SELECT
+s.name,
+concat_ws(' ',cl.solved, group_concat(DISTINCT co.genesymbol SEPARATOR '')),
+h.idsample,
+s.foreignid,
+s.externalseqid,
+s.pedigree,
+s.sex,
+s.saffected,
+t.name,
+concat(i.name,' (',i.symbol,')'),
+p.pdescription,
+group_concat(DISTINCT l.lstatus),
+group_concat(DISTINCT s.nottoseq),
+c.name,
+s.scomment,
+s.entered,
+s.idsample
+FROM
+$sampledb.sample s 
+LEFT  JOIN $sampledb.cooperation     c ON s.idcooperation = c.idcooperation
+LEFT  JOIN $sampledb.disease2sample ds ON s.idsample = ds.idsample
+LEFT  JOIN $sampledb.disease         i ON ds.iddisease = i.iddisease
+LEFT  JOIN $sampledb.tissue          t ON s.idtissue = t.idtissue
+LEFT  JOIN $solexa.sample2library   sl ON s.idsample = sl.idsample
+LEFT  JOIN $solexa.library           l ON sl.lid = l.lid
+INNER JOIN $sampledb.project         p ON s.idproject=p.idproject
+LEFT  JOIN $exomevcfe.conclusion    cl ON s.idsample=cl.idsample
+LEFT  JOIN $exomevcfe.comment       co ON s.idsample=co.idsample
+LEFT  JOIN $exomevcfe.hpo            h ON s.idsample=h.idsample
+$where
+GROUP BY s.name
+ORDER BY
+i.name,s.pedigree,s.name
+#;
+#print "query = $query<br>";
+#print "values2 = @values2<br>";
+
+$out = $dbh->prepare($query) || die print "$DBI::errstr";
+$out->execute(@values2) || die print "$DBI::errstr";
+
+@labels	= (
+	'n',
+	'ID Links',
+	'<div class="tooltip">Con-<br>clusion<span class="tooltiptext">0 nothing_done<br>1 solved<br>2 not_solved<br>3 candidate<br>4 pending</span></div>',
+	'HPO',
+	'Foreign ID',
+	'External<br>SeqID',
+	'Pedigree',
+	'Sex',
+	'Affected',
+	'Tissue',
+	'Disease',
+	'Project',
+	'Status',
+	'Not to<br>sequence',
+	'Cooperation',
+	'Comment',
+	'Entered',
+	'Internal ID'
+	);
+
+&tableheaderDefault("1500px");
+$i=0;
+
+print "<thead><tr>";
+foreach (@labels) {
+	print "<th align=\"center\">$_</th>";
+}
+print "</tr></thead><tbody>";
+
+$n=1;
+while (@row = $out->fetchrow_array) {
+	print "<tr>";
+	$i=0;
+	$idsample = $row[16];
+	$pedigree = $row[5];
+	$sname    = $row[0];
+	foreach (@row) {
+		if ($i == 0) { #edit project
+			print "<td align=\"center\">$n</td>";
+			print qq#
+			<td style='white-space:nowrap;'>
+			<div class="dropdown">
+			$row[$i]&nbsp;&nbsp;
+			<img style='width:14pt;height:14pt;' src="/EVAdb/evadb_images/down-squared.png" title="Links to analysis functions" onclick="myFunction($n)" class="dropbtn" />
+			<div id="myDropdown$n" class="dropdown-content">
+			        <a href='search.pl?pedigree=$pedigree'>Autosomal dominant</a>
+				<a href='searchGeneInd.pl?pedigree=$sname'>Autosomal recessive</a>
+				<a href='searchTrio.pl?pedigree=$sname'>De novo trio</a>
+				<a href='searchTumor.pl?pedigree=$sname'>Tumor/Control</a>
+				<a href='searchDiseaseGene.pl?sname=$sname'>Disease panels</a>
+				<a href='searchHGMD.pl?sname=$sname'>ClinVar/HGMD</a>
+				<a href='searchOmim.pl?sname=$sname'>OMIM</a>
+				<a href='searchHPO.pl?sname=$sname'>HPO</a>
+				<a href='searchDiagnostics.pl?sname=$sname'>Coverage lists</a>
+				<a href='searchHomo.pl?sname=$sname'>Homozygosity</a>
+				<a href='searchCnv.pl?sname=$sname'>CNV</a>
+				#;
+				if ($contextM eq "contextMg") { # is genome
+					print qq#
+					<a href='searchSv.pl?sname=$sname'>Structural variants</a>
+					#;
+				}
+				print qq#
+				<a href='searchSample.pl?pedigree=$pedigree'>Sample information</a>
+				<a href='conclusion.pl?idsample=$idsample'>Sample conclusions</a>
+				<a href='report.pl?sname=$sname'>Report</a>
+				#;
+				if ($role eq "admin" || $role eq "manager" ){
+                                        print qq#
+                                        <a href='wrapper.pl?sname=$sname&file=merged.rmdup.bam'>Download BAM</a>
+                                        #;
+                                }
+                                print qq#
+			</div>
+			</div>
+			</td>
+			#;
+		}
+		elsif ($i == 2) { # HPO
+			if ($row[$i] ne "") {
+				print "<td><a href='showHPO.pl?idsample=$row[$i]'>HPO</a></td>";
+			}
+			else {
+				print "<td><a href='importHPO.pl?sname=$sname'>New</a></td>";
+			}
+		}
+		elsif ($i == 5 ){
+			print qq#
+				<td><a href='searchSample.pl?pedigree=$pedigree'>$pedigree</a></td>
+			#;
+		}
+		else {
+			print "<td> $row[$i] </td>";
+		}
+		$i++;
+	}
+	print "</tr>\n";
+	$n++;
+}
+print "</tbody></table></div>";
+
+print "<hr><div><strong>AutoQC test:</strong><br><hr>";
+print "Name: ".$ref->{'s.name'}."<br>";
+print "Idsample: $idsample <br>";
+print "Library type: $libtype <br>";
+
+print "QC<br>";
+
+# Run QC:
+
+my $svquery = qq#
+(select count(SV.idsv) SV from svsample SV where idsample=$idsample) SV
+#;
+
+$svquery="(-1) SV" if ($sv_menu != 1);
+
+
+$query=qq#
+select 
+	name SampleName, 
+	(select count(SS.idsnv) SNV from $snvsample SS where idsample=$idsample) SNV,
+	(select count(SSMITO.idsnv) MITO from $snvsample SSMITO inner join genomegatk.snv SMITO on SMITO.idsnv=SSMITO.idsnv where idsample=$idsample and SMITO.chrom="chrM") MITO,
+	(select count(SSINDEL.idsnv) INDEL from $snvsample SSINDEL inner join genomegatk.snv SINDEL on SINDEL.idsnv=SSINDEL.idsnv where idsample=$idsample and SINDEL.class="indel") INDEL,
+	(select count(SSPINDEL.idsnv) PINDEL from $snvsample SSPINDEL where idsample=$idsample and SSPINDEL.caller='pindel') PINDEL,
+	(select count(SSEXOMEDEPTH.idsnv) EXOMEDEPTH from $snvsample SSEXOMEDEPTH where idsample=$idsample and SSEXOMEDEPTH.caller='exomedepth') EXOMEDEPTH,
+	(select count(HOM.idhomozygosity) from homozygosity HOM where idsample=$idsample) HOM,
+	$svquery,
+	ST.mix,
+	ST.avgcov,
+	ST.cov20x
+from $sampledb.sample S
+	inner join $sampledb.exomestat ST on ST.idsample=S.idsample
+where S.idsample=$idsample;
+#;
+
+
+$out = $dbh->prepare($query) || die print "$DBI::errstr";
+$out->execute() || die print "$DBI::errstr";
+
+
+print "<table><tr><td>Sample</td><td>QC Status</td><td>SNVs</td><td>Indels</td><td>Pindel</td><td>ExomeDepth</td><td>SVs</td><td>Mito</td><td>Homozygosity</td><td>Contamination</td><td>Coverage</td><td>Coverage 20x perc</td></tr>";
+
+while (@row = $out->fetchrow_array) {
+
+	my $sampleName      = $row[0];
+	my $snvCount        = $row[1];
+	my $mitoCount       = $row[2];
+	my $indelCount      = $row[3];
+	my $pindelCount     = $row[4];
+	my $exomeDepthCount = $row[5];
+	my $homoCount       = $row[6];
+	my $svCount         = $row[7];
+	my $mix             = $row[8];
+	my $avgCov          = $row[9];
+	my $cov20x          = $row[10]; 
+
+	# Auto Evaluation:
+	
+	#SNV Count
+
+	#Mito Count
+
+	#Indel Count
+
+	#Pindel Count
+
+	#ExomeDepth
+
+	#SVs
+
+	#Homozygosity
+
+	#Contamination
+
+	#Coverage
+
+	#Coverage 20x
+
+
+	print "<tr>
+		<td>$sampleName</td>
+		<td>FAILED</td>
+		<td>$snvCount</td>
+		<td>$indelCount</td>
+		<td>$pindelCount</td>
+		<td>$exomeDepthCount</td>
+		<td>$svCount</td>
+		<td>$mitoCount</td>
+		<td>$homoCount</td>
+		<td>$mix</td>
+		<td>$avgCov</td>
+		<td>$cov20x</td>
+	       </td>";
+}
+
+print "</table>";
+print "</div>";
+$out->finish;
+}
+
+
+
+
 ########################################################################
 # searchDiffEx resultsDiffEx
 ########################################################################
@@ -19917,12 +21917,11 @@ my $out;
 
 
 my $query = qq#
-SELECT dw.iduser is not null download
+SELECT auth.iduser is not null download
 FROM $sampledb.sample s
-LEFT JOIN $exomevcfe.download  dw ON ( s.idsample = dw.idsample OR s.idproject = dw.idproject and NOW()>=dw.startdate and NOW()<=dw.enddate and dw.iduser=(select iduser FROM $exomevcfe.user where name='$user' ))
+LEFT JOIN $exomevcfe.authorization  auth ON ( s.idsample = auth.idsample OR s.idproject = auth.idproject and NOW()>=auth.startdate and NOW()<=auth.enddate and auth.iduser=(select iduser FROM $exomevcfe.user where name='$user' ) and auth.download=1)
 WHERE s.name = ?
 #;
-
 
 #print "<br>query $query $idsample<br>";
 $out = $dbh->prepare($query) || die print "$DBI::errstr";
@@ -20327,7 +22326,7 @@ else {
 
 # nsamples maxfreq
 $query = qq#
-SELECT count(DISTINCT idsample) FROM snvsample
+SELECT count(DISTINCT idsample) FROM $snvsample
 #;
 $out = $dbh->prepare($query) || die print "$DBI::errstr";
 $out->execute() || die print "$DBI::errstr";
@@ -20384,14 +22383,14 @@ $query = qq#
 SELECT COUNT(co1), COUNT(co2) FROM
 (
 SELECT (x.idsnv) as co1, 
-(SELECT COUNT(x2.idsnv) FROM snvsample x2 use index(idsnvidsample)
+(SELECT COUNT(x2.idsnv) FROM $snvsample x2 use index(idsnvidsample)
 WHERE (x2.idsample=? or x2.idsample= ?)
 AND x.idsnv = x2.idsnv
 $alleles
 GROUP BY x2.idsnv 
 HAVING count(x2.idsample)=2
 ) as co2
-FROM snvsample x 
+FROM $snvsample x 
 INNER JOIN snv              v ON x.idsnv=v.idsnv 
 INNER JOIN $sampledb.sample s ON x.idsample=s.idsample 
 WHERE $allowedprojects
@@ -20425,14 +22424,14 @@ $query = qq#
 SELECT 
 CONCAT('<a href="listPosition.pl?idsnv=',v.idsnv,'" title="All carriers of this variant">',v.idsnv,'</a>'),
 v.chrom,v.start,v.freq,x.snvqual,x.gtqual, x.mapqual, x.coverage, x.percentvar,
-(SELECT COUNT(x2.idsnv) FROM snvsample x2 use index(idsnvidsample)
+(SELECT COUNT(x2.idsnv) FROM $snvsample x2 use index(idsnvidsample)
 WHERE (x2.idsample=? or x2.idsample= ?)
 AND x.idsnv = x2.idsnv
 $alleles
 GROUP BY x2.idsnv 
 HAVING count(x2.idsample)=2
 ) as co2
-FROM snvsample x 
+FROM $snvsample x 
 INNER JOIN snv              v ON x.idsnv=v.idsnv 
 INNER JOIN $sampledb.sample s ON x.idsample=s.idsample 
 WHERE $allowedprojects
@@ -20491,6 +22490,50 @@ print "</tbody></table></div>";
 $out->finish;
 }
 
+########################################################################
+# searcgHelpdesk
+########################################################################
+sub searchHelpdesk {
+	my $self         = shift;
+	my $dbh          = shift;
+	my $ref          = shift;
+	
+	
+	print "<div><a href=\"searchHelpdeskTicket.pl\">Create new ticket</a></div>";
+	
+	# Original poster allowed (only self if not admin / helpdesker)
+	my $opallowed = "1=1";
+	if ( $role ne "admin")
+	{
+		$opallowed = " OP.name=\"$user\" ";
+	}
+	
+	my $query = qq#
+		SELECT 
+			T.datelast,
+			T.subject,
+			LP.lastuser,
+			T.dateopened,
+			T.dateclosed,
+			T.status, 
+			OP.userid,
+		FROM
+			$logindb.ticket T			
+			INNER JOIN $logindb.user OP on T.iduser = OP.iduser
+			
+			select * from t4 where a=(select a from t4 where b>7 order by d desc limit 1);
+		WHERE 
+				T.idparent IS NULL
+			AND	$opallowed 
+			AND	( T.dateclosed IS NULL OR T.dateclosed >= DATE_SUB(NOW(), INTERVAL 2 MONTH ) )
+		ORDER BY 
+			T.idticket desc 
+			
+		#;
+	
+	
+	
+}
 
 ########################################################################
 # tableheaderResults
@@ -20727,7 +22770,7 @@ sub getVCF {
 
 
 	#get number of samples in database
-	my $query = "SELECT count(DISTINCT idsample) FROM snvsample;";
+	my $query = "SELECT count(DISTINCT idsample) FROM $snvsample;";
 	my $out = $dbh->prepare($query) || die print "$DBI::errstr";
 	$out->execute() || die print "$DBI::errstr";
 	my ($sampleCount) =  $out->fetchrow_array;
@@ -20747,7 +22790,7 @@ sub getVCF {
 	foreach my $currSNV (@idsnvs){
 		
 		#get entries
-		#$query = "SELECT chrom,start,if(rs='','.',rs),refallele,allele,(SELECT SUM(alleles) FROM snvsample WHERE idsnv = ?) FROM snv WHERE idsnv=?";
+		#$query = "SELECT chrom,start,if(rs='','.',rs),refallele,allele,(SELECT SUM(alleles) FROM $snvsample WHERE idsnv = ?) FROM snv WHERE idsnv=?";
 		$query = "SELECT chrom,start,if(rs='','.',rs),refallele,allele,freq FROM snv WHERE idsnv=?";
 		$out = $dbh->prepare($query) || die print "$DBI::errstr";
 		#$out->execute(($currSNV,$currSNV)) || die print "$DBI::errstr";
@@ -20764,7 +22807,7 @@ sub getVCF {
 		my %filter;
 		#get info from snvsample
 		foreach my $currSample(@idsamples) {
-			$query = "SELECT alleles,percentvar,percentfor,snvqual,mapqual,coverage,filter,gtqual FROM snvsample WHERE idsnv = ? AND idsample = ?";
+			$query = "SELECT alleles,percentvar,percentfor,snvqual,mapqual,coverage,filter,gtqual FROM $snvsample WHERE idsnv = ? AND idsample = ?";
 			$out = $dbh->prepare($query) || die print "$DBI::errstr";
 			$out->execute(($currSNV,$currSample)) || die print "$DBI::errstr";
 			if(my ($alleles,$percentvar,$percentfor,$snvqual,$mapqual,$coverage,$filter,$gtqual) =  $out->fetchrow_array){
@@ -20816,6 +22859,56 @@ sub getVCF {
 	
 	return $ret;
 }
+########################################################################
+# liftOver
+########################################################################
+sub liftOver {
+
+my $input  = shift;
+
+my $toBedFormat = $input;
+	$toBedFormat =~ s/\:/\\t/g;
+	$toBedFormat =~ s/\-/\\t/g;
+	
+	my ($LOchrom, $LOstart, $LOend) = split('\\\t', $toBedFormat);
+	
+	my $LOFrom=$liftOverFrom;
+	my $LOTo=$liftOverTo;
+	my $LOFile=$liftOverFile;
+	
+	if ($LOchrom eq "chrM")
+	{
+		$LOFrom = $liftOverMTFrom;
+		$LOTo   = $liftOverMTTo;
+		$LOFile = $liftOverMTFile;
+	}
+	
+	return $input if ($LOFrom eq $LOTo);
+	
+	#echo -e "chr1\t10199810\t10199811" | ./liftOver /dev/stdin hg19ToHg38.over.chain.gz /dev/stdout /dev/null 2>/dev/null ;dones
+	my $out=`export PATH=/usr/local/packages/seq/:\$PATH; echo -e \"$toBedFormat\" | $liftOver /dev/stdin $LOFile /dev/stdout /dev/null 2>/dev/null`;
+	$out =~ s/\t/\:/;
+	$out =~ s/\t/\-/;
+	return $out;
+}
+
+########################################################################
+# info (returns db variables)
+########################################################################
+sub info {
+	my $self = shift;
+	my $info = shift;
+	
+	return $subtitle 	if ( $info eq "subtitle" );
+	return $demo 		if ( $info eq "demo" );
+	return $beta 		if ( $info eq "beta" );
+	
+	
+	return "";
+
+}
+
+
 ########################################################################
 # drawMask
 ########################################################################
@@ -20949,6 +23042,29 @@ if(Check == false) {
 );
 
 }
+
+
+########################################################################
+# OKprompt
+########################################################################
+sub htmlConfirm {
+	my $self        = shift;
+	my $output = qq#
+		<script type="text/javascript">
+		function confirmLink(link,confirmprompt)
+		{
+			Check = confirm(confirmprompt);
+			if(Check == true)
+			{
+				location.href=link;
+			}
+		};
+		</script>
+	#;
+
+	return $output;
+}
+
 
 ########################################################################
 # text
@@ -21312,6 +23428,26 @@ sub selectdb {
 		$sql = "SELECT distinct d.iddisease,d.name,d.name
 			FROM $sampledb.disease d
 			INNER JOIN disease2gene dg ON d.iddisease=dg.iddisease
+			where d.type <> 'subpanel'
+			ORDER BY name";
+		
+		# Admin and beta tester can see subpanels
+		if ( $role eq "admin" || $role eq "beta" )
+		{
+			$sql = "SELECT distinct d.iddisease,d.name,d.name
+				FROM $sampledb.disease d
+				INNER JOIN disease2gene dg ON d.iddisease=dg.iddisease
+				ORDER BY name";	
+		}	
+		
+		$sth = $dbh->prepare($sql) || die print "$DBI::errstr";
+		$sth->execute || die print "$DBI::errstr";
+	}
+	if ( ($name eq "dgr.iddiseasegroup") ) { # for search
+		$sql = "SELECT distinct dgr.iddiseasegroup,dgr.name,dgr.name
+			FROM $sampledb.diseasegroup dgr
+			INNER JOIN $sampledb.disease d ON d.iddiseasegroup=dgr.iddiseasegroup
+			INNER JOIN disease2gene dg ON d.iddisease=dg.iddisease
 			ORDER BY name";
 		$sth = $dbh->prepare($sql) || die print "$DBI::errstr";
 		$sth->execute || die print "$DBI::errstr";
@@ -21368,6 +23504,14 @@ sub selectdb {
 		$sth = $dbh->prepare($sql) || die print "$DBI::errstr";
 		$sth->execute || die print "$DBI::errstr";
 	}
+	if (($name eq "iduser")) {
+		$sql = "SELECT iduser,name,CONCAT(name, ' - ', comment)
+			FROM $logindb.user 
+			where failed_last < 999
+			ORDER BY name asc";
+		$sth = $dbh->prepare($sql) || die print "$DBI::errstr";
+		$sth->execute || die print "$DBI::errstr";
+	}	
 	if ($name eq "machine")  {
 		$sql = "SELECT DISTINCT machine,machine,machine 
 			FROM rread 
@@ -21435,10 +23579,12 @@ sub selectdb {
 		$sth->execute || die print "$DBI::errstr";
 	}
 	if (($name eq "idproject") or ($name eq "s.idproject")){ # for search
-		$allowedprojects = &allowedprojects("");
-		$sql = "SELECT idproject,pmenuflag,CONCAT(pname,' - ',pdescription)
-			FROM $sampledb.project
+		$allowedprojects = &allowedprojects("s.");
+		$sql = "SELECT s.idproject,pmenuflag,CONCAT(pname,' - ',pdescription)
+			FROM $sampledb.project p
+			INNER JOIN $sampledb.sample s on s.idproject=p.idproject
 			WHERE $allowedprojects
+			GROUP BY s.idproject
 			ORDER BY pname DESC";
 			#print "$allowedprojects\n";
 		$sth = $dbh->prepare($sql) || die print "$DBI::errstr";
@@ -21510,6 +23656,16 @@ sub submit {
 }
 
 
+########################################################################
+# pageTitle
+########################################################################
+sub pageTitle {
+my $self        = shift;
+my $pageTitle   = shift;
+
+print "<span class=\"big\">$pageTitle</span><br><br>" ;
+
+}
 
 ########################################################################
 # printHeader
@@ -21554,7 +23710,7 @@ if ($sessionid eq "fork") {
 	$refresh
 	<html>
 	<head>
-	<title>EVAdb</title>
+	<title>EVAdb $subtitle</title>
 	);
 }
 else {
@@ -21563,7 +23719,7 @@ else {
     	"http://www.w3.org/TR/html4/loose.dtd">
 	<html>
 	<head>
-	<title>EVAdb</title>
+	<title>EVAdb $subtitle</title>
 	) ;
 }
 if ($sessionid eq "sessionid_created") { # redirect to Quality control
@@ -21693,16 +23849,27 @@ sub htmlencodehash {
 ########################################################################
 sub showMenu {
 
+my  $betademo="";
+$betademo="&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BETA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" if $beta;
+$betademo="DEMO" if $demo;
+
+$betademo = "<div class=\"subnav\"><span class=\"alert\">".$betademo."</span></div>" if ($betademo ne "");
 
 print qq|
   <div id="mySidenav" class="sidenav">
-  <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+  <a href="javascript:void(0)" class="closebtn" onclick="closeNav()"><font size=3>$shorttitle</font> &times;</a>
+  $betademo;
   <div class="subnav">Sample searches</div>
-  <a href="searchStat.pl">Samples with quality</a>
+  <a href="searchStat.pl">Samples with QC</a>
   <a href="searchSample.pl">Samples</a>
   <div class="subnav">Variant searches</div>
   <a href="search.pl">Autosomal dominant</a>
-  <a href="searchGeneInd.pl">Autosmal recessive</a>
+  <a href="searchGeneInd.pl">Autosomal recessive</a>
+  |;
+  print qq|
+  <a href="searchMNVHunter.pl">MNV Hunter</a>
+  | if ($beta == 1);
+  print qq|
   <a href="searchTrio.pl">De novo trio</a>
   <a href="searchDiseaseGene.pl">Disease panels</a>
   <a href="searchGene.pl">Genes</a>
@@ -21720,6 +23887,11 @@ print qq|
   <div class="subnav">Other</div>
   <a href="searchHomo.pl">Homozygosity</a>
   <a href="searchIbs.pl">IBS</a>
+  |;
+  print qq|
+  <a href="searchPengelly.pl">Pengelly SNPs</a>
+  | if ($beta == 1);
+  print qq|
   <a href="importHPO.pl">Import HPO</a>
   <a href="searchVcfTrio.pl">GATK denovo</a>
   <a href="searchVcf.pl">GATK Mutect2</a>
@@ -21728,6 +23900,12 @@ if ($sv_menu) {
 print qq|
   <div class="subnav">Structural variants</div>
   <a href="searchSv.pl">Structural variants</a>
+|;
+}
+if ($expansion_menu) {
+print qq|
+  <div class="subnav">Expansions</div>
+  <a href="searchExpansion.pl">ExpansionHunter</a>
 |;
 }
 if ($translocation_menu) {
@@ -21744,8 +23922,8 @@ print qq|
 |;
 if ($mtdna_menu) {
 print qq|
-  <div class="subnav">Mito</div>
-  <a href="searchMito.pl">Mito</a>
+  <div class="subnav">mtDNA</div>
+  <a href="searchMito.pl">mtDNA w/MITOMAP</a>
 |;
 }
 if ($rna_menu) {
@@ -21758,8 +23936,12 @@ print qq|
 |;
 }
 print qq|
+  <div class="subnav">Downloads</div>
+  <a href="downloadSamples.pl">My samples</a>
+  <a href="downloadModules.pl">Modules</a>
   <div class="subnav">Help</div>
   <a href="help.pl">Help</a>
+  <a href="helpdesk.pl">Helpdesk</a>
   <div class="subnav">Logout</div>
   <a href="login.pl">Logout $user</a>
 |;
@@ -21770,7 +23952,23 @@ print qq|
   <a href="admin.pl">New account</a>
 |;
 }
+if ($role eq "admin" || $role eq "manager") {
+	print qq|
+		<div class="subnav">Manager</div>
+		|;
+	print qq|
+			<a href="mgrUploadLink.pl">Generate Upload Link</a>
+	| if ($beta == 1);
+	print qq|
+			<a href="mgrShareSample.pl">Share Sample/Project</a>
+	|;
+	print qq|
+		<div class="subnav">Analysis</div>
+			<a href="flowCells.pl">Flowcells</a>
+	| if ($beta == 1);	
+}
 print qq|
+<br><br><br><div class="sidenavtitle">EVAdb $subtitle</div>
 </div>
 
 <!-- Use any element to open the sidenav -->
@@ -21858,6 +24056,837 @@ $footer
 
 }
 ########################################################################
+
+########################################################################
+# href
+########################################################################
+sub href
+{
+	my $text = shift;
+	my $link = shift;
+	
+	return "<a href=\"$link\">$text</a>";
+}
+
+########################################################################
+# href
+########################################################################
+sub hrefConfirm
+{
+	my $text = shift;
+	my $link = shift;
+	my $confirmtext = shift;
+	
+	$confirmtext="Confirm action?" if $confirmtext eq "";
+	
+	return "<a href=\"#\" onclick=\"confirmLink(\'$link\',\'$confirmtext\');\">$text</a>";
+}
+
+
+########################################################################
+# br
+########################################################################
+sub br
+{
+	return "<br>";
+}
+
+
+########################################################################
+# Details
+########################################################################
+sub details
+{
+	my $title   = shift;
+	my $content = shift;
+	
+	return startDetails($title).$content.endDetails();
+}
+sub startDetails
+{
+	my $title = shift;
+	
+	if ($title ne "" )
+	{
+		return "<details><summary><b>$title</b></summary>";
+	}
+	else
+	{
+		return "<details>";
+	}
+}
+sub endDetails
+{
+	return "</details>";
+}
+
+
+########################################################################
+# userExists
+########################################################################
+sub userExists
+{
+	my $dbh = shift;
+	my $checkUser = shift;
+	
+	my $query = "SELECT count(iduser) from $logindb.user where iduser=? or name=?";
+	my $out=$dbh->prepare($query) || die print "$DBI::errstr";
+	$out->execute($checkUser,$checkUser) || die print "$DBI::errstr";
+	
+	return $out->fetchrow_array;
+}
+
+
+########################################################################
+# getUserId
+########################################################################
+sub getUserId
+{
+	my $dbh = shift;
+	my $checkUser = shift;
+	
+	if ( ! userExists($dbh,$checkUser) )
+	{
+		return -1;
+	}
+	
+	my $query = "SELECT iduser from $logindb.user where name=?";
+	my $out=$dbh->prepare($query) || die print "$DBI::errstr";
+	$out->execute($checkUser) || die print "$DBI::errstr";
+	
+	return $out->fetchrow_array;
+}
+
+########################################################################
+# getUserName
+########################################################################
+sub getUserName
+{
+	my $dbh = shift;
+	my $checkUser = shift;
+	
+	if ( ! userExists($dbh,$checkUser) )
+	{
+		return -1;
+	}
+	
+	my $query = "SELECT name from $logindb.user where iduser=?";
+	my $out=$dbh->prepare($query) || die print "$DBI::errstr";
+	$out->execute($checkUser) || die print "$DBI::errstr";
+	
+	return $out->fetchrow_array;
+}
+
+########################################################################
+# getUserName
+########################################################################
+sub currentUserNameExt
+{
+	my $self = shift;
+	return $user;
+}
+
+
+########################################################################
+# isDate # TODO
+########################################################################
+sub projectExists
+{
+	my $dbh = shift;
+	my $checkproject = shift;
+	
+	my $query = "SELECT count(idproject) from $sampledb.project where idproject=? or pname=? or pcomment=?";
+	my $out=$dbh->prepare($query) || die print "$DBI::errstr";
+	$out->execute($checkproject,$checkproject,$checkproject) || die print "$DBI::errstr";
+	
+	return $out->fetchrow_array;
+}
+
+########################################################################
+# isDate # TODO
+########################################################################
+sub isDate
+{
+	my $date = shift;
+	
+	return 1;
+
+}
+
+
+
+######################################################################
+sub reverseComplement{
+	my $index = shift;
+	
+	$index = reverse($index);
+	$index =~ tr/ATGCatgc/TACGtacg/;
+	return($index);
+}
+
+
+
+########################################################################
+# flowCellAction
+########################################################################
+
+sub flowCellAction
+{
+	my $self	= shift;
+	my $dbhLIMS	= shift;
+	my $func 	= shift;
+	my $runID	= shift;
+	my $runName	= shift;
+	my $runFullName	= shift;
+	
+	my $flowCellPath = flowCellExists($dbhLIMS, $runID, $runName);
+	
+	if ( $flowCellPath eq "" )
+	{
+		print "Flow cell does not exist";
+		exit -1; 
+	}
+	
+	print "Flow cell ID:   $runName<br>";
+	print "Flow cell Path: $flowCellPath<br>";
+	print "Action required: $func<br>";
+	
+	my $error = 0;
+	my $makeSampleSheet = 0;
+	my $makeDemultiplexing = 0;
+	my $importRTA = 0;
+	my $startDemultiplexing = 0;
+	my $startNotAnalyzedSamples = 0;
+	my $startPipeline = 0;
+
+	$makeSampleSheet = 1    	if ($func eq "makeSampleSheet"      || $func eq "prepareFlowCell" || $func eq "demultiplex" || $func eq "demultiplexAndAnalyze" );
+	$makeDemultiplexing = 1 	if ($func eq "makeDemultiplexing"   || $func eq "prepareFlowCell" || $func eq "demultiplex" || $func eq "demultiplexAndAnalyze" );
+	$importRTA = 1          	if ($func eq "importRTA"            || $func eq "prepareFlowCell" || $func eq "demultiplex" || $func eq "demultiplexAndAnalyze" );
+	$startDemultiplexing = 1	if (                                                                 $func eq "demultiplex" || $func eq "demultiplexAndAnalyze" );
+	$startPipeline = 1		if (                                                                                           $func eq "demultiplexAndAnalyze" || $func eq "startPipeline" );
+	$startNotAnalyzedSamples 	if (																				$func eq "startNotAnalyzed" );
+	
+	print br().br();
+	
+	if ( $makeSampleSheet )
+	{
+		print startDetails("Creating SampleSheet");
+		$error += makeSampleSheet(0, $dbhLIMS, $runName, $runFullName);
+		print "<b>Success</b>" if ($error == 0);
+		print endDetails();
+		if ( $error > 0 ) { print "<b>Error creating samplesheet</b>"; exit(-1); };
+	}
+	
+	if ( $makeDemultiplexing )
+	{
+		print startDetails("Creating Demultiplexing  Run File");
+	
+		print "<b>Success</b>" if ($error == 0);
+		print endDetails();
+		if ( $error > 0 ) { print "<b>Error creating demultiplexing runfile</b>"; exit(-1); };	
+	}
+	
+	if ( $importRTA )
+	{
+		print startDetails("Importing metadata from RTA");
+		
+		print "<b>Success</b>" if ($error == 0);
+		print endDetails();
+		if ( $error > 0 ) { print "<b>Error importing RTA metadata</b>"; exit(-1); };
+	}
+
+	if ( $startDemultiplexing )
+	{
+		print startDetails("Starting Demultiplexing");
+		
+		print "<b>Success</b>" if ($error == 0);
+		print endDetails();
+		if ( $error > 0 ) { print "<b>Error starting demultiplexing</b>"; exit(-1); };
+		print "&nbsp;&nbsp;&nbsp;&nbsp;<b>Demultiplexing will be running for 1-3h</b> - Demultiplexing error status will be displayed on the flowcell dashboard."; 
+	}
+	
+	if ( $startPipeline )
+	{
+		print startDetails("Submitting pipeline");
+		
+		print "<b>Success</b>" if ($error == 0);
+		print endDetails();
+		if ( $error > 0 ) { print "<b>Error starting pipeline</b>"; exit(-1); };
+		print "&nbsp;&nbsp;&nbsp;&nbsp;<b>Pipeline will start only if demultiplexing will be successfully completed";
+	}
+	
+}
+
+
+########################################################################
+# flowCellExists
+# 	returns an empty string if not found
+#	returns path of the FlowCell Raw Data if found
+########################################################################
+sub flowCellExists
+{
+	my $dbh		= shift;
+	my $runID 	= shift;
+	my $runName	= shift;
+	my $flowCellPath = "";
+
+	my $query; 
+	my $out;
+	
+	
+	# Check if FlowCell in Database;
+	$query = qq#
+		select rname from $solexa.run where rid = ? and rname = ? ;
+	#;
+	
+	$out = $dbh->prepare($query) || die print "$DBI::errstr";
+	$out->execute($runID, $runName) || die print "$DBI::errstr";
+
+	my $runNameDB;
+	if (!( $runNameDB = $out->fetchrow_array ))
+	{
+		return "";
+	}
+	
+	
+	# Check if Raw data and XML meta are present:
+	return "" if (!( -d glob($rawDataPath."/[0-9]*".$runName )));
+	return "" if (!( -f glob($rawDataPath."/[0-9]*".$runName."/RunInfo.xml")));
+	return "" if (!( -f glob($rawDataPath."/[0-9]*".$runName."/*unParameters.xml")));
+	
+	$flowCellPath = glob("$rawDataPath/[0-9][0-9][0-9][0-9][0-9][0-9]*$runName");
+	return $flowCellPath;
+}
+
+########################################################################
+# makeSampleSheetSubset
+########################################################################
+sub makeSampleSheetReadRunInfo{
+	my $flowCellName=shift;
+	chomp($flowCellName);
+	my $runInfoFile="";
+	#read RunInfo.xml
+	my ($runInfoFile)=glob($rawDataPath."/[0-9]*".$flowCellName."/RunInfo.xml" );
+	if ( -f $runInfoFile )
+	{
+		($runInfoFile) = glob($rawDataPath."/[0-9]*".$flowCellName."/RunInfo.xml"); 
+	}else{ 
+		return ("","",""); 
+	}
+	
+	my $xml = new XML::Simple;
+	my $params = $xml->XMLin($runInfoFile);
+	my $flowcell   = $params->{Run}->{Flowcell};
+	my $index      = $params->{Run}->{Reads}->{Read}[1]{IsIndexedRead};
+	my $instrument = $params->{Run}->{Instrument};
+	return ($flowcell,$index,$instrument);
+}
+
+sub makeSampleSheetGetSbsConsumableVersion{
+	my $flowCellName=shift;
+	chomp($flowCellName);
+	my $runParametersFile="";
+	#read RunInfo.xml
+	my ($runParametersFile)=glob($rawDataPath."/[0-9]*".$flowCellName."/*unParameters.xml" );
+	if ( -f $runParametersFile )
+	{
+		($runParametersFile) = glob($rawDataPath."/[0-9]*".$flowCellName."/*unParameters.xml"); 
+	}else{ 
+		return (""); 
+	}
+
+        my $xml = new XML::Simple;
+        my $params = $xml->XMLin($runParametersFile);
+        my $sbsConsumableVersion = $params->{RfidsInfo}->{SbsConsumableVersion};
+
+        return $sbsConsumableVersion;
+}
+
+
+
+sub makeSampleSheetSetSequenced {
+
+	my $dbh = shift;
+	my $lid = shift;
+	my $sth = "";
+	my $sql = qq#	
+			UPDATE $solexa.library
+			SET lstatus="sequenced"
+			WHERE lid = $lid;
+		#;
+	$sth = $dbh->prepare($sql) || die print "$DBI::errstr";
+	$sth->execute() || die print "$DBI::errstr";
+}
+
+
+sub makeSampleSheetAllLanesSequenced {  #  check if all lanes to do are sequenced
+
+	my $dbh      = shift;
+	my $lid      = shift;
+	my $sth      = "";
+	my $name     = "";
+	my $idpool   = "";
+	my $lstatus  = "";
+	my $todo     = "";
+	my $finished = "";
+
+	my $sql = qq#
+		SELECT
+			s.name,o.idpool,
+			group_concat(DISTINCT l.lstatus) as lstatus,
+			sum(DISTINCT o.olanestosequence) as todo,
+			if(count(a.aid)/count(DISTINCT l.lid)-sum(replace(a.aread1failed,'T',1))/count(DISTINCT l.lid)>0,
+				count(a.aid)/count(DISTINCT l.lid)-sum(replace(a.aread1failed,'T',1))/count(DISTINCT l.lid),0) as finished
+		FROM
+			$solexa.library l
+			INNER JOIN $solexa.sample2library    sl ON l.lid = sl.lid
+			INNER JOIN $sampledb.sample           s ON sl.idsample = s.idsample
+			INNER JOIN $solexa.library2pool      lo ON l.lid = lo.lid
+			INNER JOIN $solexa.pool               o ON lo.idpool = o.idpool
+			INNER JOIN $solexa.lane               a ON o.idpool = a.idpool
+			INNER JOIN $solexa.run                r ON a.rid = r.rid
+			LEFT JOIN $sampledb.disease2sample   ds ON s.idsample = ds.idsample
+			LEFT JOIN $sampledb.disease           d ON ds.iddisease = d.iddisease
+			LEFT JOIN $sampledb.project           p ON s.idproject = p.idproject
+		WHERE l.lid = $lid
+		GROUP BY
+			o.idpool
+	#;
+	
+	$sth = $dbh->prepare($sql) || die print "$DBI::errstr";
+	$sth->execute() || die print "$DBI::errstr";
+	($name, $idpool, $lstatus,$todo,$finished) = $sth->fetchrow_array;
+
+	print "Sample: $name Library ID:  $lid Pool ID: $idpool Status: $lstatus Lanes to do: $todo Lanes done: $finished".br();
+	if (($finished >= $todo) and ($todo >= 1)) {
+		&makeSampleSheetSetSequenced ($dbh,$lid);
+	}
+	else {
+		print " error ";
+	}
+
+	print "\n";
+}
+
+
+sub makeSampleSheet {
+
+	my $self          = shift;
+	my $dbh           = shift;
+	my $flowCellName  = shift;
+	my $flowCellFolderBaseName = shift;
+
+	my $flowcell = "";
+	my $index = "";
+	my $instrument ="";
+
+	# Get Flowcell information from RunInfo
+	($flowcell,$index,$instrument) = &makeSampleSheetReadRunInfo($flowCellName);
+	
+	if ($flowcell eq "" )
+	{
+		print "Flowcell does not exist".br();
+		return (1);
+	}
+	
+	# Get Consumable Version of SBS Chemistry from RunParameters  -> Important for R2-Index orientation
+	my $sbsConsumableVersion = &makeSampleSheetGetSbsConsumableVersion($flowCellName);
+		
+	my $sth      = "";
+	my @row      = ();
+	my $i        = 0;
+	my $tmp      = "";
+	my %indices  = ();
+	my $lid      = "";
+	my %lid      = ();
+	my $scATACseq_present=0;
+	print "Instrument:  $instrument\n";
+	print "SBS Version: $sbsConsumableVersion\n";
+	print "$flowcell\n";
+	print "$index\n";
+
+	my $sql = qq#
+		SELECT distinct r.rname
+		FROM $sampledb.sample s
+		INNER JOIN $solexa.sample2library sl ON s.idsample = sl.idsample
+		INNER JOIN $solexa.library l         ON sl.lid     = l.lid
+		INNER JOIN $solexa.library2pool lp   ON l.lid      = lp.lid
+		INNER JOIN $solexa.pool po           ON lp.idpool  = po.idpool
+		INNER JOIN $solexa.lane a            ON po.idpool  = a.idpool
+		INNER JOIN $solexa.run r             ON a.rid      = r.rid
+		LEFT  JOIN $solexa.tag t             ON l.idtag    = t.idtag
+		LEFT  JOIN $solexa.tag tt            ON l.idtag2   = tt.idtag
+		LEFT  JOIN $solexa.barcodes10x bc    ON bc.idtag   = t.idtag
+		WHERE r.rname='$flowcell'
+			AND l.libtype=18
+	#;
+
+
+	$sth = $dbh->prepare($sql) || die print "$DBI::errstr";
+	$sth->execute() || die print "$DBI::errstr";
+	my $ttag2 = "";
+	while (@row = $sth->fetchrow_array) {
+		$scATACseq_present=1;
+	}
+	
+	my $sampleSheetOutFile     = "/tmp/FLOWCELLTMP.$flowCellFolderBaseName.SampleSheet.csv";
+	my $sampleSheetOutFileATAC = "/tmp/FLOWCELLTMP.$flowCellFolderBaseName.SampleSheet_scatacseq.csv";
+
+	open (OUT, ">$sampleSheetOutFile");
+
+	print OUT "[Header]\n\n\n";
+	print OUT "[Reads]\n\n\n";
+	print OUT "[Settings]\n";
+	print OUT "Adapter,AGATCGGAAGAGCACACGTCTGAACTCCAGTCA\n";
+	print OUT "AdapterRead2,AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT\n\n\n";
+	print OUT "[Data]\n";
+
+	my @labels = (
+		'Lane',
+		'Sample_ID',
+		'Sample_Name',
+		'index',
+		'index2',
+		'Sample_Project'
+	);
+
+	$i=0;
+	foreach (@labels) {
+		if ($i>0) {
+			print OUT ",";
+		}
+		print OUT "$_";
+		$i++;
+	}
+	print OUT "\n";
+
+
+	if ($scATACseq_present) {
+		open (OUTatac, ">$sampleSheetOutFileATAC");
+
+		print OUTatac "[Header]\n\n\n";
+		print OUTatac "[Reads]\n\n\n";
+		print OUTatac "[Settings]\n";
+		print OUTatac "Adapter,AGATCGGAAGAGCACACGTCTGAACTCCAGTCA\n";
+		print OUTatac "AdapterRead2,AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT\n\n\n";
+		print OUTatac "[Data]\n";
+
+		$i=0;
+		foreach (@labels) {
+			if ($i>0) {
+				print OUTatac ",";
+			}
+			print OUTatac "$_";
+			$i++;
+		}
+		print OUTatac "\n";
+	}
+
+	$sql = qq#
+		SELECT a.alane,IF(bc.torder IS NOT NULL,concat_ws('','Sample_',s.name,'_',bc.torder),concat('Sample_',s.name)) as sampleid,s.name,t.ttag,tt.ttag,'Project_all',bc.tname,bc.torder, bc.ttag ,l.libtype,l.lid
+		FROM $sampledb.sample s
+		INNER JOIN $solexa.sample2library sl ON s.idsample = sl.idsample
+		INNER JOIN $solexa.library l         ON sl.lid     = l.lid
+		INNER JOIN $solexa.library2pool lp   ON l.lid      = lp.lid
+		INNER JOIN $solexa.pool po           ON lp.idpool  = po.idpool
+		INNER JOIN $solexa.lane a            ON po.idpool  = a.idpool
+		INNER JOIN $solexa.run r             ON a.rid      = r.rid
+		LEFT  JOIN $solexa.tag t             ON l.idtag    = t.idtag
+		LEFT  JOIN $solexa.tag tt            ON l.idtag2   = tt.idtag
+		LEFT  JOIN $solexa.barcodes10x bc    ON bc.idtag   = t.idtag
+		WHERE r.rname='$flowcell'
+		ORDER BY a.alane,s.name, bc.torder
+	#;
+
+	$sth = $dbh->prepare($sql) || die print "$DBI::errstr";
+	$sth->execute() || die print "$DBI::errstr";
+	my $ttag2 = "";
+	my $fh = "";
+	while (@row = $sth->fetchrow_array) {
+		$lid{@row[-1]}= @row[-1];
+		pop(@row);
+		$i=0;
+	
+		if ($row[9]==18) {
+			$fh=*OUTatac;
+		} else {
+			$fh=*OUT;
+		}
+		# check for duplicate indices
+		if ($index eq 'Y') {
+			$indices{$row[0]}{$row[3]}{$row[4]}++;
+			if ($indices{$row[0]}{$row[3]}{$row[4]} >=2) {
+				print "Duplicate Index (@row)\n";
+			}
+		}
+		foreach (@row) {
+			if ($i>0 && $i<=5){
+				print $fh ",";
+			}
+			if ($i==3) { # if 10x barcode act accordingly
+				if ($row[$i] eq "" && $row[8] && $row[8] ne "") {
+					print $fh "$row[8]";
+				} else {
+					print $fh "$row[$i]";
+				}			
+			} elsif ($i==4) { # second index reverse complement
+				# NovaSeq with chemistry v3+ needs reverse complement again and MiSeq as well
+				if ( 
+					(
+						($instrument eq 'A00623' || $instrument eq 'A01555' )  && ($sbsConsumableVersion lt 3) 
+					) ||
+					(	$instrument eq 'M02234' || $instrument eq 'M03494'  )
+			       	){
+					$tmp = $row[$i];
+				}
+				else {
+					#Reverse Complement Index2
+					$tmp = &reverseComplement($row[$i]);
+				}
+				print $fh "$tmp";
+			}
+			elsif ($i<=5) {
+				print $fh "$row[$i]";
+			}
+			$i++;
+		}
+		print $fh "\n";
+	}
+	
+	close OUT;
+	open (OUT, ">".$sampleSheetOutFile.".complete");
+	close OUT;
+	
+	# Check if file exists:
+	my $success = waitForFile($rawDataPath."/".$flowCellFolderBaseName."/"."SampleSheet.csv",40);
+	if ($success)
+	{
+		$success = waitForFile($rawDataPath."/".$flowCellFolderBaseName."/"."SampleSheet.csv.copycomplete",40);
+		unlink($sampleSheetOutFile);
+		unlink($sampleSheetOutFile.".complete");
+	
+	}else{
+		print "Error creating samplesheet".br();
+		return 1;
+	}
+	
+	
+	if ($scATACseq_present) {
+		close OUTatac;
+		open (OUT, ">".$sampleSheetOutFileATAC.".complete");
+		close OUT;
+	
+		# Check if file exists:
+		my $success = waitForFile($rawDataPath."/".$flowCellFolderBaseName."/"."SampleSheet_scatacseq.csv",40);
+		if ($success)
+		{
+			$success = waitForFile($rawDataPath."/".$flowCellFolderBaseName."/"."SampleSheet_scatacseq.csv.copycomplete",40);
+			unlink($sampleSheetOutFileATAC);
+			unlink($sampleSheetOutFileATAC.".complete");
+		}else{
+			print "Error creating samplesheet".br();
+			return 1;
+		}	
+	}
+
+
+
+	foreach $lid (keys %lid) {
+		#print "lid $lid\n";
+		&makeSampleSheetAllLanesSequenced ($dbh,$lid);
+	}
+
+
+	return 0;
+}
+
+
+
+
+
+########################################################################
+# makeDemultiplexing
+########################################################################
+
+sub makeDemultiplexing
+{
+
+	my $self          = shift;
+	my $dbh           = shift;
+	my $flowCellName  = shift;
+	my $flowCellFolderBaseName = shift;
+	
+	# Check for existence
+	my $flowcell = ""; my $index = ""; my $instrument = "";
+	# Get Flowcell information from RunInfo
+	($flowcell,$index,$instrument) = &makeSampleSheetReadRunInfo($flowCellName);
+	
+	if ($flowcell eq "" )
+	{
+		print "Flowcell does not exist".br();
+		return (1);
+	}
+	
+	
+	# make the Makefiles
+	my $path="$rawDataPath."/".$flowCellFolderBaseName";
+	chomp($path);
+	my $convert=
+	"#bclToFastsq
+
+	nohup \\
+		/usr/local/packages/seq/solexa-pipeline/bcl2fastq2-v2.20.0/bin/bcl2fastq \\
+		--input-dir $path/Data/Intensities/BaseCalls \\
+		--output-dir $path/Demultiplexed \\
+		--sample-sheet $path/SampleSheet.csv \\
+		--loading-threads 40 \\
+		--writing-threads 40 \\
+		--processing-threads 80 \\
+		> $path/demultiplexing.log
+	";
+
+
+
+# This part disabled
+my $mipscommand = "
+#--use-bases-mask Y*,I8,I8
+#--in-place --overwrite --ignore-missing-bcl --ignore-missing-stats  \
+
+#for mips lane 123456 6index
+nohup \\
+/usr/local/packages/seq/solexa-pipeline/bcl2fastq2-v2.20.0/bin/bcl2fastq \\
+--input-dir $path/Data/Intensities/BaseCalls \\
+--output-dir $path/Demultiplexed \\
+--sample-sheet $path/SampleSheet.csv \\
+--loading-threads 4 \\
+--writing-threads 4 \\
+--processing-threads 8 \\
+--use-bases-mask 1:Y*,I6nnn,n*,Y* \\
+--use-bases-mask 2:Y*,I8n,n*,Y* \\
+--use-bases-mask 3:Y*,I8n,n*,Y* \\
+--use-bases-mask 4:Y*,I8n,I8,Y* \\
+--use-bases-mask 5:Y*,I8n,I8,Y* \\
+--use-bases-mask 6:Y*,I8n,I8,Y* \\
+--use-bases-mask 7:Y*,I8n,I8,Y* \\
+--use-bases-mask 8:Y*,I8n,I8,Y* \\
+&
+
+";
+
+
+if (-e $path. "/SampleSheet_scatacseq.csv") {
+	#get used index length from samplesheet
+	my $dataLinesReached = 0;
+	my $indexLength = -1;
+	my @line;
+	open(IN,$path. "/SampleSheet_scatacseq.csv");
+	while (<IN>) {
+		if ($dataLinesReached) {
+			@line = split(',', $_);
+			$indexLength=length($line[3]);
+			last;
+		}
+		if ($_ =~ /\[Data\]/) {
+			<IN>;	#jump over header line
+			$dataLinesReached = 1;
+		}
+	}
+	
+	#parse RunInfo.xml to get correct --use-bases-mask parameter settings
+	my $runinfofile = $path . "/RunInfo.xml";
+	my $xml = new XML::Simple;
+	my $params = $xml->XMLin($runinfofile);
+	my $flowcell   = $params->{Run}->{Flowcell};
+	my $index      = $params->{Run}->{Reads}->{Read}[1]{IsIndexedRead};
+	my $useBasesMask = "";
+	foreach my $read (@{ $params->{Run}->{Reads}->{Read} }) {
+		if ($read->{IsIndexedRead} eq "Y" && $read->{Number} == 2) {
+			$useBasesMask .= "I" . $indexLength;
+			if ($read->{NumCycles} > $indexLength) {
+				for (my $i=0; $i<($read->{NumCycles}-$indexLength); $i++) {
+					$useBasesMask .= "n";
+				}
+			}
+			$useBasesMask .= ",";
+			
+		} else {
+			$useBasesMask .= "Y" . $read->{NumCycles} . ",";
+		}
+	}
+	$useBasesMask =~ s/,$//;
+	$convert .= 	
+"
+
+
+### scATACseq demultiplexing ###
+
+nohup \\
+/usr/local/packages/seq/solexa-pipeline/bcl2fastq2-v2.20.0/bin/bcl2fastq \\
+--use-bases-mask=$useBasesMask \\
+--create-fastq-for-index-reads \\
+--minimum-trimmed-read-length=8 \\
+--mask-short-adapter-reads=8 \\
+--ignore-missing-positions \\
+--ignore-missing-controls \\
+--ignore-missing-filter \\
+--ignore-missing-bcls \\
+-r 4 \\
+-w 4 \\
+-R $path \\
+--output-dir=$path/Demultiplexed \\
+--interop-dir=$path/InterOp/ \\
+--sample-sheet=$path/SampleSheet_scatacseq.csv \\
+&
+
+"
+
+}
+
+open(OUT, ">runGerald.sh");
+print OUT "#!/bin/sh\n\n";
+print OUT "$convert\n";
+close OUT;
+
+
+}
+
+
+
+
+
+
+
+# Asymmetric file check
+sub waitForFile
+{
+	my $file = shift;
+	my $timeout = shift;
+
+	return 0 if ( $file eq "" );
+
+	my $timer = 0;
+
+	while ( 1 ) 
+	{
+
+		if ( -e $file )
+		{
+			print "Found $file at time $timer".br();
+			return 1;
+		}
+		
+		if ($timer > $timeout ) 
+		{
+			print "Not found $file at time $timer".br();
+			return 0;
+		}
+		$timer++;
+		# Sleep 1 second
+		sleep 1;
+	}
+}
+
+
 
 
 

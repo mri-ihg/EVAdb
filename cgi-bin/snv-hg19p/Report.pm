@@ -15,6 +15,7 @@ my $defaultmaterial     = "genome";
 my $sampledb        = $Snv::sampledb;
 my $coredb          = $Snv::coredb;
 my $exomevcfe       = $Snv::exomevcfe;
+my $snvsample       = $Snv::snvsample;
 my $vep_cmd         = $Snv::vep_cmd;
 my $vep_fasta       = $Snv::vep_fasta;
 my $vep_genesplicer = $Snv::vep_genesplicer;
@@ -35,9 +36,9 @@ my $self         = shift;
 my $dbh          = shift;
 my $ref          = shift;
 
-my $allowedprojects  = &Snv::allowedprojects();
+my $allowedprojects  = &Snv::allowedprojects("s.");
 #print "sampledb $sampledb<br>";
-#print "allowedprojects $allowedprojects<br>";
+#print "projects $allowedprojects<br>";
 #print "exomevcfe $exomevcfe<br>";
 
 my $query            = "";
@@ -87,16 +88,16 @@ GROUP_CONCAT(DISTINCT hpo.hpo separator " "),
 evs.het,
 evs.homalt,
 x.coverage,
-(select count(xx.idsample) from snvsample xx where (xx.idsnv=x.idsnv and xx.alleles=1)),
-(select count(xx.idsample) from snvsample xx where (xx.idsnv=x.idsnv and xx.alleles=2)),
-(select count(distinct idsample) from snvsample),
+(select count(xx.idsample) from $snvsample xx where (xx.idsnv=x.idsnv and xx.alleles=1)),
+(select count(xx.idsample) from $snvsample xx where (xx.idsnv=x.idsnv and xx.alleles=2)),
+(select count(distinct idsample) from $snvsample),
 co.causefor
 FROM $sampledb.sample s
 INNER JOIN $exomevcfe.conclusion   cl ON s.idsample=cl.idsample
 LEFT  JOIN $exomevcfe.comment      co ON s.idsample=co.idsample AND (co.patho like "%pathogenic" OR co.patho like "unknown significance")
 LEFT  JOIN $coredb.clinvar         cv ON co.chrom=cv.chrom AND co.start=cv.start AND co.refallele=cv.ref AND co.altallele=cv.alt
 LEFT  JOIN snv                      v ON v.chrom=co.chrom AND v.start=co.start AND v.end=co.end AND v.refallele=co.refallele AND v.allele=co.altallele
-LEFT  JOIN snvsample                x ON v.idsnv=x.idsnv and s.idsample=x.idsample
+LEFT  JOIN $snvsample                x ON v.idsnv=x.idsnv and s.idsample=x.idsample
 LEFT  JOIN $sampledb.omim        omim ON co.omimphenotype=omim.omimdisease
 LEFT  JOIN $exomevcfe.hpo         hpo ON s.name=hpo.samplename
 LEFT  JOIN $coredb.evs            evs ON v.chrom=evs.chrom and v.start=evs.start and v.refallele=evs.refallele and v.allele=evs.allele
@@ -634,7 +635,7 @@ if ($clinvar[$i] eq "nicht gelistet") {
 	$clinvar = "Die Variante ist in ClinVar nicht gelistet. ";
 }
 if ($vepconseq[$i] eq "frameshift") {
-$consequence .= "Aufgrund der Variante $vepHGVSc[$i] werden die Verschiebung des Leserahmens und der vorzeitiger Abbruch der Proteintranslation vorhergesagt. $clinvar";
+$consequence .= "Aufgrund der Variante $vepHGVSc[$i] werden die Verschiebung des Leserahmens und der vorzeitige Abbruch der Proteintranslation vorhergesagt. $clinvar";
 }
 elsif ($vepconseq[$i] eq "nonsense") {
 $consequence .= "Aufgrund der Variante $vepHGVSc[$i] wird der vorzeitige Abbruch der Proteintranslation vorhergesagt. $clinvar";
@@ -678,7 +679,7 @@ if ( $genotype[$i] eq "heterozygous" && ($mother eq "" || $father eq "") ) {
 }
 
 if ( $genotype[$i] eq "homozygous" || $genotype[$i] eq "compound_heterozygous" ) {
-	$extraremarks .= "Bei weiteren gemeinsamen Nachkommen der Eltern ".( $sex eq "female" ? "der Patientin" :  $sex eq "male" ? "des Patienten" : "der Patientin/des Patienten" )." betr&auml;gt die Wiederholungswahrscheinlichkeit aufgrund der nachgewiesenen Anlagetr&auml;agerschaften 25&percnt;.&nbsp;";
+	$extraremarks .= "Bei weiteren gemeinsamen Nachkommen der Eltern ".( $sex eq "female" ? "der Patientin" :  $sex eq "male" ? "des Patienten" : "der Patientin/des Patienten" )." betr&auml;gt die Wiederholungswahrscheinlichkeit aufgrund der nachgewiesenen Anlagetr&auml;gerschaften 25&percnt;.&nbsp;";
 }
 
 
@@ -729,8 +730,8 @@ print qq#
 <tr><td $td_left_t width="28%">Name, Vorname</td><td $td_left_t width="44%"><span $left8 class="mname"></span></td><td $td_left_t width="12%">Material</td><td $td_left_t width="16%">EDTA-Blut</td></tr> 
 <tr><td $td_left_wo>Geburtsdatum</td><td $td_left_wo><span $left8 class="mbirth"></span></td><td $td_left_wo>Entnahme</td><td $td_left_wo><span $left8 class="mtaken"></span></td></tr> 
 <tr><td $td_left_wo>Geschlecht</td><td $td_left_wo>weiblich</td><td $td_left_wo>Eingang</td><td $td_left_wo><span $left8 class="mreceived"></span></td></tr> 
-<tr><td $td_left_wo>Ph&auml;notyp</td><td $td_left_wo>$m_affected (Mutter)</td><td $td_left_wo>DNA-ID</td><td $td_left_wo>$mother</td></tr>
-<tr><td $td_left_b></td><td $td_left_b></td><td $td_left_b>Alias-ID</td><td $td_left_b>$m_foreignid</td></tr> 
+<tr><td $td_left_wo>Ph&auml;notyp</td><td $td_left_wo>$f_affected (Mutter)</td><td $td_left_wo>DNA-ID</td><td $td_left_wo>$mother</td></tr>
+<tr><td $td_left_b></td><td $td_left_b></td><td $td_left_b>Alias-ID</td><td $td_left_b>$f_foreignid</td></tr> 
 #;
 }
 if ($father ne "") {
@@ -738,8 +739,8 @@ print qq#
 <tr><td $td_left_t width="28%">Name, Vorname</td><td $td_left_t width="44%"><span $left8 class="fname"></span></td><td $td_left_t width="12%">Material</td><td $td_left_t width="16%">EDTA-Blut</td></tr> 
 <tr><td $td_left_wo>Geburtsdatum</td><td $td_left_wo><span $left8 class="fbirth"></span></td><td $td_left_wo>Entnahme</td><td $td_left_wo><span $left8 class="ftaken"></span></td></tr> 
 <tr><td $td_left_wo>Geschlecht</td><td $td_left_wo>m&auml;nnlich</td><td $td_left_wo>Eingang</td><td $td_left_wo><span $left8 class="freceived"></span></td></tr>
-<tr><td $td_left_wo>Ph&auml;notyp</td><td $td_left_wo>$f_affected (Vater)</td><td $td_left_wo>DNA-ID</td><td $td_left_wo>$father</td></tr> 
-<tr><td $td_left_b></td><td $td_left_b></td><td $td_left_b>Alias-ID</td><td $td_left_b>$f_foreignid</td></tr> 
+<tr><td $td_left_wo>Ph&auml;notyp</td><td $td_left_wo>$m_affected (Vater)</td><td $td_left_wo>DNA-ID</td><td $td_left_wo>$father</td></tr> 
+<tr><td $td_left_b></td><td $td_left_b></td><td $td_left_b>Alias-ID</td><td $td_left_b>$m_foreignid</td></tr> 
 #;
 }
 print qq#
@@ -1020,12 +1021,12 @@ print qq#
 <p $justify>Bei Auftreten neuer klinischer Merkmale oder der Ver&ouml;ffentlichung neuer Krankheitsgene mit &auml;hnlicher Klinik kann jederzeit 
 eine erneute Auswertung der Daten erfolgen.</p>
 <p $justify>Allgemein weisen wir darauf hin, dass die durchgef&uuml;hrte Analyse der Sequenzdaten nicht als abschlie&szlig;ende Beurteilung der Gesamtheit aller Gene betrachtet werden darf. Limitationen bestehen beispielsweise bei der Detektion von niedrig-gradigen Mosaiken, von Repeatexpansionen, von balancierten Ver&auml;nderungen (Translokationen und Inversionen) sowie bei der Callinggenauigkeit von gr&ouml;ßeren Indels &gt;20bp und kleineren SVs &lt;1000bp. Bei der Exomsequenzierung k&ouml;nnen dar&uuml;ber hinaus Varianten in nicht angereicherten Regionen (untranslatierte Bereiche, Introns, Promotor- und Enhancer-Regionen) nicht detektiert werden.
-Grunds&auml;tzlich ist die Genauigkeit f&uuml;r alle Variantentypen in Regionen mit hoher Sequenzhomologie oder niedriger Komplexit&auml;t bzw. mit anderen technischen Herausforderungen eingeschr&aumlnkt. 
+Grunds&uml;tzlich ist die Genauigkeit f&uuml;r alle Variantentypen in Regionen mit hoher Sequenzhomologie oder niedriger Komplexit&auml;t bzw. mit anderen technischen Herausforderungen eingeschr&aumlnkt. 
 <br>Bei entsprechendem klinischem Verdacht kann eine konventionelle Analyse (Sanger-Sequenzierung, MLPA, Array-Analyse) trotz des vorliegenden 
 Befundes indiziert sein. Hinsichtlich der Beurteilung identifizierter Varianten besteht die M&ouml;glichkeit, dass sich aufgrund der 
 Verf&uuml;gbarkeit neuer Daten die Einsch&auml;tzung ihrer Pathogenit&auml;t und klinischen Relevanz zu einem sp&auml;teren Zeitpunkt 
 ver&auml;ndern k&ouml;nnte. Auf Wunsch kann eine Bereitstellung des Datensatzes erfolgen.</p>
-<p $justify>Nach &sect;10 GenDG soll jede diagnostische genetische Untersuchung mit dem Angebot einer genetischen Beratung einhergehen. F&uuml;r R&uuml;ckfragen stehen wir jederzeit gerne zur Verf&uuml;gung.</p>
+<p $justify>Nach &sect;10 GenDG soll jede diagnostische genetische Untersuchung mit dem Angebot einer genetischen Beratung einhergehen. F&uuml;ur R&uuml;ckfragen stehen wir jederzeit gerne zur Ver&uuml;gung.</p>
 #;
 }
 

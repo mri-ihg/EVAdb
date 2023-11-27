@@ -28,7 +28,9 @@ while (<IN>) {
 close IN;
 my $csrfsalt = $logins{'csrfsalt'};
 
-print "<span class=\"big\">Login</span><br><br>" ;
+print "<span class=\"big\">EVAdb".$snv->info("subtitle")." | Login</span>" ;
+print "<br><span class=\"alert\">Warning: Beta! Do not use in diagnostic procedures</span><br><br>" if $snv->info("beta");
+print "<br><br>";
 
 print qq(
 <form action="loginDo.pl" method="post">

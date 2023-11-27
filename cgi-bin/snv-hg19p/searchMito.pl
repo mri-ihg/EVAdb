@@ -18,7 +18,7 @@ my ($dbh) = $snv->loadSessionId();
 my $search      = $snv->initSearchMito($pedigree,$dbh);
 	
 $snv->showMenu("searchMito");
-print "<span class=\"big\">Mitochondria</span><br><br>" ;
+$snv->pageTitle("Mitochondrial DNA");
 
 print "<form action=\"searchMitoDo.pl\" method=\"post\" name=\"myform\">" ;
 

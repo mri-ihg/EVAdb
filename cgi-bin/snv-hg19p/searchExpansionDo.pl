@@ -1,15 +1,15 @@
 #!/usr/bin/perl 
 
 ########################################################################
-# Tim M Strom   Sept 2010
+# Tim M Strom   Oct 2013
 ########################################################################
 
 use strict;
 BEGIN {require './Snv.pm';}
 
-my $cgi        = new CGI;
-my $ref        = $cgi->Vars;
-my $snv        = new Snv;
+my $cgi          = new CGI;
+my $ref          = $cgi->Vars;
+my $snv          = new Snv;
 
 ########################################################################
 # main
@@ -20,10 +20,10 @@ my ($dbh) = $snv->loadSessionId();
 
 #$ref = $snv->htmlencodehash($ref);
 
-$snv->showMenu('searchMito');
-print "<span class=\"big\">Mitochondrial DNA</span><br><br>" ;
+$snv->showMenu('searchExpansion');
+print "<span class=\"big\">Repeat Expansions</span><br><br>" ;
 
-$snv->searchResultsMito($dbh,$ref);
+$snv->searchResultsExpansion($dbh,$ref);
 
 
 $snv->printFooter($dbh);
