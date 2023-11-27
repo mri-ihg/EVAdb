@@ -2731,11 +2731,11 @@ my @AoH = (
 	  },
 	  {
 	  	label       => "Flowcell",
-	  	labels      => "HiSeq4000, NovaSeqSP, NovaSeq_S1, NovaSeq_S2, NovaSeq_S4, MiSeq",
+	  	labels      => "HiSeq4000, NovaSeqSP, NovaSeq_S1, NovaSeq_S2, NovaSeq_S4, MiSeq, PacBio_Sequel_II",
 	  	type        => "radio",
 		name        => "oflowcell",
 	  	value       => "NovaSeqS2",
-	  	values      => "HiSeq4000, NovaSeqSP, NovaSeqS1, NovaSeqS2, NovaSeqS4, MiSeq",
+	  	values      => "HiSeq4000, NovaSeqSP, NovaSeqS1, NovaSeqS2, NovaSeqS4, MiSeq, PacBio_Sequel_II",
 	  	bgcolor     => "formbg",
 	  },
 	  {
@@ -3097,11 +3097,11 @@ my @AoH = (
 	  },
 	  {
 	  	label       => "Flowcell",
-	  	labels      => "All, HiSeq4000, NovaSeqSP, NovaSeq_S1, NovaSeq_S2, NovaSeq_S4, MiSeq",
+	  	labels      => "All, HiSeq4000, NovaSeqSP, NovaSeq_S1, NovaSeq_S2, NovaSeq_S4, MiSeq, PacBio_Sequel_II",
 	  	type        => "radio",
 		name        => "oflowcell",
 	  	value       => " ",
-	  	values      => " , HiSeq4000, NovaSeqSP, NovaSeqS1, NovaSeqS2, NovaSeqS4, MiSeq",
+	  	values      => " , HiSeq4000, NovaSeqSP, NovaSeqS1, NovaSeqS2, NovaSeqS4, MiSeq, PacBio_Sequel_II",
 	  	bgcolor     => "formbg",
 	  },
 	  {
